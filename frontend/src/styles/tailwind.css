@@ -1,0 +1,9 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Optional: small runtime variables fallback for build route */
+:root{
+  --primary: #6D28D9;
+  --primary-2: #8B5CF6;
+}

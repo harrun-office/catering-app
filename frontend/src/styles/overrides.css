@@ -1,0 +1,50 @@
+:root{
+--primary: #6D28D9;
+--primary-2: #8B5CF6;
+--accent: #06B6D4;
+--accent-2: #0891B2;
+--neutral-900: #0F172A;
+--neutral-700: #334155;
+--bg: #F8FAFC;
+--success: #10B981;
+--warning: #F59E0B;
+--danger: #EF4444;
+}
+
+
+/* Replace gradients used across app */
+.bg-primary-gradient{ background: linear-gradient(90deg,var(--primary),var(--primary-2)); }
+.text-primary { color: var(--primary) !important; }
+.bg-primary { background-color: var(--primary) !important; }
+.btn-primary { background: linear-gradient(90deg,var(--primary),var(--primary-2)); color: #fff !important; }
+
+
+/* Navbar tweaks */
+.navbar-custom{ background: linear-gradient(90deg,var(--primary),var(--accent)); }
+
+
+/* Make container paddings responsive if CDN Tailwind container isn't configured */
+.container-main{ padding-left: 1rem; padding-right: 1rem; }
+@media(min-width:640px){ .container-main{ padding-left: 1.5rem; padding-right: 1.5rem; } }
+@media(min-width:1024px){ .container-main{ padding-left: 2rem; padding-right: 2rem; } }
+
+
+/* Utility helper when you need dark text on cards */
+.card-contrast{ background: white; color: var(--neutral-900); }
+
+
+/* Improve responsive image behavior */
+.card img{ width:100%; height:auto; display:block; object-fit:cover; }
+
+
+/* Small screens: make sidebar fullwidth panel with slide-in */
+.admin-sidebar-mobile { width: 88vw; max-width: 360px; }
+
+
+/* Smooth focus rings using palette */
+:focus{ outline: 3px solid rgba(139,92,246,0.18); outline-offset: 2px; }
+
+
+/* Minor button sizing adjustments for small screens */
+.btn-primary{ padding: .6rem 1rem; border-radius: .75rem; }
+@media (min-width: 1024px){ .btn-primary{ padding: .75rem 1.25rem; } }
