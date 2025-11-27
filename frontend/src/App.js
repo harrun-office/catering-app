@@ -1,20 +1,33 @@
+// src/App.jsx
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import { ProtectedRoute } from './utils/ProtectedRoute';
-import { Navbar } from './components/Navbar';
+import { RoleGate } from './utils/RoleGate';
+import Navbar from './components/Navbar';
 import { Footer } from './components/Footer';
 import { AdminSidebar } from './components/AdminSidebar';
 import { Login } from './pages/Login';
 import { Register } from './pages/Register';
-import { Home } from './pages/Home';
-import { Cart } from './pages/Cart';
+import Home from './pages/Home';
+import Cart from './pages/Cart';
 import { Orders } from './pages/Orders';
 import { AdminDashboard } from './pages/AdminDashboard';
 import { AdminOrders } from './pages/AdminOrders';
 import { AdminUsers } from './pages/AdminUsers';
+import AdminMenu from './pages/AdminMenu';
 import './styles/index.css';
+
+function MainLayout({ children }) {
+  return (
+    <>
+      <Navbar />
+      <main className="min-h-[60vh] p-4">{children}</main>
+      <Footer />
+    </>
+  );
+}
 
 function App() {
   return (
@@ -22,37 +35,43 @@ function App() {
       <CartProvider>
         <Router>
           <Routes>
-            {/* Auth Routes */}
+            {/* Auth */}
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
 
-            {/* User Routes */}
+            {/* Public / User */}
             <Route
-              path="/*"
+              path="/"
               element={
-                <>
-                  <Navbar />
-                  <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route
-                      path="/cart"
-                      element={<Cart />}
-                    />
-                    <Route
-                      path="/orders"
-                      element={
-                        <ProtectedRoute>
-                          <Orders />
-                        </ProtectedRoute>
-                      }
-                    />
-                  </Routes>
-                  <Footer />
-                </>
+                <RoleGate allowedRoles={['guest', 'user']}>
+                  <MainLayout>
+                    <Home />
+                  </MainLayout>
+                </RoleGate>
+              }
+            />
+            <Route
+              path="/cart"
+              element={
+                <RoleGate allowedRoles={['guest', 'user']}>
+                  <MainLayout>
+                    <Cart />
+                  </MainLayout>
+                </RoleGate>
+              }
+            />
+            <Route
+              path="/orders"
+              element={
+                <MainLayout>
+                  <ProtectedRoute requiredRole="user">
+                    <Orders />
+                  </ProtectedRoute>
+                </MainLayout>
               }
             />
 
-            {/* Admin Routes */}
+            {/* Admin */}
             <Route
               path="/admin/*"
               element={
@@ -60,9 +79,9 @@ function App() {
                   <AdminSidebar>
                     <Routes>
                       <Route path="/" element={<AdminDashboard />} />
-                      <Route path="/orders" element={<AdminOrders />} />
-                      <Route path="/menu" element={<AdminOrders />} />
-                      <Route path="/users" element={<AdminUsers />} />
+                      <Route path="orders" element={<AdminOrders />} />
+                      <Route path="menu" element={<AdminMenu />} />
+                      <Route path="users" element={<AdminUsers />} />
                     </Routes>
                   </AdminSidebar>
                 </ProtectedRoute>

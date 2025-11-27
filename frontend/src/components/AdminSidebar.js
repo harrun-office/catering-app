@@ -1,95 +1,112 @@
 import React, { useState, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
-import { Link, useNavigate } from 'react-router-dom';
-import { Menu, X, LogOut, LayoutDashboard, ShoppingBag, Users, BarChart3 } from 'lucide-react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Menu, X, LogOut, LayoutDashboard, ShoppingBag, Users, BarChart3, Settings } from 'lucide-react';
+
+const navItems = [
+  { icon: LayoutDashboard, label: 'Dashboard', path: '/admin' },
+  { icon: ShoppingBag, label: 'Orders', path: '/admin/orders' },
+  { icon: BarChart3, label: 'Menu', path: '/admin/menu' },
+  { icon: Users, label: 'Users', path: '/admin/users' },
+];
 
 export const AdminSidebar = ({ children }) => {
   const { user, logout } = useContext(AuthContext);
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
-
-  const menuItems = [
-    { icon: <LayoutDashboard size={18} />, label: 'Dashboard', path: '/admin' },
-    { icon: <ShoppingBag size={18} />, label: 'Orders', path: '/admin/orders' },
-    { icon: <BarChart3 size={18} />, label: 'Menu', path: '/admin/menu' },
-    { icon: <Users size={18} />, label: 'Users', path: '/admin/users' },
-  ];
+  const location = useLocation();
 
   const handleLogout = () => {
     logout();
     navigate('/');
   };
 
+  const renderNavLink = ({ icon: Icon, label, path }) => {
+    const isActive = location.pathname === path || location.pathname.startsWith(`${path}/`);
+    return (
+      <Link
+        key={path}
+        to={path}
+        onClick={() => setIsOpen(false)}
+        className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition border border-transparent ${
+          isActive
+            ? 'bg-white/15 text-white shadow-lg shadow-purple-900/20 border-white/20'
+            : 'text-white/80 hover:bg-white/10 hover:text-white'
+        }`}
+      >
+        <Icon size={18} />
+        <span className="truncate">{label}</span>
+      </Link>
+    );
+  };
+
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex min-h-screen bg-slate-100">
       {/* Sidebar */}
       <div
-        className={`fixed inset-y-0 left-0 z-50 bg-primary-gradient text-white transform transition-transform duration-300 lg:relative lg:translate-x-0`}
-        style={{ width: 'min(22rem, 92vw)', transform: isOpen ? 'translateX(0)' : undefined }}
-        aria-hidden={!isOpen && window.innerWidth < 1024}
+        className={`fixed inset-y-0 left-0 z-50 w-[min(22rem,92vw)] transform bg-gradient-to-b from-purple-900 via-purple-800 to-blue-900 text-white shadow-2xl transition-transform duration-300 lg:static lg:translate-x-0 ${
+          isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+        }`}
       >
-        <div className="flex flex-col h-full">
-          {/* Header */}
-          <div className="p-6 border-b border-purple-500 flex items-center justify-between">
+        <div className="flex h-full flex-col">
+          <div className="flex items-center justify-between border-b border-white/10 px-6 py-6">
             <div>
-              <h1 className="text-2xl font-bold">🍽️ Admin</h1>
-              <p className="text-sm text-purple-200">{user?.first_name}</p>
+              <p className="text-xs uppercase tracking-[0.2em] text-white/70">CaterHub Admin</p>
+              <h1 className="text-2xl font-bold">Control Center</h1>
+              <p className="text-sm text-white/70 mt-1">Hello, {user?.first_name || 'Admin'}</p>
             </div>
-            <button className="lg:hidden p-2" onClick={() => setIsOpen(false)} aria-label="Close sidebar">
+            <button className="rounded-full bg-white/10 p-2 lg:hidden" onClick={() => setIsOpen(false)} aria-label="Close sidebar">
               <X size={20} />
             </button>
           </div>
 
-          {/* Menu Items */}
-          <nav className="flex-1 p-4 space-y-2 overflow-auto">
-            {menuItems.map((item) => (
-              <Link
-                key={item.path}
-                to={item.path}
-                className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-purple-500 transition"
-                onClick={() => setIsOpen(false)}
-              >
-                {item.icon}
-                <span className="truncate">{item.label}</span>
-              </Link>
-            ))}
-          </nav>
+          <nav className="flex-1 space-y-2 overflow-y-auto px-4 py-6">{navItems.map(renderNavLink)}</nav>
 
-          {/* Logout */}
-          <button
-            onClick={handleLogout}
-            className="m-4 flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-red-500 transition w-[calc(100%-2rem)]"
-          >
-            <LogOut size={18} />
-            <span>Logout</span>
-          </button>
+          <div className="px-4 pb-6 space-y-2">
+            <Link
+              to="/admin/settings"
+              className="flex items-center gap-3 rounded-2xl px-4 py-3 text-white/80 transition hover:bg-white/10 hover:text-white"
+            >
+              <Settings size={18} />
+              <span>Settings</span>
+              <span className="ml-auto rounded-full bg-white/20 px-2 text-xs text-white">soon</span>
+            </Link>
+
+            <button
+              onClick={handleLogout}
+              className="flex w-full items-center gap-3 rounded-2xl bg-white/10 px-4 py-3 text-left font-semibold text-white transition hover:bg-white/20"
+            >
+              <LogOut size={18} />
+              <span>Logout</span>
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Top Bar */}
-        <div className="bg-white shadow-md p-4 flex justify-between items-center lg:justify-end">
+      {/* Main content */}
+      <div className="flex flex-1 flex-col">
+        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-200 bg-white/80 px-4 py-4 backdrop-blur lg:justify-end">
           <button
-            onClick={() => setIsOpen(!isOpen)}
-            className="lg:hidden text-gray-800 hover:text-gray-600"
+            onClick={() => setIsOpen((prev) => !prev)}
+            className="rounded-full border border-slate-200 p-2 text-slate-700 hover:bg-slate-100 lg:hidden"
             aria-label="Toggle sidebar"
           >
-            {isOpen ? <X size={24} /> : <Menu size={24} />}
+            {isOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
-          <h1 className="text-xl font-bold text-gray-800">Admin Panel</h1>
+          <div className="text-right">
+            <p className="text-xs uppercase tracking-widest text-slate-400">Admin Panel</p>
+            <p className="text-base font-semibold text-slate-700">{user?.email}</p>
+          </div>
         </div>
 
-        {/* Content */}
-        <div className="flex-1 overflow-auto bg-gray-50 p-6">{children}</div>
+        <div className="flex-1 overflow-auto bg-slate-50 p-6 lg:p-10">{children}</div>
       </div>
 
-      {/* Overlay for mobile */}
       {isOpen && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 lg:hidden z-40"
+        <button
+          className="fixed inset-0 z-40 bg-black/40 lg:hidden"
           onClick={() => setIsOpen(false)}
-          aria-hidden="true"
+          aria-label="Close menu overlay"
         />
       )}
     </div>

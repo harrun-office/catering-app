@@ -1,50 +1,42 @@
-:root{
---primary: #6D28D9;
---primary-2: #8B5CF6;
---accent: #06B6D4;
---accent-2: #0891B2;
---neutral-900: #0F172A;
---neutral-700: #334155;
---bg: #F8FAFC;
---success: #10B981;
---warning: #F59E0B;
---danger: #EF4444;
+/* src/styles/overrides.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+html { scroll-behavior: smooth; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu',
+    'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #f5f5f5;
 }
 
+/* Animations */
+@keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-/* Replace gradients used across app */
-.bg-primary-gradient{ background: linear-gradient(90deg,var(--primary),var(--primary-2)); }
-.text-primary { color: var(--primary) !important; }
-.bg-primary { background-color: var(--primary) !important; }
-.btn-primary { background: linear-gradient(90deg,var(--primary),var(--primary-2)); color: #fff !important; }
+.animate-slide-in { animation: slideIn 0.3s ease-out; }
+.animate-fade-in { animation: fadeIn 0.3s ease-out; }
 
-
-/* Navbar tweaks */
-.navbar-custom{ background: linear-gradient(90deg,var(--primary),var(--accent)); }
-
-
-/* Make container paddings responsive if CDN Tailwind container isn't configured */
-.container-main{ padding-left: 1rem; padding-right: 1rem; }
+/* Simple layout utilities used across the app */
+.container-main { max-width: 1120px; margin-left: auto; margin-right: auto; padding-left: 1rem; padding-right: 1rem; }
 @media(min-width:640px){ .container-main{ padding-left: 1.5rem; padding-right: 1.5rem; } }
 @media(min-width:1024px){ .container-main{ padding-left: 2rem; padding-right: 2rem; } }
 
+.card { background: white; border-radius: 0.5rem; box-shadow: 0 6px 18px rgba(15,23,42,0.06); }
+.btn-primary { padding: .6rem 1rem; border-radius: .75rem; background: linear-gradient(90deg,#6D28D9,#8B5CF6); color: #fff; font-weight: 600; }
+.btn-secondary { padding: .6rem 1rem; border-radius: .75rem; background: #e6e6e6; color: #111827; }
 
-/* Utility helper when you need dark text on cards */
-.card-contrast{ background: white; color: var(--neutral-900); }
+/* Lightbox styles used by Home */
+.lightbox-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); display:flex; align-items:center; justify-content:center; z-index:60; padding:2rem; }
+.lightbox-content { position: relative; display:flex; gap:1rem; max-width:95%; max-height:95%; }
+.lightbox-content img { max-width: 100%; max-height: 80vh; border-radius: 8px; }
 
-
-/* Improve responsive image behavior */
-.card img{ width:100%; height:auto; display:block; object-fit:cover; }
-
-
-/* Small screens: make sidebar fullwidth panel with slide-in */
-.admin-sidebar-mobile { width: 88vw; max-width: 360px; }
-
-
-/* Smooth focus rings using palette */
-:focus{ outline: 3px solid rgba(139,92,246,0.18); outline-offset: 2px; }
-
-
-/* Minor button sizing adjustments for small screens */
-.btn-primary{ padding: .6rem 1rem; border-radius: .75rem; }
-@media (min-width: 1024px){ .btn-primary{ padding: .75rem 1.25rem; } }
+/* Focus */
+:focus { outline: 3px solid rgba(139,92,246,0.18); outline-offset: 2px; }

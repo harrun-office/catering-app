@@ -7,6 +7,7 @@ import { Trash2, Plus, Minus, ShoppingBag } from 'lucide-react';
 import { orderAPI } from '../utils/api';
 import { Alert } from '../components/Alert';
 import { LoadingSpinner } from '../components/LoadingSpinner';
+import { resolveImageSrc } from '../components/MenuItem';
 
 export const Cart = () => {
   const { items, removeItem, updateQuantity, clearCart, total } = useContext(CartContext);
@@ -93,16 +94,18 @@ export const Cart = () => {
           {/* Cart Items */}
           <div className="lg:col-span-2">
             <div className="bg-white rounded-lg shadow-md">
-              {items.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex items-center gap-4 p-6 border-b last:border-b-0 hover:bg-gray-50 transition"
-                >
-                  <img
-                    src={item.image || 'https://via.placeholder.com/100'}
-                    alt={item.name}
-                    className="w-24 h-24 object-cover rounded-lg"
-                  />
+              {items.map((item) => {
+                const resolvedImage = resolveImageSrc(item.image, item.name);
+                return (
+                  <div
+                    key={item.id}
+                    className="flex items-center gap-4 p-6 border-b last:border-b-0 hover:bg-gray-50 transition"
+                  >
+                    <img
+                      src={resolvedImage}
+                      alt={item.name}
+                      className="w-24 h-24 object-cover rounded-lg"
+                    />
 
                   <div className="flex-1">
                     <h3 className="font-bold text-lg text-gray-800">{item.name}</h3>
@@ -142,8 +145,9 @@ export const Cart = () => {
                   <button onClick={() => removeItem(item.id)} className="text-red-600 hover:text-red-800 p-2" aria-label={`Remove ${item.name}`}>
                     <Trash2 size={20} />
                   </button>
-                </div>
-              ))}
+                  </div>
+                );
+              })}
             </div>
           </div>
 

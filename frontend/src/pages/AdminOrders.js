@@ -1,8 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { adminAPI } from '../utils/api';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { Alert } from '../components/Alert';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp, Search, RefreshCw } from 'lucide-react';
+
+const statusOptions = ['pending', 'confirmed', 'preparing', 'ready', 'out_for_delivery', 'delivered', 'cancelled'];
+
+const statusStyles = {
+  pending: 'bg-amber-50 text-amber-700',
+  confirmed: 'bg-blue-50 text-blue-700',
+  preparing: 'bg-purple-50 text-purple-700',
+  ready: 'bg-emerald-50 text-emerald-700',
+  out_for_delivery: 'bg-indigo-50 text-indigo-700',
+  delivered: 'bg-teal-50 text-teal-700',
+  cancelled: 'bg-rose-50 text-rose-700',
+};
+
+const formatAmount = (value) => `₹${Number(value || 0).toFixed(0)}`;
 
 export const AdminOrders = () => {
   const [orders, setOrders] = useState([]);
@@ -10,17 +24,20 @@ export const AdminOrders = () => {
   const [error, setError] = useState('');
   const [expandedOrder, setExpandedOrder] = useState(null);
   const [selectedStatus, setSelectedStatus] = useState('all');
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     fetchOrders();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedStatus]);
 
   const fetchOrders = async () => {
     try {
       setLoading(true);
+      setError('');
       const params = selectedStatus === 'all' ? {} : { status: selectedStatus };
       const response = await adminAPI.getAllOrders(params);
-      setOrders(response.data.orders);
+      setOrders(response.data.orders || []);
     } catch (err) {
       setError('Failed to load orders');
     } finally {
@@ -31,132 +48,183 @@ export const AdminOrders = () => {
   const handleStatusChange = async (orderId, newStatus) => {
     try {
       await adminAPI.updateOrderStatus(orderId, newStatus);
-      setOrders(orders.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o)));
+      setOrders((prev) => prev.map((order) => (order.id === orderId ? { ...order, status: newStatus } : order)));
     } catch (err) {
       setError('Failed to update order status');
     }
   };
 
-  const statusOptions = ['pending', 'confirmed', 'preparing', 'ready', 'out_for_delivery', 'delivered', 'cancelled'];
+  const statusSummary = useMemo(() => {
+    return statusOptions.reduce(
+      (acc, status) => ({
+        ...acc,
+        [status]: orders.filter((order) => order.status === status).length,
+      }),
+      {}
+    );
+  }, [orders]);
 
-  const getStatusColor = (status) => {
-    const colors = {
-      pending: 'bg-yellow-100 text-yellow-800',
-      confirmed: 'bg-blue-100 text-blue-800',
-      preparing: 'bg-purple-100 text-purple-800',
-      ready: 'bg-green-100 text-green-800',
-      out_for_delivery: 'bg-indigo-100 text-indigo-800',
-      delivered: 'bg-teal-100 text-teal-800',
-      cancelled: 'bg-red-100 text-red-800',
-    };
-    return colors[status] || 'bg-gray-100 text-gray-800';
-  };
+  const filteredOrders = useMemo(() => {
+    const term = searchTerm.trim().toLowerCase();
+    if (!term) return orders;
+    return orders.filter((order) => {
+      const customer = `${order.first_name || ''} ${order.last_name || ''}`.toLowerCase();
+      return (
+        order.order_number?.toLowerCase().includes(term) ||
+        customer.includes(term) ||
+        order.delivery_address?.toLowerCase().includes(term)
+      );
+    });
+  }, [orders, searchTerm]);
+
+  const renderStatusChip = (status) => (
+    <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ${statusStyles[status] || 'bg-slate-100 text-slate-700'}`}>
+      {status.replace(/_/g, ' ')}
+    </span>
+  );
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold text-gray-800">Order Management</h1>
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <p className="text-xs uppercase tracking-[0.4em] text-slate-400">Operations</p>
+          <h1 className="mt-1 text-3xl font-semibold text-slate-900">Order Command Center</h1>
+          <p className="text-sm text-slate-500">Track, filter, and act on every order in one view.</p>
+        </div>
+        <button
+          onClick={fetchOrders}
+          className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100"
+        >
+          <RefreshCw size={16} /> Refresh
+        </button>
+      </div>
 
       {error && <Alert type="error" message={error} onClose={() => setError('')} />}
 
-      {/* Status Filter */}
-      <div className="flex flex-wrap gap-2">
-        {['all', ...statusOptions].map((status) => (
-          <button
-            key={status}
-            onClick={() => setSelectedStatus(status)}
-            className={`px-4 py-2 rounded-lg font-semibold transition ${
-              selectedStatus === status
-                ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white'
-                : 'bg-white border-2 border-gray-200 text-gray-700'
-            }`}
-          >
-            {status.replace('_', ' ').toUpperCase()}
-          </button>
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {['pending', 'preparing', 'out_for_delivery', 'delivered'].map((status) => (
+          <div key={status} className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-100">
+            <p className="text-xs uppercase tracking-widest text-slate-400">{status.replace(/_/g, ' ')}</p>
+            <p className="mt-2 text-2xl font-semibold text-slate-800">{statusSummary[status] ?? 0}</p>
+            <p className="text-xs text-slate-400">of {orders.length} orders</p>
+          </div>
         ))}
+      </div>
+
+      <div className="rounded-3xl bg-white p-4 shadow-sm ring-1 ring-slate-100 space-y-4">
+        <div className="flex flex-wrap gap-3">
+          <div className="relative flex-1 min-w-[220px]">
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search order #, customer, address"
+              className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-2 pl-10 pr-4 text-sm text-slate-700 focus:border-purple-500 focus:bg-white focus:outline-none"
+            />
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {['all', ...statusOptions].map((status) => {
+              const isActive = selectedStatus === status;
+              return (
+                <button
+                  key={status}
+                  onClick={() => setSelectedStatus(status)}
+                  className={`rounded-2xl px-3 py-2 text-xs font-semibold transition ${
+                    isActive
+                      ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow'
+                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  }`}
+                >
+                  {status.replace(/_/g, ' ')}
+                  {status !== 'all' && <span className="ml-1 text-[10px] opacity-80">{statusSummary[status] ?? 0}</span>}
+                </button>
+              );
+            })}
+          </div>
+        </div>
       </div>
 
       {loading ? (
         <LoadingSpinner size="lg" text="Loading orders..." />
-      ) : orders.length === 0 ? (
-        <div className="text-center bg-white rounded-lg p-12">
-          <p className="text-gray-600 text-lg">No orders found</p>
+      ) : filteredOrders.length === 0 ? (
+        <div className="rounded-3xl bg-white p-12 text-center shadow-sm ring-1 ring-slate-100">
+          <p className="text-lg font-semibold text-slate-700">No orders found</p>
+          <p className="text-sm text-slate-500">Try adjusting filters or refreshing.</p>
         </div>
       ) : (
-        <div className="bg-white rounded-lg shadow-md overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-gray-100 border-b">
-              <tr>
-                <th className="px-6 py-3 text-left font-semibold text-gray-700">Order #</th>
-                <th className="px-6 py-3 text-left font-semibold text-gray-700">Customer</th>
-                <th className="px-6 py-3 text-left font-semibold text-gray-700">Amount</th>
-                <th className="px-6 py-3 text-left font-semibold text-gray-700">Status</th>
-                <th className="px-6 py-3 text-left font-semibold text-gray-700">Date</th>
-                <th className="px-6 py-3 text-left font-semibold text-gray-700">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {orders.map((order) => (
-                <React.Fragment key={order.id}>
-                  <tr className="border-b hover:bg-gray-50 transition">
-                    <td className="px-6 py-3 font-semibold text-gray-800">{order.order_number}</td>
-                    <td className="px-6 py-3 text-gray-700">
-                      {order.first_name} {order.last_name}
-                    </td>
-                    <td className="px-6 py-3 font-bold text-purple-600">₹{order.total_amount}</td>
-                    <td className="px-6 py-3">
-                      <span className={`inline-block px-3 py-1 rounded-full text-sm font-semibold ${getStatusColor(order.status)}`}>
-                        {order.status.replace('_', ' ')}
-                      </span>
-                    </td>
-                    <td className="px-6 py-3 text-gray-700">{new Date(order.created_at).toLocaleDateString()}</td>
-                    <td className="px-6 py-3">
-                      <button
-                        onClick={() => setExpandedOrder(expandedOrder === order.id ? null : order.id)}
-                        className="text-purple-600 hover:text-purple-800 font-semibold flex items-center gap-2"
-                      >
-                        {expandedOrder === order.id ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-                        Details
-                      </button>
-                    </td>
-                  </tr>
+        <div className="space-y-3">
+          {filteredOrders.map((order) => {
+            const isExpanded = expandedOrder === order.id;
+            return (
+              <div key={order.id} className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-100">
+                <div className="flex flex-wrap items-start justify-between gap-4">
+                  <div>
+                    <p className="text-xs uppercase tracking-widest text-slate-400">Order</p>
+                    <h3 className="text-xl font-semibold text-slate-900">{order.order_number}</h3>
+                    <p className="text-sm text-slate-500">
+                      {order.first_name} {order.last_name} • {new Date(order.created_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs uppercase tracking-widest text-slate-400">Total</p>
+                    <p className="text-2xl font-semibold text-purple-600">{formatAmount(order.total_amount)}</p>
+                    <div className="mt-2">{renderStatusChip(order.status)}</div>
+                  </div>
+                </div>
 
-                  {expandedOrder === order.id && (
-                    <tr className="bg-gray-50 border-b">
-                      <td colSpan="6" className="px-6 py-4">
-                        <div className="space-y-4">
-                          {/* Delivery Address */}
-                          <div>
-                            <p className="font-semibold text-gray-800 mb-1">Delivery Address:</p>
-                            <p className="text-gray-700">{order.delivery_address}</p>
-                          </div>
+                <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-dashed border-slate-200 pt-4">
+                  <p className="text-sm text-slate-500 line-clamp-2">{order.delivery_address}</p>
+                  <button
+                    onClick={() => setExpandedOrder(isExpanded ? null : order.id)}
+                    className="inline-flex items-center gap-2 text-sm font-semibold text-purple-600 hover:text-purple-700"
+                  >
+                    {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                    {isExpanded ? 'Hide details' : 'View details'}
+                  </button>
+                </div>
 
-                          {/* Status Update */}
-                          <div>
-                            <p className="font-semibold text-gray-800 mb-2">Update Status:</p>
-                            <div className="flex flex-wrap gap-2">
-                              {statusOptions.map((status) => (
-                                <button
-                                  key={status}
-                                  onClick={() => handleStatusChange(order.id, status)}
-                                  className={`px-4 py-2 rounded-lg font-semibold transition text-sm ${
-                                    order.status === status
-                                      ? 'bg-purple-600 text-white'
-                                      : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
-                                  }`}
-                                >
-                                  {status.replace('_', ' ')}
-                                </button>
-                              ))}
+                {isExpanded && (
+                  <div className="mt-4 space-y-4 rounded-2xl bg-slate-50 p-4">
+                    <div>
+                      <p className="text-xs uppercase tracking-widest text-slate-400">Update status</p>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {statusOptions.map((status) => {
+                          const active = order.status === status;
+                          return (
+                            <button
+                              key={status}
+                              onClick={() => handleStatusChange(order.id, status)}
+                              className={`rounded-full px-4 py-2 text-xs font-semibold transition ${
+                                active ? 'bg-purple-600 text-white shadow' : 'bg-white text-slate-600 hover:bg-slate-100'
+                              }`}
+                            >
+                              {status.replace(/_/g, ' ')}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {order.items && order.items.length > 0 && (
+                      <div>
+                        <p className="text-xs uppercase tracking-widest text-slate-400">Items</p>
+                        <div className="mt-3 space-y-2">
+                          {order.items.map((item) => (
+                            <div key={item.id} className="flex items-center justify-between rounded-2xl bg-white px-3 py-2 text-sm text-slate-600">
+                              <span>
+                                {item.name} × {item.quantity}
+                              </span>
+                              <span className="font-semibold text-slate-800">{formatAmount(item.price * item.quantity)}</span>
                             </div>
-                          </div>
+                          ))}
                         </div>
-                      </td>
-                    </tr>
-                  )}
-                </React.Fragment>
-              ))}
-            </tbody>
-          </table>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
