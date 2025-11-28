@@ -100,12 +100,7 @@ export const Login = () => {
           </Link>
         </p>
 
-        {/* Demo Credentials */}
-        <div className="mt-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
-          <p className="text-sm font-semibold text-blue-900 mb-2">Demo Credentials:</p>
-          <p className="text-xs text-blue-800">User: user@example.com / Admin: admin@example.com</p>
-          <p className="text-xs text-blue-800">Password: Demo@123</p>
-        </div>
+        
       </div>
     </div>
   );

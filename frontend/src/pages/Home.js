@@ -16,7 +16,42 @@ const SVG_PLACEHOLDER =
     `<svg xmlns='http://www.w3.org/2000/svg' width='1200' height='800'><rect fill='#f3f4f6' width='100%' height='100%'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-size='28' fill='#9ca3af'>Image unavailable</text></svg>`
   );
 
+// --------------------
+// Inline Toasts component (self-contained)
+// --------------------
+const Toasts = ({ toasts = [], removeToast = () => {} }) => {
+  return (
+    <div aria-live="polite" className="fixed right-4 bottom-6 z-50 flex flex-col gap-3">
+      {toasts.map((t) => (
+        <div
+          key={t.id}
+          className={`min-w-[200px] max-w-sm rounded-lg shadow-lg overflow-hidden border ${
+            t.type === 'error' ? 'bg-red-50 border-red-200' : 'bg-white border-gray-100'
+          }`}
+        >
+          <div className="flex items-start gap-3 p-3">
+            <div className="flex-1">
+              <p className={`text-sm font-medium ${t.type === 'error' ? 'text-red-700' : 'text-gray-900'}`}>
+                {t.message}
+              </p>
+            </div>
+            <button
+              onClick={() => removeToast(t.id)}
+              className="p-1 rounded hover:bg-gray-100"
+              aria-label="dismiss toast"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+// --------------------
 // Local-first image arrays (point to public/images)
+// --------------------
 const HERO_IMAGES = [
   { src: '/images/hero1.jpg', alt: 'Beautiful catering spread', caption: 'Memorable events start with great food' },
   { src: '/images/hero2.jpg', alt: 'Chef plating dishes', caption: 'Crafted by chefs who care' },
@@ -39,7 +74,6 @@ const GALLERY_IMAGES = [
 ];
 
 // Local menu images used when backend doesn't provide photos.
-// Currently only pasta.jpg exists; add more files under public/images/ as you create them.
 const LOCAL_MENU_IMAGES = ['/images/pasta.jpg'];
 
 const BIRYANI_FEATURES = [
@@ -160,6 +194,9 @@ export const Home = () => {
   // gallery lightbox
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
+
+  // Toasts stack
+  const [toasts, setToasts] = useState([]);
 
   useEffect(() => {
     fetchCategories();
@@ -299,6 +336,17 @@ export const Home = () => {
     return filtered.length ? filtered.slice(0, 4) : MANDHI_FEATURES;
   }, [items]);
 
+  // Toast helpers
+  const showToast = (message, type = 'success', duration = 3200) => {
+    const id = `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+    setToasts((t) => [...t, { id, message, type }]);
+    // auto remove
+    setTimeout(() => removeToast(id), duration);
+  };
+  const removeToast = (id) => {
+    setToasts((t) => t.filter((x) => x.id !== id));
+  };
+
   const handleAddToCart = (item) => {
     addItem({
       id: item.id,
@@ -309,6 +357,9 @@ export const Home = () => {
     });
     setSuccessMessage(`${item.name} added to cart!`);
     setTimeout(() => setSuccessMessage(''), 3000);
+
+    // show toast
+    showToast(`${item.name} added to cart!`, 'success', 3200);
   };
 
   // Lightbox helpers
@@ -340,7 +391,9 @@ export const Home = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      
+      {/* Toasts container */}
+      <Toasts toasts={toasts} removeToast={removeToast} />
+
       {/* HERO */}
       <section id="hero" className="relative px-4 md:px-0">
         <div className="relative h-[420px] md:h-[520px] overflow-hidden rounded-[36px] border-4 border-white/30 shadow-[0_25px_70px_rgba(15,23,42,0.35)] bg-slate-900/30">
