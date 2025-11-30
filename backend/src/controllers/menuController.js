@@ -97,16 +97,22 @@ const createMenuItem = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Invalid category' });
     }
 
+    // If a file was uploaded, store its public path (uploads/images folder)
+    let imagePath = null;
+    if (req.file && req.file.filename) {
+      imagePath = `/uploads/images/${req.file.filename}`;
+    }
+
     const [result] = await connection.query(
-      'INSERT INTO menu_items (category_id, name, description, price, servings, preparation_time, is_vegetarian, is_vegan, is_gluten_free) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      [category_id, name, description, price, servings, preparation_time, is_vegetarian, is_vegan, is_gluten_free]
+      'INSERT INTO menu_items (category_id, name, description, price, servings, preparation_time, is_vegetarian, is_vegan, is_gluten_free, image) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [category_id, name, description, price, servings, preparation_time, is_vegetarian, is_vegan, is_gluten_free, imagePath]
     );
     connection.release();
 
     res.status(201).json({
       success: true,
       message: 'Menu item created successfully',
-      item: { id: result.insertId, ...req.body },
+      item: { id: result.insertId, category_id, name, description, price, servings, preparation_time, is_vegetarian, is_vegan, is_gluten_free, image: imagePath },
     });
   } catch (error) {
     console.error(error);
@@ -122,13 +128,53 @@ const updateMenuItem = async (req, res) => {
 
     const connection = await pool.getConnection();
 
+    // Load existing item to provide sensible defaults
+    const [existingRows] = await connection.query('SELECT * FROM menu_items WHERE id = ?', [id]);
+    if (existingRows.length === 0) {
+      connection.release();
+      return res.status(404).json({ success: false, message: 'Menu item not found' });
+    }
+    const existing = existingRows[0];
+
+    // If a new image was uploaded, use it (stored under uploads/images)
+    let imagePath = null;
+    if (req.file && req.file.filename) {
+      imagePath = `/uploads/images/${req.file.filename}`;
+      await connection.query('UPDATE menu_items SET image = ? WHERE id = ?', [imagePath, id]);
+    }
+
+    // Coerce/normalize incoming values, falling back to existing values where appropriate
+    const finalCategoryIdRaw = category_id !== undefined && category_id !== '' ? category_id : existing.category_id;
+    const finalCategoryId = finalCategoryIdRaw !== null ? Number(finalCategoryIdRaw) : null;
+    const finalName = name !== undefined ? name : existing.name;
+    const finalDescription = description !== undefined ? description : existing.description;
+    const finalPriceRaw = price !== undefined && price !== '' ? price : existing.price;
+    const finalPrice = finalPriceRaw !== null && finalPriceRaw !== '' ? Number(finalPriceRaw) : null;
+
+    // Servings must be an integer or NULL. If incoming value is empty string treat as NULL.
+    let finalServings = existing.servings;
+    if (servings !== undefined) {
+      if (servings === '' || servings === null) {
+        finalServings = null;
+      } else {
+        const n = Number(servings);
+        finalServings = Number.isFinite(n) ? n : null;
+      }
+    }
+
+    const finalPreparationTime = preparation_time !== undefined ? preparation_time : existing.preparation_time;
+    const finalIsVegetarian = typeof is_vegetarian !== 'undefined' ? (is_vegetarian === '1' || is_vegetarian === 1 || is_vegetarian === true) ? 1 : 0 : existing.is_vegetarian;
+    const finalIsVegan = typeof is_vegan !== 'undefined' ? (is_vegan === '1' || is_vegan === 1 || is_vegan === true) ? 1 : 0 : existing.is_vegan;
+    const finalIsGlutenFree = typeof is_gluten_free !== 'undefined' ? (is_gluten_free === '1' || is_gluten_free === 1 || is_gluten_free === true) ? 1 : 0 : existing.is_gluten_free;
+    const finalIsAvailable = typeof is_available !== 'undefined' ? (is_available === '1' || is_available === 1 || is_available === true) ? 1 : 0 : existing.is_available;
+
     await connection.query(
       'UPDATE menu_items SET category_id = ?, name = ?, description = ?, price = ?, servings = ?, preparation_time = ?, is_vegetarian = ?, is_vegan = ?, is_gluten_free = ?, is_available = ? WHERE id = ?',
-      [category_id, name, description, price, servings, preparation_time, is_vegetarian, is_vegan, is_gluten_free, is_available, id]
+      [finalCategoryId, finalName, finalDescription, finalPrice, finalServings, finalPreparationTime, finalIsVegetarian, finalIsVegan, finalIsGlutenFree, finalIsAvailable, id]
     );
     connection.release();
 
-    res.json({ success: true, message: 'Menu item updated successfully' });
+    res.json({ success: true, message: 'Menu item updated successfully', image: imagePath || undefined });
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, message: 'Server error' });

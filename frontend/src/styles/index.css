@@ -17,7 +17,8 @@ body {
     'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #f5f5f5;
+  background-color: var(--color-bg);
+  color: var(--color-text-strong);
 }
 
 code {
@@ -71,21 +72,28 @@ body::-webkit-scrollbar {
 }
 
 .gradient-text {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .card {
-  @apply bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300;
+  @apply rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300;
+  background: var(--color-surface);
 }
 
 .btn-primary {
-  @apply px-6 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg font-semibold hover:shadow-lg transition-all duration-300;
+  @apply rounded-lg font-semibold hover:shadow-lg transition-all duration-300;
+  padding: var(--space-sm) var(--space-md);
+  background-image: linear-gradient(90deg, var(--color-primary), var(--color-accent));
+  color: white;
 }
 
 .btn-secondary {
-  @apply px-6 py-2 bg-gray-200 text-gray-800 rounded-lg font-semibold hover:bg-gray-300 transition-colors duration-300;
+  @apply rounded-lg font-semibold hover:bg-gray-100 transition-colors duration-300;
+  padding: var(--space-sm) var(--space-md);
+  background: var(--color-surface-2);
+  color: var(--color-text-strong);
 }
 
 .container-main {

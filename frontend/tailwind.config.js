@@ -4,22 +4,18 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        primary: {
-          DEFAULT: '#6D28D9',
-          50: '#F6F3FF',
-          100: '#EEE9FF',
-          200: '#D9CFFF',
-          300: '#C0A8FF',
-          400: '#9B6BFF',
-          500: '#6D28D9',
-          600: '#5B21B6',
-          700: '#4A1A93',
-        },
-        accent: {
-          DEFAULT: '#06B6D4',
-          600: '#0891B2'
-        },
-        neutral900: '#0F172A',
+        // Colors use CSS variables defined in overrides.css (OKLCH-based)
+        primary: 'var(--color-primary)',
+        'primary-600': 'var(--color-primary-600)',
+        accent: 'var(--color-accent)',
+        'accent-600': 'var(--color-accent-600)',
+        surface: 'var(--color-surface)',
+        'surface-2': 'var(--color-surface-2)',
+        bg: 'var(--color-bg)',
+        'text-strong': 'var(--color-text-strong)',
+        success: 'var(--color-success)',
+        warning: 'var(--color-warning)',
+        danger: 'var(--color-danger)',
       },
       container: {
         center: true,
@@ -29,6 +25,10 @@ module.exports = {
           lg: '2rem',
           xl: '4rem'
         }
+      },
+      screens: {
+        'xs': '480px',
+        // keep rest default (sm, md, lg, xl)
       },
       fontFamily: { sans: ['Inter', 'ui-sans-serif', 'system-ui'] },
       boxShadow: { soft: '0 6px 18px rgba(16,24,40,0.06)' }

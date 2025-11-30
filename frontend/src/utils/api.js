@@ -49,8 +49,18 @@ export const menuAPI = {
   getMenuItems: (params) => apiClient.get('/menu', { params }),
   getMenuItemById: (id) => apiClient.get(`/menu/${id}`),
   getCategories: () => apiClient.get('/menu/categories'),
-  createMenuItem: (data) => apiClient.post('/menu', data),
-  updateMenuItem: (id, data) => apiClient.put(`/menu/${id}`, data),
+  createMenuItem: (data) => {
+    if (data instanceof FormData) {
+      return apiClient.post('/menu', data, { headers: { 'Content-Type': 'multipart/form-data' } });
+    }
+    return apiClient.post('/menu', data);
+  },
+  updateMenuItem: (id, data) => {
+    if (data instanceof FormData) {
+      return apiClient.put(`/menu/${id}`, data, { headers: { 'Content-Type': 'multipart/form-data' } });
+    }
+    return apiClient.put(`/menu/${id}`, data);
+  },
   deleteMenuItem: (id) => apiClient.delete(`/menu/${id}`),
 };
 

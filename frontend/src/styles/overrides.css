@@ -1,3 +1,87 @@
+/* src/styles/overrides.css
+   OKLCH-based color tokens and responsive helpers
+*/
+:root {
+  /* Unique OKLCH palette (modern, vivid but accessible) */
+  --color-primary: oklch(62% 0.24 270);
+  --color-primary-600: oklch(46% 0.20 270);
+
+  --color-accent: oklch(67% 0.17 210);
+  --color-accent-600: oklch(48% 0.16 210);
+
+  --color-surface: oklch(98% 0.01 0); /* almost white surface */
+  --color-surface-2: oklch(95% 0.02 260);
+  --color-bg: oklch(99% 0.003 0);
+
+  --color-text-strong: oklch(10% 0.02 270);
+
+  --color-success: oklch(60% 0.15 130);
+  --color-warning: oklch(65% 0.18 95);
+  --color-danger: oklch(50% 0.20 25);
+
+  /* Fallbacks for older browsers (in case OKLCH not supported) */
+  --color-primary-fallback: #6b21a8;
+  --color-accent-fallback: #0ea5a5;
+  --color-surface-fallback: #ffffff;
+  --color-bg-fallback: #fbfbfd;
+  --color-text-strong-fallback: #0b1320;
+
+  /* Spacing & fluid typography */
+  --space-sm: clamp(0.5rem, 0.9vw, 0.75rem);
+  --space-md: clamp(1rem, 1.6vw, 1.25rem);
+  --space-lg: clamp(1.5rem, 2.2vw, 2rem);
+  --radius-md: 12px;
+}
+
+/* Provide fallbacks when browser doesn't support oklch() */
+@supports not (color: oklch(50% 0.1 200)) {
+  :root {
+    --color-primary: var(--color-primary-fallback);
+    --color-accent: var(--color-accent-fallback);
+    --color-surface: var(--color-surface-fallback);
+    --color-bg: var(--color-bg-fallback);
+    --color-text-strong: var(--color-text-strong-fallback);
+  }
+}
+
+/* Fluid base font-size */
+html {
+  font-size: clamp(14px, 1.2vw, 16px);
+}
+
+/* Utility helpers to use OKLCH variables in plain CSS where needed */
+.bg-surface { background-color: var(--color-surface); }
+.bg-main { background-color: var(--color-bg); }
+.text-strong { color: var(--color-text-strong); }
+
+/* Buttons using OKLCH gradient */
+.btn-oklch {
+  background-image: linear-gradient(90deg, var(--color-primary) 0%, var(--color-accent) 100%);
+  color: white;
+  border: none;
+  padding: var(--space-md) var(--space-lg);
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  box-shadow: 0 6px 24px color-mix(in srgb, var(--color-primary) 12%, transparent);
+}
+
+/* Responsive card tweaks */
+.card { padding: var(--space-md); border-radius: var(--radius-md); background: var(--color-surface); }
+@media (min-width: 768px) {
+  .card { padding: calc(var(--space-lg) + 0.5rem); }
+}
+
+/* Improve layout responsiveness for hero/images */
+.responsive-image { width: 100%; height: auto; border-radius: 8px; }
+
+/* Small utility for subtle outlines in high-contrast mode */
+@media (prefers-contrast: more) {
+  :root { --color-surface: oklch(94% 0.01 0); }
+  .card { outline: 1px solid color-mix(in srgb, var(--color-primary) 6%, transparent); }
+}
+
+/* safe area helper for iOS-like insets */
+.safe-area-bottom { padding-bottom: calc(var(--space-md) + env(safe-area-inset-bottom, 0px)); }
 /* src/styles/overrides.css */
 @tailwind base;
 @tailwind components;
