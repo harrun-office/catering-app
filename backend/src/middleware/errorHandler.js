@@ -23,10 +23,22 @@ const errorHandler = (err, req, res, next) => {
     });
   }
 
+  // If response was already sent, don't send another
+  if (res.headersSent) {
+    return next(err);
+  }
+
   res.status(500).json({
     success: false,
-    message: 'Internal server error',
-    error: process.env.NODE_ENV === 'development' ? err.message : undefined,
+    message: err.message || 'Internal server error',
+    error: process.env.NODE_ENV === 'development' ? {
+      message: err.message,
+      stack: err.stack,
+      code: err.code,
+      errno: err.errno,
+      sqlState: err.sqlState,
+      sqlMessage: err.sqlMessage
+    } : undefined,
   });
 };
 

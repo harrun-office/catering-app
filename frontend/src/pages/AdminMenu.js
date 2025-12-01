@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import MenuItem from '../components/MenuItem';
 import { ImagePlus, Plus, Save, ToggleLeft, ToggleRight } from 'lucide-react';
-import { menuAPI } from '../utils/api';
+import { menuAPI, adminAPI } from '../utils/api';
 
 const seedItems = [
   {
@@ -58,15 +58,27 @@ export default function AdminMenu() {
 
   useEffect(() => {
     let mounted = true;
-    menuAPI
-      .getCategories()
-      .then((res) => {
+    // Load categories and menu items (use admin API to get all items including unavailable)
+    Promise.all([menuAPI.getCategories(), adminAPI.getMenuItemsAdmin({ limit: 2000 })])
+      .then(([catsRes, itemsRes]) => {
         if (!mounted) return;
-        const cats = res.data?.categories || [];
+        const cats = catsRes.data?.categories || [];
         setCategories(cats);
         if (cats.length > 0) setAddForm((f) => ({ ...f, category_id: String(cats[0].id) }));
+
+        const items = itemsRes.data?.items || [];
+        // Map items to include category name and ensure boolean fields are properly set
+        const mappedItems = items.map(item => ({
+          ...item,
+          category: item.category_name || item.category || '',
+          is_vegetarian: item.is_vegetarian === 1 || item.is_vegetarian === true,
+          is_vegan: item.is_vegan === 1 || item.is_vegan === true,
+          is_gluten_free: item.is_gluten_free === 1 || item.is_gluten_free === true,
+          is_available: item.is_available === 1 || item.is_available === true,
+        }));
+        setItems(mappedItems);
       })
-      .catch((err) => console.error('Failed to load categories', err));
+      .catch((err) => console.error('Failed to load categories or items', err));
     return () => (mounted = false);
   }, []);
 
@@ -157,31 +169,83 @@ export default function AdminMenu() {
     try {
       setLoadingIds((s) => [...s, item.id]);
       const form = new FormData();
-      let categoryId = item.category_id || '';
-      if (!categoryId && item.category && categories.length > 0) {
-        const found = categories.find((c) => c.name === item.category || String(c.id) === String(item.category));
-        if (found) categoryId = String(found.id);
+      // Ensure we have a valid category_id - always send it
+      let categoryId = item.category_id;
+      // If category_id is missing or invalid, try to find it from category name
+      if (!categoryId || categoryId === '' || categoryId === null || categoryId === undefined) {
+        if (item.category && categories.length > 0) {
+          const found = categories.find((c) => c.name === item.category || String(c.id) === String(item.category));
+          if (found) categoryId = String(found.id);
+        }
+        // Fallback to first category if still not found
+        if ((!categoryId || categoryId === '') && categories.length > 0) {
+          categoryId = String(categories[0].id);
+        }
       }
-      if (!categoryId && categories.length > 0) categoryId = String(categories[0].id);
-
-      form.append('category_id', categoryId);
+      
+      // Convert to string and ensure it's valid
+      categoryId = String(categoryId || '');
+      
+      // Always append category_id (backend will use existing if invalid)
+      if (categoryId && categoryId !== '' && categoryId !== 'null' && categoryId !== 'undefined') {
+        form.append('category_id', categoryId);
+      }
       form.append('name', item.name || 'Untitled');
       form.append('description', item.description || '');
-      form.append('price', item.price || 0);
-      form.append('servings', item.servings || '');
-      form.append('preparation_time', item.preparation_time || '');
+      // ensure price is sent as a valid number/string, not undefined or empty
+      let priceValue = item.price;
+      if (priceValue === undefined || priceValue === null || priceValue === '') {
+        // If price is missing, try to use existing price or default to 0
+        priceValue = item.price || 0;
+      }
+      // Convert to number first to validate, then back to string
+      const priceNum = Number(priceValue);
+      if (!Number.isFinite(priceNum) || priceNum < 0) {
+        priceValue = 0;
+      }
+      form.append('price', String(priceValue));
+      // only append optional numeric fields if provided (avoid empty strings)
+      if (typeof item.servings !== 'undefined' && item.servings !== '') {
+        form.append('servings', String(item.servings));
+      }
+      if (typeof item.preparation_time !== 'undefined' && item.preparation_time !== '') {
+        form.append('preparation_time', String(item.preparation_time));
+      }
       form.append('is_vegetarian', item.is_vegetarian ? 1 : 0);
       form.append('is_vegan', item.is_vegan ? 1 : 0);
       form.append('is_gluten_free', item.is_gluten_free ? 1 : 0);
+      form.append('is_available', item.is_available ? 1 : 0);
       if (item.file) form.append('image', item.file);
 
       const res = await menuAPI.updateMenuItem(item.id, form);
-      if (res.status === 200) {
-        setItems((prev) => prev.map((it) => (it.id === item.id ? { ...it, ...item, file: null } : it)));
+      if (res.status === 200 || res.data?.success) {
+        // Update the item with the response data if available, or use the current item data
+        const updatedItem = res.data?.item || item;
+        setItems((prev) => prev.map((it) => {
+          if (it.id === item.id) {
+            return {
+              ...it,
+              ...updatedItem,
+              category: categories.find(c => String(c.id) === String(updatedItem.category_id || item.category_id))?.name || it.category,
+              file: null,
+            };
+          }
+          return it;
+        }));
       }
     } catch (err) {
       console.error('Save failed', err);
-      alert('Failed to save item. See console for details.');
+      console.error('Error response:', err.response?.data);
+      const errorMessage = err.response?.data?.message || err.response?.data?.error?.message || err.message || 'Failed to save item. See console for details.';
+      const errors = err.response?.data?.errors;
+      if (errors) {
+        setEditErrors((prev) => ({ ...prev, [item.id]: errors }));
+      }
+      // Show detailed error in development
+      const detailedError = process.env.NODE_ENV === 'development' 
+        ? `${errorMessage}\n\nFull error: ${JSON.stringify(err.response?.data, null, 2)}`
+        : errorMessage;
+      alert(detailedError);
     } finally {
       setLoadingIds((s) => s.filter((i) => i !== item.id));
     }
@@ -344,11 +408,21 @@ export default function AdminMenu() {
                 </label>
                 <label className="space-y-2 text-sm font-semibold text-slate-600">
                   Category
-                  <input
-                    value={item.category}
-                    onChange={(e) => handleFieldChange(item.id, 'category', e.target.value)}
+                  <select
+                    value={item.category_id || ''}
+                    onChange={(e) => {
+                      const selectedCat = categories.find(c => String(c.id) === String(e.target.value));
+                      handleFieldChange(item.id, 'category_id', e.target.value);
+                      if (selectedCat) {
+                        handleFieldChange(item.id, 'category', selectedCat.name);
+                      }
+                    }}
                     className="w-full rounded-2xl border border-slate-200 px-4 py-2 text-sm focus:border-purple-500 focus:outline-none"
-                  />
+                  >
+                    {categories.map((c) => (
+                      <option key={c.id} value={c.id}>{c.name}</option>
+                    ))}
+                  </select>
                 </label>
               </div>
 
