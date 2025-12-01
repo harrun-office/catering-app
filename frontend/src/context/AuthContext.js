@@ -1,6 +1,25 @@
 import React, { createContext, useState, useCallback } from 'react';
 import { authAPI } from '../utils/api';
 
+// === Helper: Extract userId from stored "user" before logout ===
+// (This avoids dependency on CartContext)
+function getStoredUserIdSimple() {
+  try {
+    const raw = localStorage.getItem('user');
+    if (!raw) return null;
+    const u = JSON.parse(raw);
+
+    return (
+      u?.id ||
+      u?.userId ||
+      u?._id ||
+      null
+    );
+  } catch {
+    return null;
+  }
+}
+
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
@@ -52,24 +71,46 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
+  // ⭐⭐⭐ OPTIONAL FIX HERE ⭐⭐⭐
   const logout = useCallback(() => {
+    // get userId BEFORE clearing auth
+    const uid = getStoredUserIdSimple();
+
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+
+    // OPTIONAL: Remove that user's cart from localStorage
+    try {
+      if (uid) {
+        localStorage.removeItem(`cart_${uid}`);
+      }
+    } catch (err) {
+      console.warn("Failed clearing user's cart on logout:", err);
+    }
+
+    // Trigger tab sync
+    try {
+      localStorage.setItem('auth_change_ts', String(Date.now()));
+    } catch {}
+
     setToken(null);
     setUser(null);
   }, []);
 
-  const updateProfile = useCallback(async (data) => {
-    try {
-      await authAPI.updateProfile(data);
-      const updatedUser = { ...user, ...data };
-      localStorage.setItem('user', JSON.stringify(updatedUser));
-      setUser(updatedUser);
-      return { success: true };
-    } catch (error) {
-      return { success: false, error: error.response?.data?.message };
-    }
-  }, [user]);
+  const updateProfile = useCallback(
+    async (data) => {
+      try {
+        await authAPI.updateProfile(data);
+        const updatedUser = { ...user, ...data };
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+        setUser(updatedUser);
+        return { success: true };
+      } catch (error) {
+        return { success: false, error: error.response?.data?.message };
+      }
+    },
+    [user]
+  );
 
   const value = {
     user,

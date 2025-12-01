@@ -488,12 +488,6 @@ export const Home = () => {
               <h2 className="text-2xl font-bold">Biryani & Dum Delights</h2>
               <p className="text-sm text-gray-600 mt-1">Hand-layered rice, saffron aromas, and slow-cooked proteins ready for gatherings.</p>
             </div>
-            <button
-              onClick={() => setSearchTerm('biryani')}
-              className="btn-secondary whitespace-nowrap"
-            >
-              View all biryani
-            </button>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {biryaniShowcase.map((item) => (
@@ -510,12 +504,6 @@ export const Home = () => {
               <h2 className="text-2xl font-bold">Mandhi & Smoky Platters</h2>
               <p className="text-sm text-gray-600 mt-1">Pit-roasted meats over spiced rice, topped with roasted nuts and caramelized onions.</p>
             </div>
-            <button
-              onClick={() => setSearchTerm('mandhi')}
-              className="btn-secondary whitespace-nowrap"
-            >
-              View all mandhi
-            </button>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {mandhiShowcase.map((item) => (

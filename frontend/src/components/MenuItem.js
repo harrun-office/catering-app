@@ -139,7 +139,7 @@ export const MenuItem = ({ item = {}, onAddToCart = () => {}, onImgError }) => {
   /* Only allow cart if logged in */
   const handleAddClick = () => {
     if (!isAuthenticated) {
-      navigate("/register", { state: { from: window.location.pathname } });
+      navigate("/login", { state: { from: window.location.pathname } });
       return;
     }
     onAddToCart(item);
