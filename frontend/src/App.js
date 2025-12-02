@@ -1,5 +1,8 @@
 // src/App.jsx
 import React from 'react';
+import About from './pages/About';
+import Gallery from './pages/Gallery';
+import Contact from './pages/Contact';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
@@ -23,11 +26,12 @@ function MainLayout({ children }) {
   return (
     <>
       <Navbar />
-      <main className="min-h-[60vh] p-4">{children}</main>
+      <main className="min-h-[60vh] p-4" style={{ marginLeft: "var(--sidebar-width)" }}>{children}</main>
       <Footer />
     </>
   );
 }
+
 
 function App() {
   return (
@@ -35,6 +39,36 @@ function App() {
       <CartProvider>
         <Router>
           <Routes>
+            <Route
+  path="/about"
+  element={
+    <RoleGate allowedRoles={['guest', 'user']}>
+      <MainLayout>
+        <About />
+      </MainLayout>
+    </RoleGate>
+  }
+/>
+<Route
+  path="/gallery"
+  element={
+    <RoleGate allowedRoles={['guest', 'user']}>
+      <MainLayout>
+        <Gallery />
+      </MainLayout>
+    </RoleGate>
+  }
+/>
+<Route
+  path="/contact"
+  element={
+    <RoleGate allowedRoles={['guest', 'user']}>
+      <MainLayout>
+        <Contact />
+      </MainLayout>
+    </RoleGate>
+  }
+/>
             {/* Auth */}
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />

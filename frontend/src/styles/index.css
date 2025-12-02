@@ -192,3 +192,79 @@ section#hero button[aria-label^="Go to slide"] {
 
 /* ensure anchor jumps are smooth */
 html { scroll-behavior: smooth; }
+/* Sidebar layout */
+.app-sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 18rem;           /* sidebar width (adjustable) */
+  background: linear-gradient(180deg, #2b0f6b 0%, #1f2a64 100%); /* optional gradient */
+  color: white;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  box-shadow: 0 8px 30px rgba(2,6,23,0.45);
+  padding: 1.25rem 0.75rem; /* vertical + horizontal */
+}
+
+/* Logo area centered horizontally */
+.app-sidebar .sidebar-logo {
+  height: 6.5rem; /* space for centered logo */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+  flex-shrink: 0;
+}
+
+/* logo image adjustments */
+.app-sidebar .sidebar-logo img {
+  max-height: 3.5rem;
+  width: auto;
+  display: block;
+}
+
+/* optional site title under logo */
+.app-sidebar .sidebar-title {
+  text-align: center;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  font-size: 0.95rem;
+  color: rgba(255,255,255,0.9);
+  margin-top: 0.25rem;
+}
+
+/* nav area inside sidebar (you can style links inside) */
+.app-sidebar nav {
+  margin-top: 0.75rem;
+  padding: 0.5rem;
+  flex: 1 1 auto;
+  overflow-y: auto;
+}
+
+/* sticky footer area inside sidebar (logout or copyright) */
+.app-sidebar .sidebar-footer {
+  margin-top: auto;
+  padding-top: 0.5rem;
+}
+
+/* main content area must be offset to the right of the sidebar */
+.main-with-sidebar {
+  margin-left: 18rem; /* same as .app-sidebar width */
+  transition: margin-left 0.2s ease;
+}
+
+/* responsive: small screens shrink sidebar width */
+@media (max-width: 1024px) {
+  .app-sidebar { width: 14rem; }
+  .main-with-sidebar { margin-left: 14rem; }
+}
+@media (max-width: 640px) {
+  /* On very small screens, collapse to a narrow left rail to preserve space */
+  .app-sidebar { width: 4.5rem; padding: 0.75rem 0.5rem; }
+  .app-sidebar .sidebar-title, .app-sidebar nav > * .label { display: none; } /* hide text labels */
+  .app-sidebar .sidebar-logo img { max-height: 2.2rem; }
+  .main-with-sidebar { margin-left: 4.5rem; }
+}

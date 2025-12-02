@@ -1,124 +1,267 @@
 // src/components/Navbar.jsx
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { CartContext } from '../context/CartContext';
-import { ShoppingCart, LogOut, Home, Menu as MenuIcon, User, BarChart3 } from 'lucide-react';
+// new
+import {
+  ShoppingCart,
+  LogOut,
+  User,
+  BarChart3,
+  Home as HomeIcon,
+  Menu as MenuIcon,
+  ChevronLeft,
+  ChevronRight,
+  Info,
+  Image,
+  Phone
+} from 'lucide-react';
+
+
 
 export const Navbar = () => {
   const { user, logout, isAuthenticated, isAdmin } = useContext(AuthContext);
   const { count } = useContext(CartContext);
   const navigate = useNavigate();
   const location = useLocation();
+  const [collapsed, setCollapsed] = useState(false);   // NEW
+  const [sidebarWidth, setSidebarWidth] = useState(288); // 72 * 4 = 288px
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  useEffect(() => {
+    const width = collapsed ? 80 : 288;
+    setSidebarWidth(width);
+    document.documentElement.style.setProperty("--sidebar-width", `${width}px`);
+  }, [collapsed]);
 
   const handleLogout = () => {
     logout();
     navigate('/');
   };
 
-  // Navigate to home and scroll to section (id)
-  const goToSection = (id) => {
-    if (location.pathname !== '/') {
-      // go to home first, then set hash a little later so React finishes navigation
-      navigate(`/?scrollTo=${id}`);
-      // also set hash for direct anchors (helps if user refreshes)
-      setTimeout(() => {
-        window.location.hash = id;
-      }, 120);
-    } else {
-      // already on home
-      const el = document.getElementById(id);
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      else window.location.hash = id;
-    }
+  // inside src/components/Navbar.jsx, replace the existing goToSection function with this:
+
+const goToSection = (id) => {
+  // pages that now have their own routes
+  const pageRoutes = ['about', 'gallery', 'contact'];
+
+  if (pageRoutes.includes(id)) {
+    // navigate to dedicated page
+    navigate(`/${id}`);
     setMobileOpen(false);
-  };
+    return;
+  }
+
+  // fall back to scrolling on home for hero/menu
+  if (location.pathname !== '/') {
+    navigate(`/?scrollTo=${id}`);
+    // small timeout to allow Home to mount and handle the scroll param
+    setTimeout(() => {
+      // keep old behavior of setting hash if needed
+      window.location.hash = id;
+    }, 120);
+  } else {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    else window.location.hash = id;
+  }
+  setMobileOpen(false);
+};
+
 
   return (
-    <nav
-      className="navbar-custom text-white shadow-lg bg-gradient-to-r from-purple-600 to-blue-600"
-      style={{ background: 'linear-gradient(90deg,#6D28D9,#06B6D4)' }}
-    >
-      <div className="container-main flex items-center justify-between gap-4 py-3">
-        <Link to="/" className="flex items-center gap-2 text-2xl font-bold">
-          <span>🍽️</span>
-          <span>CaterHub</span>
-        </Link>
-
+    <>
+      {/* SIDEBAR (desktop) */}
+      <aside
+        className="hidden md:flex fixed inset-y-0 left-0 z-50 flex-col bg-gradient-to-b
+        from-purple-900 via-purple-800 to-blue-900 text-white shadow-2xl p-4 transition-all duration-300"
+        style={{ width: sidebarWidth }}
+      >
+        {/* COLLAPSE BUTTON */}
         <button
-          className="lg:hidden p-2 rounded-md bg-white/10 hover:bg-white/20"
-          onClick={() => setMobileOpen(!mobileOpen)}
-          aria-expanded={mobileOpen}
-          aria-label="Toggle navigation"
+          onClick={() => setCollapsed(!collapsed)}
+          className="absolute -right-4 top-6 bg-purple-700 text-white p-2 rounded-full shadow-lg hover:bg-purple-600 transition"
         >
-          {mobileOpen ? '✕' : '☰'}
+          {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
         </button>
 
-        <div className={`flex-1 lg:flex items-center justify-end gap-6 ${mobileOpen ? 'block' : 'hidden'} lg:block`}>
-          <div className="flex items-center gap-4 flex-wrap">
-            <button onClick={() => goToSection('hero')} className="hover:opacity-90 transition px-2 py-1 rounded">
-              Home
-            </button>
+        {/* LOGO */}
+        <div className="flex-shrink-0 h-24 flex items-center justify-center">
+          {!collapsed ? (
+            <img
+              src="/images/logo.svg"
+              alt="CaterHub"
+              className="max-h-14 object-contain"
+              onError={(e) => (e.target.style.display = "none")}
+            />
+          ) : (
+            <span className="text-3xl">🍽️</span>
+          )}
+        </div>
 
-            <button onClick={() => goToSection('menu')} className="hover:opacity-90 transition px-2 py-1 rounded">
-              Menu
-            </button>
+        {!collapsed && (
+          <div className="text-center text-sm font-semibold tracking-wide mb-4">
+            CaterHub
+          </div>
+        )}
 
-            <button onClick={() => goToSection('about')} className="hover:opacity-90 transition px-2 py-1 rounded">
-              About
-            </button>
+        {/* NAV LINKS */}
+        <nav className="flex-1 overflow-y-auto space-y-1 mt-4">
+          <button
+            onClick={() => goToSection("hero")}
+            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/10 transition"
+          >
+            <HomeIcon size={18} />
+            {!collapsed && <span>Home</span>}
+          </button>
 
-            <button onClick={() => goToSection('gallery')} className="hover:opacity-90 transition px-2 py-1 rounded">
-              Gallery
-            </button>
+          <button
+            onClick={() => goToSection("menu")}
+            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/10 transition"
+          >
+            <MenuIcon size={18} />
+            {!collapsed && <span>Menu</span>}
+          </button>
 
-            <button onClick={() => goToSection('contact')} className="hover:opacity-90 transition px-2 py-1 rounded">
-              Contact
-            </button>
+          <button
+            onClick={() => goToSection("about")}
+            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/10 transition"
+          >
+            <Info size={18} />
+            {!collapsed && <span>About</span>}
+          </button>
+          <button
+            onClick={() => goToSection("gallery")}
+            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/10 transition"
+          >
+            <Image size={18} />
+            {!collapsed && <span>Gallery</span>}
+          </button>
 
-            {/* Cart - always visible */}
-            <Link to="/cart" className="relative hover:opacity-80 transition flex items-center gap-2 px-2 py-1 rounded">
-              <ShoppingCart size={20} />
-              {count > 0 && (
-                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  {count}
-                </span>
+          <button
+            onClick={() => goToSection("contact")}
+            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/10 transition"
+          >
+            <Phone size={18} />
+            {!collapsed && <span>Contact</span>}
+          </button>
+
+          {/* CART */}
+          <Link
+            to="/cart"
+            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/10 transition relative"
+          >
+            <ShoppingCart size={18} />
+            {!collapsed && <span>Cart</span>}
+            {count > 0 && (
+              <span className="absolute right-3 -top-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                {count}
+              </span>
+            )}
+          </Link>
+
+          {/* AUTH */}
+          {isAuthenticated ? (
+            <>
+              {isAdmin && (
+                <Link
+                  to="/admin"
+                  className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/10 transition"
+                >
+                  <BarChart3 size={18} />
+                  {!collapsed && <span>Admin</span>}
+                </Link>
               )}
-            </Link>
+
+              <div className="w-full flex items-center gap-3 px-3 py-2">
+                <User size={18} />
+                {!collapsed && <span>{user?.first_name}</span>}
+              </div>
+
+              <button
+                onClick={handleLogout}
+                className="w-full mt-2 bg-red-500 hover:bg-red-600 px-3 py-2 rounded-lg flex items-center justify-center gap-2 text-sm font-semibold"
+              >
+                <LogOut size={18} />
+                {!collapsed && <span>Logout</span>}
+              </button>
+            </>
+          ) : (
+            !collapsed && (
+              <div className="space-y-2 mt-2">
+                <Link
+                  to="/login"
+                  className="block text-center bg-white text-purple-700 px-3 py-2 rounded-lg font-semibold"
+                >
+                  Login
+                </Link>
+                <Link
+                  to="/register"
+                  className="block text-center border border-white px-3 py-2 rounded-lg font-semibold"
+                >
+                  Register
+                </Link>
+              </div>
+            )
+          )}
+        </nav>
+
+        {!collapsed && (
+          <div className="text-xs text-white/60 mt-4 text-center">
+            © {new Date().getFullYear()} CaterHub
+          </div>
+        )}
+      </aside>
+
+      {/* MOBILE NAV (unchanged) */}
+      <nav className="md:hidden fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-md">
+        <div className="container-main flex items-center justify-between py-3">
+          <button
+            onClick={() => setMobileOpen((s) => !s)}
+            className="p-2 rounded-md bg-white/10"
+          >
+            <MenuIcon size={18} />
+          </button>
+
+          <Link to="/" className="flex items-center gap-2 text-lg font-bold">
+            <span>🍽️</span>
+            <span>CaterHub</span>
+          </Link>
+
+          <Link to="/cart" className="relative">
+            <ShoppingCart size={20} />
+            {count > 0 && (
+              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                {count}
+              </span>
+            )}
+          </Link>
+        </div>
+
+        {mobileOpen && (
+          <div className="bg-white/5 backdrop-blur-sm p-3 space-y-2">
+            <button onClick={() => goToSection("hero")} className="block w-full text-left px-3 py-2 rounded-lg">Home</button>
+            <button onClick={() => goToSection("menu")} className="block w-full text-left px-3 py-2 rounded-lg">Menu</button>
+            <button onClick={() => goToSection("about")} className="block w-full text-left px-3 py-2 rounded-lg">About</button>
+            <button onClick={() => goToSection("gallery")} className="block w-full text-left px-3 py-2 rounded-lg">Gallery</button>
+            <button onClick={() => goToSection("contact")} className="block w-full text-left px-3 py-2 rounded-lg">Contact</button>
 
             {isAuthenticated ? (
               <>
-                {isAdmin && (
-                  <Link to="/admin" className="px-2 py-1 rounded hover:opacity-90 transition">
-                    <BarChart3 size={18} />
-                  </Link>
-                )}
-
-                <div className="flex items-center gap-2 px-2 py-1">
-                  <User size={16} />
-                  <span className="hidden sm:inline">{user?.first_name}</span>
-                </div>
-
-                <button onClick={handleLogout} className="bg-red-500 hover:bg-red-600 px-3 py-2 rounded-lg flex items-center gap-2 transition text-sm">
-                  <LogOut size={16} />
-                  <span>Logout</span>
-                </button>
+                {isAdmin && <Link to="/admin" className="block px-3 py-2 rounded-lg">Admin</Link>}
+                <button onClick={handleLogout} className="w-full text-left px-3 py-2 rounded-lg">Logout</button>
               </>
             ) : (
               <>
-                <Link to="/login" className="bg-white text-purple-600 px-4 py-2 rounded-lg font-semibold hover:bg-gray-100 transition">
-                  Login
-                </Link>
-                <Link to="/register" className="border-2 border-white px-4 py-2 rounded-lg font-semibold hover:bg-white hover:text-purple-600 transition">
-                  Register
-                </Link>
+                <Link to="/login" className="block px-3 py-2 rounded-lg">Login</Link>
+                <Link to="/register" className="block px-3 py-2 rounded-lg">Register</Link>
               </>
             )}
           </div>
-        </div>
-      </div>
-    </nav>
+        )}
+      </nav>
+    </>
   );
 };
 

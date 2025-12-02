@@ -9,13 +9,19 @@ const getDashboardStats = async (req, res) => {
     const [[{ total_orders }]] = await connection.query('SELECT COUNT(*) as total_orders FROM orders');
 
     // Revenue
-    const [[{ revenue = 0 }]] = await connection.query('SELECT SUM(total_amount) as revenue FROM orders WHERE status = "delivered"');
+    const [[{ revenue = 0 }]] = await connection.query(
+      'SELECT SUM(total_amount) as revenue FROM orders WHERE status = "delivered"'
+    );
 
     // Pending orders
-    const [[{ pending_orders }]] = await connection.query('SELECT COUNT(*) as pending_orders FROM orders WHERE status = "pending"');
+    const [[{ pending_orders }]] = await connection.query(
+      'SELECT COUNT(*) as pending_orders FROM orders WHERE status = "pending"'
+    );
 
     // Total users
-    const [[{ total_users }]] = await connection.query('SELECT COUNT(*) as total_users FROM users WHERE role = "user"');
+    const [[{ total_users }]] = await connection.query(
+      'SELECT COUNT(*) as total_users FROM users WHERE role = "user"'
+    );
 
     connection.release();
 
@@ -35,12 +41,17 @@ const getDashboardStats = async (req, res) => {
 };
 
 // Get all orders (Admin)
+// Get all orders (Admin) - paste this in place of your existing getAllOrders
+// Get all orders (Admin) - paste this in place of your existing getAllOrders
+// Get all orders (Admin) - drop-in replacement for your controllers/adminController.js
 const getAllOrders = async (req, res) => {
+  let connection;
   try {
     const { page = 1, limit = 20, status } = req.query;
-    const offset = (page - 1) * limit;
+    const offset = (Number(page) - 1) * Number(limit);
 
-    let query = 'SELECT o.*, u.first_name, u.last_name, u.email FROM orders o JOIN users u ON o.user_id = u.id';
+    let query =
+      'SELECT o.*, u.first_name, u.last_name, u.email FROM orders o JOIN users u ON o.user_id = u.id';
     const params = [];
 
     if (status) {
@@ -49,30 +60,120 @@ const getAllOrders = async (req, res) => {
     }
 
     query += ' ORDER BY o.created_at DESC LIMIT ? OFFSET ?';
-    params.push(parseInt(limit), offset);
+    params.push(parseInt(limit, 10), parseInt(offset, 10));
 
-    const connection = await pool.getConnection();
+    connection = await pool.getConnection();
     const [orders] = await connection.query(query, params);
 
-    const countQuery = status ? 'SELECT COUNT(*) as total FROM orders WHERE status = ?' : 'SELECT COUNT(*) as total FROM orders';
+    // count for pagination
+    const countQuery = status
+      ? 'SELECT COUNT(*) as total FROM orders WHERE status = ?'
+      : 'SELECT COUNT(*) as total FROM orders';
     const countParams = status ? [status] : [];
     const [[{ total }]] = await connection.query(countQuery, countParams);
 
+    // if no orders, return early
+    if (!orders || orders.length === 0) {
+      connection.release();
+      return res.json({
+        success: true,
+        orders: [],
+        pagination: {
+          total: Number(total || 0),
+          page: Number(page),
+          limit: Number(limit),
+          pages: Math.ceil((total || 0) / Number(limit)),
+        },
+      });
+    }
+
+    // gather order IDs
+    const orderIds = orders.map((o) => o.id).filter((v) => v !== undefined && v !== null);
+
+    let items = [];
+    if (orderIds.length > 0) {
+      // SELECT oi.* to avoid unknown-column errors. Join menu_items to get a readable name/image.
+      const [itemsRows] = await connection.query(
+        `SELECT 
+           oi.*,
+           m.name AS menu_name,
+           m.image AS menu_image
+         FROM order_items oi
+         LEFT JOIN menu_items m ON m.id = oi.menu_item_id
+         WHERE oi.order_id IN (?)`,
+        [orderIds]
+      );
+      items = itemsRows || [];
+    }
+
+    // release connection now that queries are done
     connection.release();
 
-    res.json({
+    // helper to pick numeric value from possible column names
+    const pickNumber = (obj, candidates, fallback = 0) => {
+      for (const key of candidates) {
+        if (obj.hasOwnProperty(key) && obj[key] !== null && obj[key] !== undefined && obj[key] !== '') {
+          const n = Number(obj[key]);
+          if (!Number.isNaN(n)) return n;
+        }
+      }
+      return fallback;
+    };
+
+    // group items by order_id
+    const itemsByOrder = items.reduce((acc, item) => {
+      const oid = item.order_id || item.orderId || item.order_id; // defensive
+      if (!acc[oid]) acc[oid] = [];
+
+      const price = pickNumber(item, ['price', 'unit_price', 'item_price', 'amount']);
+      const quantity = pickNumber(item, ['quantity', 'qty', 'count'], 1);
+
+      acc[oid].push({
+        // include all original columns if you want raw data: ...item
+        id: item.id,
+        menu_item_id: item.menu_item_id,
+        name: item.menu_name || item.name || item.title || 'Item',
+        image: item.menu_image || item.image || null,
+        price,
+        quantity,
+        subtotal: price * quantity,
+        // include raw row for debugging if needed:
+        // raw: item
+      });
+      return acc;
+    }, {});
+
+    const ordersWithItems = orders.map((o) => ({
+      ...o,
+      items: itemsByOrder[o.id] || [],
+      items_count: (itemsByOrder[o.id] || []).length,
+    }));
+
+    return res.json({
       success: true,
-      orders,
+      orders: ordersWithItems,
       pagination: {
-        total,
-        page: parseInt(page),
-        limit: parseInt(limit),
-        pages: Math.ceil(total / limit),
+        total: Number(total || 0),
+        page: Number(page),
+        limit: Number(limit),
+        pages: Math.ceil((total || 0) / Number(limit)),
       },
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ success: false, message: 'Server error' });
+    // ensure connection released if open
+    try {
+      if (connection) connection.release();
+    } catch (e) {
+      console.warn('Error releasing connection after failure', e);
+    }
+
+    console.error('getAllOrders error:', error && (error.stack || error));
+    const isDev = process.env.NODE_ENV === 'development';
+    return res.status(500).json({
+      success: false,
+      message: isDev ? `Server error: ${error && error.message}` : 'Server error',
+      ...(isDev ? { details: error } : {}),
+    });
   }
 };
 
@@ -82,7 +183,15 @@ const updateOrderStatus = async (req, res) => {
     const { id } = req.params;
     const { status } = req.body;
 
-    const validStatuses = ['pending', 'confirmed', 'preparing', 'ready', 'out_for_delivery', 'delivered', 'cancelled'];
+    const validStatuses = [
+      'pending',
+      'confirmed',
+      'preparing',
+      'ready',
+      'out_for_delivery',
+      'delivered',
+      'cancelled',
+    ];
 
     if (!validStatuses.includes(status)) {
       return res.status(400).json({ success: false, message: 'Invalid status' });
@@ -91,7 +200,10 @@ const updateOrderStatus = async (req, res) => {
     const connection = await pool.getConnection();
 
     // Get previous order and user id for notification
-    const [[orderBefore]] = await connection.query('SELECT id, user_id, status FROM orders WHERE id = ?', [id]);
+    const [[orderBefore]] = await connection.query(
+      'SELECT id, user_id, status FROM orders WHERE id = ?',
+      [id]
+    );
     if (!orderBefore) {
       connection.release();
       return res.status(404).json({ success: false, message: 'Order not found' });
@@ -119,7 +231,12 @@ const updateOrderStatus = async (req, res) => {
     try {
       const io = req.app.get('io');
       if (io) {
-        const payload = { orderId: parseInt(id), status, updatedBy: req.user.id, updatedAt: new Date().toISOString() };
+        const payload = {
+          orderId: parseInt(id, 10),
+          status,
+          updatedBy: req.user.id,
+          updatedAt: new Date().toISOString(),
+        };
         // notify specific user
         io.to(`user-${orderBefore.user_id}`).emit('order_status_updated', payload);
         // notify admins
@@ -136,7 +253,8 @@ const updateOrderStatus = async (req, res) => {
     return res.status(500).json({ success: false, message: 'Server error' });
   }
 };
-// Admin - Get all users (paste above module.exports)
+
+// Admin - Get all users
 const getAllUsers = async (req, res) => {
   try {
     const { page = 1, limit = 20 } = req.query;
@@ -148,7 +266,9 @@ const getAllUsers = async (req, res) => {
       [parseInt(limit, 10), offset]
     );
 
-    const [[{ total }]] = await connection.query('SELECT COUNT(*) as total FROM users WHERE role = "user"');
+    const [[{ total }]] = await connection.query(
+      'SELECT COUNT(*) as total FROM users WHERE role = "user"'
+    );
     connection.release();
 
     res.json({
@@ -186,7 +306,10 @@ const toggleUserStatus = async (req, res) => {
 
     connection.release();
 
-    res.json({ success: true, message: `User ${newStatus ? 'activated' : 'blocked'} successfully` });
+    res.json({
+      success: true,
+      message: `User ${newStatus ? 'activated' : 'blocked'} successfully`,
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, message: 'Server error' });
@@ -202,10 +325,12 @@ const getMenuItemsAdmin = async (req, res) => {
     const connection = await pool.getConnection();
     const [items] = await connection.query(
       'SELECT m.*, c.name as category_name FROM menu_items m JOIN categories c ON m.category_id = c.id LIMIT ? OFFSET ?',
-      [parseInt(limit), offset]
+      [parseInt(limit, 10), offset]
     );
 
-    const [[{ total }]] = await connection.query('SELECT COUNT(*) as total FROM menu_items');
+    const [[{ total }]] = await connection.query(
+      'SELECT COUNT(*) as total FROM menu_items'
+    );
     connection.release();
 
     res.json({
@@ -213,8 +338,8 @@ const getMenuItemsAdmin = async (req, res) => {
       items,
       pagination: {
         total,
-        page: parseInt(page),
-        limit: parseInt(limit),
+        page: parseInt(page, 10),
+        limit: parseInt(limit, 10),
         pages: Math.ceil(total / limit),
       },
     });

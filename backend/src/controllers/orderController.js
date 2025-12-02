@@ -7,28 +7,42 @@ const createOrder = async (req, res) => {
     const { items: rawItems, delivery_date, delivery_time, delivery_address, notes } = req.body;
 
     // Debug: log incoming items structure when troubleshooting order failures
-    console.debug && console.debug('createOrder incoming items:', JSON.stringify(rawItems));
+    console.debug && console.debug('createOrder incoming rawItems:', JSON.stringify(rawItems));
+    console.debug && console.debug('createOrder full payload:', JSON.stringify(req.body));
 
-    // Basic validation & sanitization
-    const items = Array.isArray(rawItems) ? rawItems.map((it) => ({
-      menu_item_id: it?.menu_item_id !== undefined ? Number(it.menu_item_id) : Number(it?.id),
-      quantity: it?.quantity !== undefined ? Number(it.quantity) : Number(it?.qty),
-      special_instructions: it?.special_instructions || null,
-    })) : [];
+    // Basic validation & sanitization: map raw items into normalized shape
+    const items = Array.isArray(rawItems)
+      ? rawItems.map((it) => ({
+          menu_item_id: it?.menu_item_id !== undefined ? Number(it.menu_item_id) : Number(it?.id),
+          quantity: it?.quantity !== undefined ? Number(it.quantity) : Number(it?.qty),
+          special_instructions: it?.special_instructions || null,
+        }))
+      : [];
+
+    // === NEW: Early numeric validation for menu_item_id and quantity ===
+    if (!Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ success: false, message: 'No items provided' });
+    }
+
+    for (const [idx, it] of items.entries()) {
+      if (!Number.isFinite(it.menu_item_id) || it.menu_item_id <= 0) {
+        return res.status(400).json({
+          success: false,
+          message: `Invalid menu_item_id for item at index ${idx}: ${JSON.stringify(rawItems?.[idx] ?? it)}`,
+        });
+      }
+      if (!Number.isFinite(it.quantity) || it.quantity <= 0) {
+        return res.status(400).json({
+          success: false,
+          message: `Invalid quantity for item with menu_item_id ${it.menu_item_id} at index ${idx}`,
+        });
+      }
+    }
+    // === END NEW VALIDATION ===
 
     const errors = validateOrder({ items, delivery_date, delivery_address });
     if (Object.keys(errors).length > 0) {
       return res.status(400).json({ success: false, errors });
-    }
-
-    // Ensure items have valid numeric ids and quantities
-    for (const it of items) {
-      if (!Number.isFinite(it.menu_item_id) || it.menu_item_id <= 0) {
-        return res.status(400).json({ success: false, message: 'Invalid menu_item_id in items' });
-      }
-      if (!Number.isFinite(it.quantity) || it.quantity <= 0) {
-        return res.status(400).json({ success: false, message: 'Invalid quantity in items' });
-      }
     }
 
     const connection = await pool.getConnection();
@@ -54,7 +68,13 @@ const createOrder = async (req, res) => {
         const qty = Number(item.quantity) || 0;
         const itemTotal = price * qty;
         subtotal += itemTotal;
-        itemDetails.push({ menu_item_id: item.menu_item_id, quantity: qty, special_instructions: item.special_instructions || null, unit_price: price, total_price: itemTotal });
+        itemDetails.push({
+          menu_item_id: item.menu_item_id,
+          quantity: qty,
+          special_instructions: item.special_instructions || null,
+          unit_price: price,
+          total_price: itemTotal,
+        });
       }
 
       const tax = parseFloat((subtotal * 0.05).toFixed(2)); // 5% tax
@@ -103,10 +123,17 @@ const createOrder = async (req, res) => {
       connection.release();
     }
   } catch (error) {
-    console.error(error);
+    // Log payload + error to help debug malformed requests that reach the catch
+    console.error('createOrder failed. payload:', {
+      body: req.body,
+      user: req.user?.id,
+    });
+    console.error('createOrder error:', error && (error.stack || error.message || error));
+
     res.status(500).json({ success: false, message: 'Server error' });
   }
 };
+
 
 // Get user orders
 const getUserOrders = async (req, res) => {

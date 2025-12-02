@@ -1,4 +1,4 @@
-// src/pages/Home.jsx
+// src/pages/Home.js
 import React, { useContext, useEffect, useState, useRef } from 'react';
 import { MenuItem } from '../components/MenuItem';
 import { CartContext } from '../context/CartContext';
@@ -7,7 +7,6 @@ import { Alert } from '../components/Alert';
 import { menuAPI } from '../utils/api';
 import { useLocation, Link } from 'react-router-dom';
 import { Search, Filter, ShoppingCart } from 'lucide-react';
-
 
 // tiny inline SVG fallback (data URL) used when images missing
 const SVG_PLACEHOLDER =
@@ -73,7 +72,6 @@ const GALLERY_IMAGES = [
   '/images/g6.jpg',
 ];
 
-// Local menu images used when backend doesn't provide photos.
 const LOCAL_MENU_IMAGES = ['/images/pasta.jpg'];
 
 const BIRYANI_FEATURES = [
@@ -191,10 +189,6 @@ export const Home = () => {
   const [testIndex, setTestIndex] = useState(0);
   const testTimerRef = useRef(null);
 
-  // gallery lightbox
-  const [lightboxOpen, setLightboxOpen] = useState(false);
-  const [lightboxIndex, setLightboxIndex] = useState(0);
-
   // Toasts stack
   const [toasts, setToasts] = useState([]);
 
@@ -254,14 +248,6 @@ export const Home = () => {
     }
   };
 
-  /**
-   * fetchMenuItems
-   * - requests items from backend
-   * - normalises the returned `image` value into one of:
-   *   - absolute URL (if backend returned it)
-   *   - `/images/<basename>` (for bare filenames, Windows paths, server-side uploads)
-   *   - local fallback from LOCAL_MENU_IMAGES
-   */
   const getBasename = (p) => {
     if (!p) return '';
     return p.replace(/\\/g, '/').replace(/\/+$/, '').split('/').pop();
@@ -274,15 +260,12 @@ export const Home = () => {
         category_id: selectedCategory,
         search: searchTerm,
         page: 1,
-        // Use a higher limit so featured sections (like biryani) see real DB items
-        // instead of always falling back to hard-coded showcase data.
         limit: 200,
       });
 
-      const serverItems = response.data.items || [];
+      const serverItems = response?.data?.items || [];
 
       const withImages = serverItems.map((it, index) => {
-        // choose a local fallback first (deterministic)
         const chooseLocal = () => {
           if (it.image) return it.image;
           if (typeof it.id === 'number') return LOCAL_MENU_IMAGES[it.id % LOCAL_MENU_IMAGES.length];
@@ -293,19 +276,12 @@ export const Home = () => {
 
         if (!raw) return { ...it, image: '' };
 
-        // absolute URL -> keep
         if (/^https?:\/\//i.test(raw)) return { ...it, image: raw };
-
-        // if already starts with '/', treat as app-root relative (good)
         if (raw.startsWith('/')) return { ...it, image: raw };
-
-        // windows path or backslash present -> pick basename and map to /images/<basename>
         if (/^[A-Za-z]:\\/.test(raw) || raw.includes('\\')) {
           const name = getBasename(raw);
           return { ...it, image: name ? `/images/${name}` : '' };
         }
-
-        // bare filename or nested path like 'uploads/menu1.jpg' -> pick basename and map to /images/<basename>
         const name = getBasename(raw);
         return { ...it, image: name ? `/images/${name}` : '' };
       });
@@ -342,109 +318,108 @@ export const Home = () => {
   const showToast = (message, type = 'success', duration = 3200) => {
     const id = `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
     setToasts((t) => [...t, { id, message, type }]);
-    // auto remove
     setTimeout(() => removeToast(id), duration);
   };
   const removeToast = (id) => {
     setToasts((t) => t.filter((x) => x.id !== id));
   };
 
-  const handleAddToCart = async (item) => {
-    try {
-      console.debug && console.debug('Home.handleAddToCart start', { rawItem: item });
-
-      // 1) Prefer the ID already present on real backend items
-      let menuItemId = Number(item.id);
-      console.debug && console.debug('initial menuItemId', { itemIdRaw: item.id, menuItemId });
-
-      // 2) If the ID is not a valid number (e.g. 'biryani-veg' from local showcase),
-      //    first try to resolve it from the already loaded `items` array (real DB items).
-      if (!Number.isFinite(menuItemId) || menuItemId <= 0) {
-        const fromLoaded = items.find(
-          (it) => String(it.name).toLowerCase() === String(item.name).toLowerCase()
-        );
-        console.debug && console.debug('resolved fromLoaded', { fromLoaded });
-        if (fromLoaded && (typeof fromLoaded.id === 'number' || typeof fromLoaded.id === 'string')) {
-          menuItemId = Number(fromLoaded.id);
-          console.debug && console.debug('menuItemId set from loaded items', { menuItemId });
-        }
-      }
-
-      // 3) As a fallback, try to resolve the real menu item from the backend using the name.
-      if (!Number.isFinite(menuItemId) || menuItemId <= 0) {
-        try {
-          const res = await menuAPI.getMenuItems({ search: item.name, limit: 5 });
-          console.debug && console.debug('menuAPI.getMenuItems search result', { search: item.name, res });
-          const found =
-            res?.data?.items?.find(
-              (it) => String(it.name).toLowerCase() === String(item.name).toLowerCase()
-            ) || res?.data?.items?.[0];
-          console.debug && console.debug('menuAPI resolved found item', { found });
-          if (found && (typeof found.id === 'number' || typeof found.id === 'string')) {
-            menuItemId = Number(found.id);
-            console.debug && console.debug('menuItemId set from API search', { menuItemId });
+// Home.js — improved handleAddToCart (resolve menu id before adding)
+const handleAddToCart = async (item) => {
+  try {
+    // helper to try server-side resolution
+    const tryResolveMenuId = async (nameOrItem) => {
+      try {
+        // 1) server-side "findMatch"
+        if (menuAPI.findMatch) {
+          try {
+            const fm = await menuAPI.findMatch(nameOrItem);
+            if (fm?.data?.item && (typeof fm.data.item.id === 'number' || typeof fm.data.item.id === 'string')) {
+              return Number(fm.data.item.id);
+            }
+          } catch (e) {
+            // ignore and continue
           }
-        } catch (err) {
-          console.error('Failed to resolve menu item ID for cart:', err);
         }
+
+        // 2) search API
+        const res = await menuAPI.getMenuItems({ search: nameOrItem, limit: 12 });
+        const list = res?.data?.items || [];
+        if (!list.length) return null;
+
+        // prefer exact normalized match
+        const norm = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+        const sName = norm(nameOrItem);
+        const exact = list.find((it) => norm(it.name) === sName);
+        if (exact) return Number(exact.id);
+
+        // fallback: choose best token-match candidate
+        const tokens = sName.split(' ').filter(Boolean);
+        let best = null;
+        let bestScore = -Infinity;
+        for (const cand of list) {
+          const cn = norm(cand.name);
+          let score = 0;
+          if (cn.includes(sName)) score += 5;
+          for (const t of tokens) if (cn.includes(t)) score += 1;
+          if (score > bestScore) {
+            bestScore = score;
+            best = cand;
+          }
+        }
+        if (best && bestScore > 0) return Number(best.id);
+      } catch (err) {
+        console.error('tryResolveMenuId error', err);
       }
+      return null;
+    };
 
-      // 4) If still invalid, show a friendly message and do not add to cart
-      console.debug && console.debug('final resolved menuItemId', { menuItemId });
+    // prefer numeric id if already present
+    let menuItemId = Number(item.id);
+    if (!Number.isFinite(menuItemId) || menuItemId <= 0) {
+      const resolved = await tryResolveMenuId(item.name ?? item.id);
+      if (resolved && Number.isFinite(resolved) && resolved > 0) menuItemId = resolved;
+    }
 
-      // If we resolved a numeric id, prefer adding with that numeric id.
-      if (Number.isFinite(menuItemId) && menuItemId > 0) {
-        console.debug && console.debug('Adding to cart (resolved numeric id)', { resolvedId: menuItemId, item });
-        addItem(
-          {
-            id: Number(menuItemId),
-            name: item.name,
-            price: Number(item.price) || 0,
-            image: item.image,
-          },
-          1
-        );
-        setSuccessMessage(`${item.name} added to cart!`);
-        setTimeout(() => setSuccessMessage(''), 3000);
-        showToast(`${item.name} added to cart!`, 'success', 3200);
-        return;
-      }
-
-      // Fallback: allow adding showcase/local items that don't map to DB rows yet.
-      // Use a stable string id (existing item.id or slug from name) so CartContext can store it.
-      const fallbackId = String(item.id ?? item.name ?? `local-${Date.now()}`);
-      console.debug && console.debug('Adding to cart (fallback string id)', { fallbackId, item });
+    // If resolved to numeric id — add numeric item to cart
+    if (Number.isFinite(menuItemId) && menuItemId > 0) {
       addItem(
         {
-          id: fallbackId,
+          id: Number(menuItemId),
           name: item.name,
           price: Number(item.price) || 0,
           image: item.image,
-          _isLocalShowcase: true,
         },
         1
       );
       setSuccessMessage(`${item.name} added to cart!`);
+      showToast(`${item.name} added to cart!`, 'success', 3200);
       setTimeout(() => setSuccessMessage(''), 3000);
-      showToast(`${item.name} added to cart (note: preview item)`, 'success', 4200);
-    } catch (err) {
-      console.error('handleAddToCart error:', err);
-      showToast('Could not add item to cart. Please try again.', 'error', 4500);
+      return;
     }
-  };
 
-  // Lightbox helpers
-  const openLightbox = (index) => {
-    setLightboxIndex(index);
-    setLightboxOpen(true);
-    document.body.style.overflow = 'hidden';
-  };
-  const closeLightbox = () => {
-    setLightboxOpen(false);
-    document.body.style.overflow = '';
-  };
-  const prevLightbox = () => setLightboxIndex((i) => (i - 1 + GALLERY_IMAGES.length) % GALLERY_IMAGES.length);
-  const nextLightbox = () => setLightboxIndex((i) => (i + 1) % GALLERY_IMAGES.length);
+    // fallback: keep local-preview behavior (unchanged)
+    const fallbackId = String(item.id ?? item.name ?? `local-${Date.now()}`);
+    addItem(
+      {
+        id: fallbackId,
+        name: item.name,
+        price: Number(item.price) || 0,
+        image: item.image,
+        _isLocalShowcase: true,
+      },
+      1
+    );
+    setSuccessMessage(`${item.name} added to cart!`);
+    showToast(`${item.name} added to cart`, 'success', 4200);
+    setTimeout(() => setSuccessMessage(''), 3000);
+  } catch (err) {
+    console.error('handleAddToCart error:', err);
+    showToast('Could not add item to cart. Please try again.', 'error', 4500);
+  }
+};
+
+
 
   // shared image error handler: swap to SVG placeholder if local image missing or blocked
   const handleImgError = (e) => {
@@ -496,17 +471,9 @@ export const Home = () => {
                     >
                       Browse Menu
                     </a>
-                    <a
-                      href="#contact"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        const el = document.getElementById('contact');
-                        if (el) el.scrollIntoView({ behavior: 'smooth' });
-                      }}
-                      className="btn-secondary"
-                    >
+                    <Link to="/contact" className="btn-secondary">
                       Contact Us
-                    </a>
+                    </Link>
                   </div>
                 </div>
               </div>
@@ -629,45 +596,11 @@ export const Home = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {items.map((item) => (
                 <div key={item.id}>
-                  {/* pass shared image error handler down so both Home & MenuItem use same fallback behavior */}
                   <MenuItem item={item} onAddToCart={handleAddToCart} onImgError={handleImgError} />
                 </div>
               ))}
             </div>
           )}
-        </section>
-
-        {/* ... the rest of your Home component (About, Testimonials, Gallery, Contact, Lightbox) remains the same ... */}
-
-        {/* About */}
-        <section id="about" className="mb-12 bg-white rounded-lg p-8 shadow">
-          <div className="border-l-4 border-purple-500 pl-4 mb-4">
-            <p className="text-xs uppercase tracking-[0.4em] text-purple-400">Story</p>
-            <h2 className="text-2xl font-bold text-gray-900">About CaterHub</h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <h3 className="font-semibold text-lg mb-2">How we started</h3>
-              <p className="text-sm text-gray-700 mb-4">Born from a love of great food and community gatherings, CaterHub started in a small kitchen with a simple idea: bring restaurant-quality catering to neighbourhood celebrations. Since then we've grown into a trusted catering partner for corporate events, weddings and local festivals.</p>
-              <h3 className="font-semibold text-lg mb-2">Our achievements</h3>
-              <ul className="list-disc ml-5 text-sm text-gray-700 mb-4">
-                <li>Served 10,000+ meals across celebrations and corporate events</li>
-                <li>Top-rated on local platforms for taste and punctuality</li>
-                <li>Certified kitchen, HACCP-compliant processes</li>
-              </ul>
-              <h3 className="font-semibold text-lg mb-2">Why choose us?</h3>
-              <p className="text-sm text-gray-700">We craft menus with care, personalize to dietary needs, and ensure every platter looks as delightful as it tastes. Our team handles logistics so you can enjoy the event.</p>
-            </div>
-
-            <div>
-              <img src="/images/g6.jpg" alt="Catering team" onError={handleImgError} className="w-full rounded-lg shadow-md mb-4 object-cover max-h-72" />
-              <div className="bg-gray-50 p-4 rounded">
-                <h4 className="font-semibold">What customers say</h4>
-                <p className="text-sm text-gray-600 mt-2">"Amazing food and spotless service — our event was a hit!" — S. Rao</p>
-                <p className="text-sm text-gray-600 mt-2">"On-time, professional and delicious — we highly recommend CaterHub." — K. Mehta</p>
-              </div>
-            </div>
-          </div>
         </section>
 
         {/* Testimonials slider */}
@@ -702,76 +635,6 @@ export const Home = () => {
           </div>
         </section>
 
-        {/* Gallery with lightbox */}
-        <section id="gallery" className="mb-12">
-          <div className="border-l-4 border-purple-500 pl-4 mb-4">
-            <p className="text-xs uppercase tracking-[0.4em] text-purple-400">Highlights</p>
-            <h2 className="text-2xl font-bold text-gray-900">Gallery & Celebrations</h2>
-          </div>
-          <p className="text-sm text-gray-600 mb-4">A few moments from our events — plated with love.</p>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {GALLERY_IMAGES.map((src, idx) => (
-              <button key={src} onClick={() => openLightbox(idx)} className="block w-full overflow-hidden rounded-lg focus:outline-none">
-                <img src={src} alt={`gallery-${idx}`} onError={handleImgError} className="w-full h-48 object-cover rounded-lg transform hover:scale-105 transition" />
-              </button>
-            ))}
-          </div>
-        </section>
-
-        {/* Contact */}
-        <section id="contact" className="mb-12 bg-white rounded-lg p-8 shadow">
-          <div className="border-l-4 border-purple-500 pl-4 mb-4">
-            <p className="text-xs uppercase tracking-[0.4em] text-purple-400">Connect</p>
-            <h2 className="text-2xl font-bold text-gray-900">Contact & Location</h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <h3 className="font-semibold text-lg mb-2">Get in touch</h3>
-              <p className="text-sm text-gray-700 mb-3">We'd love to help plan your event. Call or email and we'll get back within a few hours.</p>
-
-              <ul className="text-sm text-gray-700 space-y-2">
-                <li>
-                  <strong>Address:</strong> 123 Food Street, City
-                </li>
-                <li>
-                  <strong>Phone:</strong>{' '}
-                  <a href="tel:+91234567890" className="text-purple-600">
-                    +91 234 567 890
-                  </a>
-                </li>
-                <li>
-                  <strong>Email:</strong>{' '}
-                  <a href="mailto:info@caterhub.com" className="text-purple-600">
-                    info@caterhub.com
-                  </a>
-                </li>
-              </ul>
-
-              <div className="mt-6">
-                <h4 className="font-semibold mb-2">Opening Hours</h4>
-                <p className="text-sm text-gray-700">Mon — Sun: 9:00 AM — 8:00 PM</p>
-              </div>
-            </div>
-
-            <div>
-              <h3 className="font-semibold text-lg mb-2">Find us on the map</h3>
-              <div className="w-full h-64 rounded overflow-hidden shadow">
-                <iframe
-                  title="CaterHub location"
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3153.019094415669!2d-122.41941548468197!3d37.77492977975916!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8085818d2b3d8f5b%3A0x6b42d3b2f1f4d6b9!2sSan+Francisco!5e0!3m2!1sen!2sin!4v1610000000000!5m2!1sen!2sin"
-                  width="100%"
-                  height="100%"
-                  style={{ border: 0 }}
-                  allowFullScreen=""
-                  loading="lazy"
-                ></iframe>
-              </div>
-            </div>
-          </div>
-        </section>
-
         {/* CTA */}
         <section className="mb-24 text-center">
           <h3 className="text-2xl font-bold mb-3">Ready to delight your guests?</h3>
@@ -781,6 +644,7 @@ export const Home = () => {
               onClick={() => {
                 const el = document.getElementById('contact');
                 if (el) el.scrollIntoView({ behavior: 'smooth' });
+                else window.location.href = '/contact';
               }}
               className="btn-primary px-6 py-3"
             >
@@ -811,24 +675,6 @@ export const Home = () => {
           {cartCount}
         </span>
       </Link>
-
-      {/* Lightbox markup */}
-      {lightboxOpen && (
-        <div role="dialog" aria-modal="true" className="lightbox-overlay" onClick={closeLightbox}>
-          <div className="lightbox-content" onClick={(e) => e.stopPropagation()}>
-            <button aria-label="close" className="lightbox-close" onClick={closeLightbox}>
-              ×
-            </button>
-            <button aria-label="prev" className="lightbox-nav left" onClick={prevLightbox}>
-              ‹
-            </button>
-            <img src={GALLERY_IMAGES[lightboxIndex]} alt={`expanded-${lightboxIndex}`} onError={handleImgError} className="max-h-[80vh] object-contain" />
-            <button aria-label="next" className="lightbox-nav right" onClick={nextLightbox}>
-              ›
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
