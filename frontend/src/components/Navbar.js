@@ -28,11 +28,13 @@ export const Navbar = () => {
   const [collapsed, setCollapsed] = useState(false);   // NEW
   const [sidebarWidth, setSidebarWidth] = useState(288); // 72 * 4 = 288px
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [logoError, setLogoError] = useState(false);
 
   useEffect(() => {
     const width = collapsed ? 80 : 288;
     setSidebarWidth(width);
     document.documentElement.style.setProperty("--sidebar-width", `${width}px`);
+    setLogoError(false); // Reset logo error when sidebar state changes
   }, [collapsed]);
 
   const handleLogout = () => {
@@ -42,32 +44,32 @@ export const Navbar = () => {
 
   // inside src/components/Navbar.jsx, replace the existing goToSection function with this:
 
-const goToSection = (id) => {
-  // pages that now have their own routes
-  const pageRoutes = ['about', 'gallery', 'contact'];
+  const goToSection = (id) => {
+    // pages that now have their own routes
+    const pageRoutes = ['about', 'gallery', 'contact'];
 
-  if (pageRoutes.includes(id)) {
-    // navigate to dedicated page
-    navigate(`/${id}`);
+    if (pageRoutes.includes(id)) {
+      // navigate to dedicated page
+      navigate(`/${id}`);
+      setMobileOpen(false);
+      return;
+    }
+
+    // fall back to scrolling on home for hero/menu
+    if (location.pathname !== '/') {
+      navigate(`/?scrollTo=${id}`);
+      // small timeout to allow Home to mount and handle the scroll param
+      setTimeout(() => {
+        // keep old behavior of setting hash if needed
+        window.location.hash = id;
+      }, 120);
+    } else {
+      const el = document.getElementById(id);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      else window.location.hash = id;
+    }
     setMobileOpen(false);
-    return;
-  }
-
-  // fall back to scrolling on home for hero/menu
-  if (location.pathname !== '/') {
-    navigate(`/?scrollTo=${id}`);
-    // small timeout to allow Home to mount and handle the scroll param
-    setTimeout(() => {
-      // keep old behavior of setting hash if needed
-      window.location.hash = id;
-    }, 120);
-  } else {
-    const el = document.getElementById(id);
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    else window.location.hash = id;
-  }
-  setMobileOpen(false);
-};
+  };
 
 
   return (
@@ -78,26 +80,30 @@ const goToSection = (id) => {
         from-purple-900 via-purple-800 to-blue-900 text-white shadow-2xl p-4 transition-all duration-300"
         style={{ width: sidebarWidth }}
       >
-        {/* COLLAPSE BUTTON */}
-        <button
-          onClick={() => setCollapsed(!collapsed)}
-          className="absolute -right-4 top-6 bg-purple-700 text-white p-2 rounded-full shadow-lg hover:bg-purple-600 transition"
-        >
-          {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
-        </button>
+        {/* HEADER: LOGO + TOGGLE */}
+        <div className={`flex-shrink-0 flex items-center ${collapsed ? 'flex-col justify-center gap-4 py-4' : 'justify-between px-2'} h-24 mb-2 transition-all`}>
+          {/* LOGO */}
+          <div className="flex items-center justify-center">
+            {logoError ? (
+              <span className="text-3xl">🍽️</span>
+            ) : (
+              <img
+                src={collapsed ? "/images/logo-small.svg" : "/images/logo.svg"}
+                alt="CaterHub"
+                className="max-h-12 object-contain"
+                onError={() => setLogoError(true)}
+              />
+            )}
+          </div>
 
-        {/* LOGO */}
-        <div className="flex-shrink-0 h-24 flex items-center justify-center">
-          {!collapsed ? (
-            <img
-              src="/images/logo.svg"
-              alt="CaterHub"
-              className="max-h-14 object-contain"
-              onError={(e) => (e.target.style.display = "none")}
-            />
-          ) : (
-            <span className="text-3xl">🍽️</span>
-          )}
+          {/* COLLAPSE BUTTON */}
+          <button
+            onClick={() => setCollapsed(!collapsed)}
+            className={`bg-white/10 hover:bg-white/20 text-white p-2 rounded-lg transition ${collapsed ? '' : ''}`}
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            {collapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+          </button>
         </div>
 
         {!collapsed && (

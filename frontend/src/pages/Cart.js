@@ -1,27 +1,24 @@
 // src/pages/Cart.jsx
 import React, { useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-// Use the context object directly (call hooks unconditionally)
 import { CartContext as _CartContext } from '../context/CartContext';
 import { AuthContext } from '../context/AuthContext';
 import { Trash2, Plus, Minus, ShoppingBag } from 'lucide-react';
 import { orderAPI, menuAPI } from '../utils/api';
 import { Alert } from '../components/Alert';
-import { LoadingSpinner } from '../components/LoadingSpinner';
 import { resolveImageSrc } from '../components/MenuItem';
 
 export const Cart = () => {
   const navigate = useNavigate();
 
-  // CALL HOOKS UNCONDITIONALLY (important for ESLint Rules of Hooks)
-  const cartCtx = useContext(_CartContext) || {}; // will be {} if provider missing
+  const cartCtx = useContext(_CartContext) || {};
   const authCtx = useContext(AuthContext) || { isAuthenticated: false };
 
-  // Normalize available cart methods/values to expected names
+  // Normalize available cart methods/values
   const itemsRaw = Array.isArray(cartCtx.items) ? cartCtx.items : [];
-  const removeItemFn = cartCtx.removeItem ?? cartCtx.remove ?? (() => {});
-  const updateQuantityCtx = cartCtx.updateQuantity ?? cartCtx.updateQty ?? (() => {});
-  const clearCartFn = cartCtx.clearCart ?? cartCtx.clear ?? (() => {});
+  const removeItemFn = cartCtx.removeItem ?? cartCtx.remove ?? (() => { });
+  const updateQuantityCtx = cartCtx.updateQuantity ?? cartCtx.updateQty ?? (() => { });
+  const clearCartFn = cartCtx.clearCart ?? cartCtx.clear ?? (() => { });
   const ctxTotal = cartCtx.total ?? cartCtx.totalPrice ?? cartCtx.total_amount;
 
   const { isAuthenticated } = authCtx;
@@ -70,7 +67,7 @@ export const Cart = () => {
   };
 
   // Normalize items to a known shape (id, name, price, quantity, lineTotal)
-  const items = (itemsRaw || []).map((it, idx) => {
+  const items = itemsRaw.map((it, idx) => {
     const id = it?.id ?? it?._id ?? it?.menu_item_id ?? `i_${idx}`;
     const name = it?.name ?? it?.title ?? it?.label ?? 'Untitled item';
     const quantity = toNumber(it?.quantity ?? it?.qty ?? it?.amount ?? 0, 0);
@@ -87,7 +84,6 @@ export const Cart = () => {
     try {
       removeItemFn(id);
     } catch (e) {
-      // ignore if provider doesn't support it
       console.warn('removeItem failed', e);
     }
   };
@@ -98,8 +94,6 @@ export const Cart = () => {
         cartCtx.addItem(item, qty);
       } else if (typeof cartCtx.add === 'function') {
         cartCtx.add(item, qty);
-      } else {
-        console.warn('addItem: cart context has no add function');
       }
     } catch (e) {
       console.warn('addItem failed', e);
@@ -113,8 +107,6 @@ export const Cart = () => {
         updateQuantityCtx(id, safeQty);
       } else if (cartCtx && typeof cartCtx.updateQty === 'function') {
         cartCtx.updateQty(id, safeQty);
-      } else {
-        // no-op
       }
     } catch (e) {
       console.warn('updateQuantity failed', e);
@@ -136,352 +128,140 @@ export const Cart = () => {
     });
   };
 
- const handleCheckout = async (e) => {
-  e.preventDefault();
-  setError('');
-  setLoading(true);
+  // Optimized linkPreviewItems
+  const linkPreviewItems = async () => {
+    setError('');
+    setSuccessMessage('');
+    setLoading(true);
 
-  try {
-    // 0) Debug: show current cart items in console to help trace null ids
-    console.debug('handleCheckout - cart items before normalize:', items);
-
-    // 1) Auto-link preview items first (non-numeric ids)
-    const previewItems = items.filter((it) => !Number.isFinite(Number(it.id)) || it._isLocalShowcase);
-    if (previewItems.length > 0) {
-      const { stillMissing } = await linkPreviewItems({ aggressiveScan: true });
-      console.debug('handleCheckout - linkPreviewItems result:', { stillMissing });
-      if (stillMissing && stillMissing.length > 0) {
-        setLoading(false);
-        setError(
-          `The following items cannot be ordered because they are previews: ${stillMissing.join(
-            ', '
-          )}. Please remove them from the cart or add them from the main menu.`
-        );
-        return;
-      }
-    }
-
-    // 2) Auth check
-    if (!isAuthenticated) {
+    const previews = items.filter((it) => !Number.isFinite(Number(it.id)) || it._isLocalShowcase);
+    if (previews.length === 0) {
       setLoading(false);
-      navigate('/login', { state: { from: '/cart' } });
-      return;
+      setSuccessMessage('No preview items found in cart.');
+      setTimeout(() => setSuccessMessage(''), 3000);
+      return { stillMissing: [] };
     }
 
-    // 3) Build normalized items; try to resolve any remaining non-numeric ids intelligently
-    const normalizedItems = [];
-    const unresolved = [];
-
-    // helper normalizers
     const norm = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
-    const slugify = (s = '') => String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    const linked = [];
+    const stillMissing = [];
 
-    // resolver that tries server-side findMatch first, then search fallback
-    const resolveToMenuItem = async (nameOrItem) => {
-      const name = String(nameOrItem || '');
-      if (!name) return null;
+    // Batch resolve if possible, or sequential but optimized
+    for (const p of previews) {
+      const name = String(p.name || p.id || '');
+      const n = norm(name);
+      if (!n) {
+        stillMissing.push(p.name || p.id || 'Unknown');
+        continue;
+      }
+
       try {
-        // 1) server-side findMatch
-        try {
-          const fm = await menuAPI.findMatch(name);
-          if (fm?.data?.item) return fm.data.item;
-        } catch (e) {
-          // ignore and fallback
-        }
-
-        // 2) search by full name
-        const res = await menuAPI.getMenuItems({ search: name, limit: 12 });
+        // Try exact match first via search
+        const res = await menuAPI.getMenuItems({ search: name, limit: 5 });
         const list = res?.data?.items || [];
-        if (!list.length) return null;
 
-        // exact normalized match
-        const n = norm(name);
-        const exact = list.find((it) => norm(it.name) === n);
-        if (exact) return exact;
+        // Exact match
+        let found = list.find(it => norm(it.name) === n);
 
-        // slug match
-        const sslug = slugify(name);
-        const bySlug = list.find((it) => slugify(it.name) === sslug || (it.image && String(it.image).includes(sslug)));
-        if (bySlug) return bySlug;
-
-        // token score fallback
-        const tokens = n.split(' ').filter(Boolean);
-        let best = null;
-        let bestScore = -Infinity;
-        for (const cand of list) {
-          const cn = norm(cand.name);
-          let score = 0;
-          if (cn.includes(n)) score += 5;
-          for (const t of tokens) if (cn.includes(t)) score += 1;
-          if (score > bestScore) {
-            bestScore = score;
-            best = cand;
-          }
+        // If not exact, try fuzzy
+        if (!found && list.length > 0) {
+          // Simple fuzzy: check if name contains the search term or vice versa
+          found = list.find(it => norm(it.name).includes(n) || n.includes(norm(it.name)));
         }
-        if (best && bestScore > 0) return best;
 
-        return null;
+        if (found && (typeof found.id === 'number' || typeof found.id === 'string')) {
+          removeItem(p.id);
+          addItem({ id: Number(found.id), name: found.name, price: Number(found.price) || 0, image: found.image }, p.quantity || p.qty || 1);
+          linked.push(found.name);
+        } else {
+          stillMissing.push(p.name);
+        }
       } catch (err) {
-        console.error('resolveToMenuItem failed', err);
-        return null;
+        console.error('Error resolving preview item:', name, err);
+        stillMissing.push(p.name);
       }
-    };
-
-    for (const item of items) {
-      // prefer explicit menu_item_id if present (some callers may set it)
-      const rawId = item.menu_item_id ?? item.id;
-      const menuItemId = Number(rawId);
-
-      if (Number.isFinite(menuItemId) && menuItemId > 0) {
-        normalizedItems.push({ menu_item_id: menuItemId, quantity: Number(item.quantity || item.qty || 1) });
-        continue;
-      }
-
-      // attempt to resolve by name
-      const candidate = await resolveToMenuItem(item.name ?? item.id);
-      if (candidate && (typeof candidate.id === 'number' || typeof candidate.id === 'string')) {
-        normalizedItems.push({ menu_item_id: Number(candidate.id), quantity: Number(item.quantity || item.qty || 1) });
-        continue;
-      }
-
-      // as a last-ditch attempt, try token-based search on individual words
-      const tokens = (String(item.name || '')).split(/\s+/).filter((t) => t.length > 2);
-      let tokenFound = null;
-      for (const token of tokens) {
-        try {
-          const res2 = await menuAPI.getMenuItems({ search: token, limit: 8 });
-          const candList = res2?.data?.items || [];
-          if (candList.length === 1) {
-            tokenFound = candList[0];
-            break;
-          }
-          // prefer exact token inclusion
-          const pf = candList.find((c) => norm(c.name).includes(token));
-          if (pf) {
-            tokenFound = pf;
-            break;
-          }
-        } catch (e) {
-          // ignore token search failure
-        }
-      }
-      if (tokenFound && (typeof tokenFound.id === 'number' || typeof tokenFound.id === 'string')) {
-        normalizedItems.push({ menu_item_id: Number(tokenFound.id), quantity: Number(item.quantity || item.qty || 1) });
-        continue;
-      }
-
-      unresolved.push(item.name || item.id || 'Unknown item');
     }
 
-    // 4) If unresolved remain, return helpful error (do not attempt to call createOrder)
-    if (unresolved.length) {
-      setLoading(false);
-      setError(
-        `The following items cannot be ordered because they are previews: ${unresolved.join(
-          ', '
-        )}. Please remove them from the cart and add them from the main menu.`
-      );
-      return;
-    }
-
-    // 5) Build order payload and send to server
-    const orderData = {
-      items: normalizedItems,
-      ...formData,
-    };
-
-    console.debug('handleCheckout - sending orderData:', orderData);
-
-    const response = await orderAPI.createOrder(orderData);
-
-    if (response?.data?.success) {
-      clearCart();
-      navigate(`/order-confirmation/${response.data.order.id}`);
-    } else {
-      setError(response?.data?.message || 'Failed to place order');
-    }
-  } catch (err) {
-    console.error('handleCheckout unexpected error:', err);
-    setError(err?.response?.data?.message || 'Failed to place order');
-  } finally {
     setLoading(false);
-  }
-};
 
-
-
-  // Attempt to map preview/local items in the cart to real menu items from the backend.
-  // Replace the existing linkPreviewItems with this version
-// Cart.jsx — aggressive linkPreviewItems (replace existing function)
-const linkPreviewItems = async ({ aggressiveScan = true } = {}) => {
-  setError('');
-  setSuccessMessage('');
-  setLoading(true);
-
-  const previews = items.filter((it) => !Number.isFinite(Number(it.id)) || it._isLocalShowcase);
-  if (previews.length === 0) {
-    setLoading(false);
-    setSuccessMessage('No preview items found in cart.');
-    setTimeout(() => setSuccessMessage(''), 3000);
-    return { linked: [], autoLinked: [], stillMissing: [] };
-  }
-
-  const norm = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
-  const levenshteinLocal = levenshtein;
-
-  const resolvePreviewItem = async (item) => {
-    const name = String(item.name || item.id || '');
-    const n = norm(name);
-    if (!n) return null;
-
-    // 1) attempt server-side matcher
-    try {
-      try {
-        const fm = await menuAPI.findMatch(name);
-        if (fm?.data?.item) return fm.data.item;
-      } catch (e) { /* ignore */ }
-
-      const res = await menuAPI.getMenuItems({ search: name, limit: 12 });
-      const list = res?.data?.items || [];
-      if (!list.length) return null;
-
-      // exact normalized match
-      const exact = list.find((it) => norm(it.name) === n);
-      if (exact) return exact;
-
-      // token-based scoring
-      const tokens = n.split(' ').filter((t) => t.length > 2);
-      let best = null;
-      let bestScore = -Infinity;
-      for (const cand of list) {
-        const cn = norm(cand.name);
-        let tokenScore = 0;
-        if (cn.includes(n)) tokenScore += 5;
-        for (const t of tokens) if (cn.includes(t)) tokenScore += 1;
-        const maxLen = Math.max(cn.length, n.length, 1);
-        const dist = levenshteinLocal(cn, n);
-        const levSim = 1 - dist / maxLen;
-        const combined = tokenScore * 2 + levSim * 3;
-        if (combined > bestScore) {
-          bestScore = combined;
-          best = cand;
-        }
-      }
-      if (best && bestScore > 0.9) return best;
-    } catch (err) {
-      console.error('resolvePreviewItem step failed', err);
+    if (linked.length > 0) {
+      setSuccessMessage(`Linked ${linked.length} preview item(s) to menu items.`);
+      setTimeout(() => setSuccessMessage(''), 3000);
     }
 
-    // 2) large-scan fallback
-    try {
-      const resAll = await menuAPI.getMenuItems({ page: 1, limit: 500 });
-      const listAll = resAll?.data?.items || [];
-      let fbest = null;
-      let fbestScore = -Infinity;
-      const tokens = n.split(' ').filter((t) => t.length > 2);
-      for (const cand of listAll) {
-        const cn = norm(cand.name);
-        let tokenScore = 0;
-        if (cn.includes(n)) tokenScore += 5;
-        for (const t of tokens) if (cn.includes(t)) tokenScore += 1;
-        const maxLen = Math.max(cn.length, n.length, 1);
-        const dist = levenshteinLocal(cn, n);
-        const levSim = 1 - dist / maxLen;
-        const combined = tokenScore * 2 + levSim * 3;
-        if (combined > fbestScore) {
-          fbestScore = combined;
-          fbest = cand;
-        }
-      }
-      if (fbest && fbestScore > 0.9) return fbest;
-    } catch (err) {
-      console.error('resolvePreviewItem large-scan failed', err);
+    if (stillMissing.length > 0) {
+      // Don't set error here, just return it. Let the caller decide if it's a blocker.
+      // But if called explicitly via button, we might want to show it.
+      // We'll return it and let the UI show a summary if needed.
     }
 
-    return null;
+    return { stillMissing };
   };
 
-  const linked = [];
-  const unlinked = [];
+  const handleCheckout = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
 
-  for (const p of previews) {
     try {
-      const found = await resolvePreviewItem(p);
-      if (found && (typeof found.id === 'number' || typeof found.id === 'string')) {
-        try { removeItem(p.id); } catch (e) { console.warn('remove preview failed', e); }
-        addItem({ id: Number(found.id), name: found.name, price: Number(found.price) || 0, image: found.image }, p.quantity || p.qty || 1);
-        linked.push({ preview: p.name || p.id, resolved: found.name });
-        continue;
+      // 1) Check for preview items
+      const previewItems = items.filter((it) => !Number.isFinite(Number(it.id)) || it._isLocalShowcase);
+      if (previewItems.length > 0) {
+        // Try to auto-link once
+        const { stillMissing } = await linkPreviewItems();
+        if (stillMissing && stillMissing.length > 0) {
+          setLoading(false);
+          setError(
+            `The following items cannot be ordered because they are previews: ${stillMissing.join(
+              ', '
+            )}. Please remove them from the cart or add them from the main menu.`
+          );
+          return;
+        }
+        // If we successfully linked everything, we need to re-evaluate 'items' because state updates 
+        // in React are async. However, since we just called addItem/removeItem, the 'items' variable 
+        // in this closure is STALE. 
+        // We should really return here and let the user click "Place Order" again, or we need to 
+        // wait for the context to update. For safety, let's ask the user to retry.
+        setLoading(false);
+        setSuccessMessage("Items updated. Please click Place Order again.");
+        return;
+      }
+
+      // 2) Auth check
+      if (!isAuthenticated) {
+        setLoading(false);
+        navigate('/login', { state: { from: '/cart' } });
+        return;
+      }
+
+      // 3) Build normalized items
+      const normalizedItems = items.map(item => ({
+        menu_item_id: Number(item.id),
+        quantity: Number(item.quantity)
+      }));
+
+      // 4) Build order payload
+      const orderData = {
+        items: normalizedItems,
+        ...formData,
+      };
+
+      const response = await orderAPI.createOrder(orderData);
+
+      if (response?.data?.success) {
+        clearCart();
+        navigate(`/order-confirmation/${response.data.order.id}`);
+      } else {
+        setError(response?.data?.message || 'Failed to place order');
       }
     } catch (err) {
-      console.error('Error resolving preview', err);
+      console.error('handleCheckout unexpected error:', err);
+      setError(err?.response?.data?.message || 'Failed to place order');
+    } finally {
+      setLoading(false);
     }
-    unlinked.push(p.name || p.id || 'Unknown');
-  }
-
-  const autoLinked = [];
-  const stillMissing = [];
-
-  if (unlinked.length > 0 && aggressiveScan) {
-    try {
-      const resAll = await menuAPI.getMenuItems({ page: 1, limit: 1000 });
-      const listAll = resAll?.data?.items || [];
-
-      for (const missingName of unlinked) {
-        const name = String(missingName || '');
-        const n = norm(name);
-        if (!n) { stillMissing.push(missingName); continue; }
-        const tokens = n.split(' ').filter((t) => t.length > 2);
-        let best = null;
-        let bestScore = -Infinity;
-        for (const cand of listAll) {
-          const cn = norm(cand.name);
-          let tokenScore = 0;
-          if (cn.includes(n)) tokenScore += 5;
-          for (const t of tokens) if (cn.includes(t)) tokenScore += 1;
-          const maxLen = Math.max(cn.length, n.length, 1);
-          const dist = levenshteinLocal(cn, n);
-          const levSim = 1 - dist / maxLen;
-          const combined = tokenScore * 2 + levSim * 3;
-          if (combined > bestScore) {
-            bestScore = combined;
-            best = cand;
-          }
-        }
-        // lower threshold for aggressive auto-link to avoid blocking users
-        if (best && bestScore > 0.45) {
-          const previewItem = previews.find((pp) => (pp.name || pp.id) === missingName || String(pp.id) === String(missingName));
-          try { if (previewItem) removeItem(previewItem.id); } catch (e) { console.warn('remove preview during auto-link failed', e); }
-          addItem({ id: Number(best.id), name: best.name, price: Number(best.price) || 0, image: best.image }, previewItem?.quantity || previewItem?.qty || 1);
-          autoLinked.push({ preview: missingName, resolved: best.name, score: bestScore });
-        } else {
-          stillMissing.push(missingName);
-        }
-      }
-    } catch (err) {
-      console.error('Aggressive auto-link scan failed', err);
-      stillMissing.push(...unlinked);
-    }
-  } else {
-    stillMissing.push(...unlinked);
-  }
-
-  setLoading(false);
-
-  const totalLinked = linked.length + autoLinked.length;
-  if (totalLinked) {
-    setSuccessMessage(`Linked ${totalLinked} preview item(s) to menu items.`);
-    setTimeout(() => setSuccessMessage(''), 3000);
-  }
-  if (stillMissing.length) {
-    setError(`Could not find menu entries for: ${stillMissing.join(', ')}. Please add them from the main menu.`);
-  }
-
-  // return result to caller
-  return { linked, autoLinked, stillMissing };
-};
-
-
+  };
 
   if (!items || items.length === 0) {
     return (
@@ -508,6 +288,7 @@ const linkPreviewItems = async ({ aggressiveScan = true } = {}) => {
         <h1 className="text-3xl font-bold text-gray-800 mb-8">Shopping Cart</h1>
 
         {error && <Alert type="error" message={error} onClose={() => setError('')} />}
+        {successMessage && <Alert type="success" message={successMessage} onClose={() => setSuccessMessage('')} />}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Cart Items */}
@@ -552,7 +333,17 @@ const linkPreviewItems = async ({ aggressiveScan = true } = {}) => {
                       <input
                         type="number"
                         value={item.quantity}
-                        onChange={(e) => updateQuantity(item.id, Math.max(1, parseInt(e.target.value || 1, 10)))}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          if (val === '') {
+                            // Allow empty string temporarily for UX, but we can't store it in context as number
+                            // So we might need local state or just default to 1 on blur.
+                            // For now, let's just update to 1 if empty to avoid NaN
+                            updateQuantity(item.id, 1);
+                          } else {
+                            updateQuantity(item.id, Math.max(1, parseInt(val, 10)));
+                          }
+                        }}
                         className="w-12 text-center border border-gray-300 rounded py-1"
                         min="1"
                       />
@@ -683,20 +474,3 @@ const linkPreviewItems = async ({ aggressiveScan = true } = {}) => {
 };
 
 export default Cart;
-/* -- Add Mandhi & Biryani menu items (adjust prices/descriptions as desired)
-
-INSERT INTO menu_items
-  (category_id, name, description, price, image, servings, preparation_time, is_vegetarian, is_vegan, is_gluten_free, rating, total_ratings, is_available, created_at, updated_at)
-VALUES
-  (5, 'Mutton Mandhi', 'Tender mutton slow-cooked over pit fire, served atop spiced rice with roasted nuts', 699.00, '/uploads/images/mutton-mandhi.jpg', 5, 90, 0, 0, 0, 4.9, 10, 1, '2025-12-02 12:00:00', '2025-12-02 12:00:00'),
-
-  (5, 'Smoked Chicken Mandhi', 'Yemeni-style mandi rice with charcoal-smoked chicken and roasted nuts', 639.00, '/uploads/images/chicken-mandhi.jpg', 5, 75, 0, 0, 0, 4.8, 18, 1, '2025-12-02 12:00:00', '2025-12-02 12:00:00'),
-
-  (5, 'Coastal Fish Mandhi', 'Coastal marinated fish on aromatic mandi rice with lemon zest', 619.00, '/uploads/images/fish-mandhi.jpg', 5, 65, 0, 0, 0, 4.6, 7, 1, '2025-12-02 12:00:00', '2025-12-02 12:00:00'),
-
-  (5, 'Hyderabadi Dum Biryani', 'Layered basmati rice, saffron, and slow-cooked chicken sealed in dum', 499.00, '/uploads/images/hyderabadi-biryani.jpg', 4, 60, 0, 0, 0, 4.9, 45, 1, '2025-12-02 12:00:00', '2025-12-02 12:00:00'),
-
-  (5, 'Ambur Mutton Biryani', 'Short-grain seeraga samba rice with tender mutton and spice-laced broth', 549.00, '/uploads/images/ambur-biryani.jpg', 4, 70, 0, 0, 0, 4.8, 22, 1, '2025-12-02 12:00:00', '2025-12-02 12:00:00'),
-
-  (5, 'Royal Veg Biryani', 'Seasonal vegetables tossed with caramelized onions and cashews', 459.00, '/uploads/images/veg-biryani.jpg', 4, 55, 1, 1, 0, 4.7, 14, 1, '2025-12-02 12:00:00', '2025-12-02 12:00:00');
- */

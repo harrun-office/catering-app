@@ -79,19 +79,13 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
 
-    // OPTIONAL: Remove that user's cart from localStorage
-    try {
-      if (uid) {
-        localStorage.removeItem(`cart_${uid}`);
-      }
-    } catch (err) {
-      console.warn("Failed clearing user's cart on logout:", err);
-    }
+    // Cart persistence: We do NOT delete the cart here anymore.
+    // This allows the user to see their items when they log back in.
 
     // Trigger tab sync
     try {
       localStorage.setItem('auth_change_ts', String(Date.now()));
-    } catch {}
+    } catch { }
 
     setToken(null);
     setUser(null);
