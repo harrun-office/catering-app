@@ -46,4 +46,15 @@ INSERT INTO menu_items (category_id, name, description, price, image, is_vegetar
 -- Vegan Special
 (6, 'Vegan Burger', 'Plant-based burger with avocado', 10.99, 'https://via.placeholder.com/300x200?text=Vegan+Burger', 1, 1, 1),
 (6, 'Tofu Pad Thai', 'Thai noodles with crispy tofu', 11.99, 'https://via.placeholder.com/300x200?text=Tofu+Pad+Thai', 1, 1, 1),
-(6, 'Chickpea Curry', 'Aromatic curry with chickpeas', 10.99, 'https://via.placeholder.com/300x200?text=Chickpea+Curry', 1, 1, 1);
+(6, 'Chickpea Curry', 'Aromatic curry with chickpeas', 10.99, 'https://via.placeholder.com/300x200?text=Chickpea+Curry', 1, 1, 1),
+
+-- Biryani & Mandhi Specials (to match Home page showcase names)
+-- Use existing categories: 2 = Main Courses, 5 = Vegetarian
+(2, 'Hyderabadi Dum Biryani', 'Layered basmati rice, saffron, and slow-cooked chicken sealed in dum.', 499.00, '/images/hyderabadi-biryani.jpg', 0, 0, 1),
+(2, 'Ambur Mutton Biryani', 'Short-grain seeraga samba rice with tender mutton and spice-laced broth.', 549.00, '/images/ambur-biryani.jpg', 0, 0, 1),
+(5, 'Royal Veg Biryani', 'Seasonal vegetables tossed with caramelized onions and cashews.', 459.00, '/images/veg-biryani.jpg', 1, 0, 1),
+(5, 'Paneer Tikka Biryani', 'Smoky paneer tikka cubes layered with fragrant rice and mint.', 479.00, '/images/paneer-biryani.jpg', 1, 0, 1),
+(2, 'Smoked Chicken Mandhi', 'Yemeni-style mandi rice with charcoal-smoked chicken and roasted nuts.', 639.00, '/images/chicken-mandhi.jpg', 0, 0, 1),
+(2, 'Mutton Mandhi', 'Tender mutton slow-cooked over pit fire, served atop spiced rice.', 699.00, '/images/mutton-mandhi.jpg', 0, 0, 1),
+(2, 'Coastal Fish Mandhi', 'Coastal marinated fish, lemon zest, and light mandhi spices.', 619.00, '/images/fish-mandhi.jpg', 0, 0, 1),
+(2, 'Family Mixed Mandhi', 'Chicken + mutton portions with generous toppings, perfect for gatherings.', 799.00, '/images/mixed-mandhi.jpg', 0, 0, 1);

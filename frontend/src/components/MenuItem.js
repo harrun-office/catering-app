@@ -138,11 +138,13 @@ export const MenuItem = ({ item = {}, onAddToCart = () => {}, onImgError }) => {
 
   /* Only allow cart if logged in */
   const handleAddClick = () => {
-    if (!isAuthenticated) {
-      navigate("/login", { state: { from: window.location.pathname } });
-      return;
+    // Allow adding to cart for guests as well — checkout will enforce authentication.
+    try {
+      console.debug && console.debug('MenuItem handleAddClick', { item });
+      onAddToCart(item);
+    } catch (err) {
+      console.error('onAddToCart handler failed', err);
     }
-    onAddToCart(item);
   };
 
   /* CLEAN BADGE — remove 0 always */

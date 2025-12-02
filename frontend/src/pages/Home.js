@@ -274,7 +274,9 @@ export const Home = () => {
         category_id: selectedCategory,
         search: searchTerm,
         page: 1,
-        limit: 12,
+        // Use a higher limit so featured sections (like biryani) see real DB items
+        // instead of always falling back to hard-coded showcase data.
+        limit: 200,
       });
 
       const serverItems = response.data.items || [];
@@ -347,19 +349,88 @@ export const Home = () => {
     setToasts((t) => t.filter((x) => x.id !== id));
   };
 
-  const handleAddToCart = (item) => {
-    addItem({
-      id: item.id,
-      name: item.name,
-      price: item.price,
-      image: item.image,
-      quantity: 1,
-    });
-    setSuccessMessage(`${item.name} added to cart!`);
-    setTimeout(() => setSuccessMessage(''), 3000);
+  const handleAddToCart = async (item) => {
+    try {
+      console.debug && console.debug('Home.handleAddToCart start', { rawItem: item });
 
-    // show toast
-    showToast(`${item.name} added to cart!`, 'success', 3200);
+      // 1) Prefer the ID already present on real backend items
+      let menuItemId = Number(item.id);
+      console.debug && console.debug('initial menuItemId', { itemIdRaw: item.id, menuItemId });
+
+      // 2) If the ID is not a valid number (e.g. 'biryani-veg' from local showcase),
+      //    first try to resolve it from the already loaded `items` array (real DB items).
+      if (!Number.isFinite(menuItemId) || menuItemId <= 0) {
+        const fromLoaded = items.find(
+          (it) => String(it.name).toLowerCase() === String(item.name).toLowerCase()
+        );
+        console.debug && console.debug('resolved fromLoaded', { fromLoaded });
+        if (fromLoaded && (typeof fromLoaded.id === 'number' || typeof fromLoaded.id === 'string')) {
+          menuItemId = Number(fromLoaded.id);
+          console.debug && console.debug('menuItemId set from loaded items', { menuItemId });
+        }
+      }
+
+      // 3) As a fallback, try to resolve the real menu item from the backend using the name.
+      if (!Number.isFinite(menuItemId) || menuItemId <= 0) {
+        try {
+          const res = await menuAPI.getMenuItems({ search: item.name, limit: 5 });
+          console.debug && console.debug('menuAPI.getMenuItems search result', { search: item.name, res });
+          const found =
+            res?.data?.items?.find(
+              (it) => String(it.name).toLowerCase() === String(item.name).toLowerCase()
+            ) || res?.data?.items?.[0];
+          console.debug && console.debug('menuAPI resolved found item', { found });
+          if (found && (typeof found.id === 'number' || typeof found.id === 'string')) {
+            menuItemId = Number(found.id);
+            console.debug && console.debug('menuItemId set from API search', { menuItemId });
+          }
+        } catch (err) {
+          console.error('Failed to resolve menu item ID for cart:', err);
+        }
+      }
+
+      // 4) If still invalid, show a friendly message and do not add to cart
+      console.debug && console.debug('final resolved menuItemId', { menuItemId });
+
+      // If we resolved a numeric id, prefer adding with that numeric id.
+      if (Number.isFinite(menuItemId) && menuItemId > 0) {
+        console.debug && console.debug('Adding to cart (resolved numeric id)', { resolvedId: menuItemId, item });
+        addItem(
+          {
+            id: Number(menuItemId),
+            name: item.name,
+            price: Number(item.price) || 0,
+            image: item.image,
+          },
+          1
+        );
+        setSuccessMessage(`${item.name} added to cart!`);
+        setTimeout(() => setSuccessMessage(''), 3000);
+        showToast(`${item.name} added to cart!`, 'success', 3200);
+        return;
+      }
+
+      // Fallback: allow adding showcase/local items that don't map to DB rows yet.
+      // Use a stable string id (existing item.id or slug from name) so CartContext can store it.
+      const fallbackId = String(item.id ?? item.name ?? `local-${Date.now()}`);
+      console.debug && console.debug('Adding to cart (fallback string id)', { fallbackId, item });
+      addItem(
+        {
+          id: fallbackId,
+          name: item.name,
+          price: Number(item.price) || 0,
+          image: item.image,
+          _isLocalShowcase: true,
+        },
+        1
+      );
+      setSuccessMessage(`${item.name} added to cart!`);
+      setTimeout(() => setSuccessMessage(''), 3000);
+      showToast(`${item.name} added to cart (note: preview item)`, 'success', 4200);
+    } catch (err) {
+      console.error('handleAddToCart error:', err);
+      showToast('Could not add item to cart. Please try again.', 'error', 4500);
+    }
   };
 
   // Lightbox helpers

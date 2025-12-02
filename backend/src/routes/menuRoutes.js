@@ -9,6 +9,12 @@ const router = express.Router();
 // Public routes
 router.get('/', getMenuItems);
 router.get('/categories', getCategories);
+// find-match should come before the :id route
+router.get('/find-match', (req, res) => {
+  // lazy-load controller to avoid circular issues
+  const { findMatch } = require('../controllers/menuController');
+  return findMatch(req, res);
+});
 router.get('/:id', getMenuItemById);
 
 // Multer error handler middleware

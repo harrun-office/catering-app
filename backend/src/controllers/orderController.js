@@ -4,11 +4,31 @@ const { validateOrder } = require('../utils/validators');
 // Create order
 const createOrder = async (req, res) => {
   try {
-    const { items, delivery_date, delivery_time, delivery_address, notes } = req.body;
+    const { items: rawItems, delivery_date, delivery_time, delivery_address, notes } = req.body;
+
+    // Debug: log incoming items structure when troubleshooting order failures
+    console.debug && console.debug('createOrder incoming items:', JSON.stringify(rawItems));
+
+    // Basic validation & sanitization
+    const items = Array.isArray(rawItems) ? rawItems.map((it) => ({
+      menu_item_id: it?.menu_item_id !== undefined ? Number(it.menu_item_id) : Number(it?.id),
+      quantity: it?.quantity !== undefined ? Number(it.quantity) : Number(it?.qty),
+      special_instructions: it?.special_instructions || null,
+    })) : [];
 
     const errors = validateOrder({ items, delivery_date, delivery_address });
     if (Object.keys(errors).length > 0) {
       return res.status(400).json({ success: false, errors });
+    }
+
+    // Ensure items have valid numeric ids and quantities
+    for (const it of items) {
+      if (!Number.isFinite(it.menu_item_id) || it.menu_item_id <= 0) {
+        return res.status(400).json({ success: false, message: 'Invalid menu_item_id in items' });
+      }
+      if (!Number.isFinite(it.quantity) || it.quantity <= 0) {
+        return res.status(400).json({ success: false, message: 'Invalid quantity in items' });
+      }
     }
 
     const connection = await pool.getConnection();
@@ -20,16 +40,21 @@ const createOrder = async (req, res) => {
       const itemDetails = [];
 
       for (const item of items) {
+        // fetch price and validate existence
         const [menuItems] = await connection.query('SELECT price FROM menu_items WHERE id = ?', [item.menu_item_id]);
 
         if (menuItems.length === 0) {
-          throw new Error('Invalid menu item');
+          // return a clear client error for invalid item
+          await connection.rollback();
+          connection.release();
+          return res.status(400).json({ success: false, message: `Menu item not found: ${item.menu_item_id}` });
         }
 
-        const price = menuItems[0].price;
-        const itemTotal = price * item.quantity;
+        const price = Number(menuItems[0].price) || 0;
+        const qty = Number(item.quantity) || 0;
+        const itemTotal = price * qty;
         subtotal += itemTotal;
-        itemDetails.push({ ...item, unit_price: price, total_price: itemTotal });
+        itemDetails.push({ menu_item_id: item.menu_item_id, quantity: qty, special_instructions: item.special_instructions || null, unit_price: price, total_price: itemTotal });
       }
 
       const tax = parseFloat((subtotal * 0.05).toFixed(2)); // 5% tax

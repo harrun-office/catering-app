@@ -351,6 +351,78 @@ const deleteMenuItem = async (req, res) => {
   }
 };
 
+// Find best match for a menu item name (used to resolve preview items)
+const findMatch = async (req, res) => {
+  try {
+    const name = String(req.query.name || '').trim();
+    if (!name) return res.json({ success: true, item: null });
+
+    const norm = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+    const n = norm(name);
+
+    const connection = await pool.getConnection();
+
+    // 1) Exact normalized match
+    const [exactRows] = await connection.query('SELECT * FROM menu_items WHERE LOWER(name) = ? AND is_available = TRUE LIMIT 1', [n]);
+    if (exactRows && exactRows.length) {
+      connection.release();
+      return res.json({ success: true, item: exactRows[0] });
+    }
+
+    // 2) Search by LIKE on name/description (case-insensitive). Limit to reasonable set.
+    const likeParam = `%${name}%`;
+    const [candidates] = await connection.query(
+      'SELECT * FROM menu_items WHERE is_available = TRUE AND (LOWER(name) LIKE LOWER(?) OR LOWER(description) LIKE LOWER(?)) LIMIT 80',
+      [likeParam, likeParam]
+    );
+
+    // Scoring helper
+    const scoreName = (candidateName) => {
+      const cn = norm(candidateName);
+      let score = 0;
+      if (cn.includes(n)) score += 5;
+      const tokens = n.split(' ').filter((t) => t.length > 2);
+      for (const t of tokens) if (cn.includes(t)) score += 1;
+      return score;
+    };
+
+    let best = null;
+    let bestScore = 0;
+    for (const c of candidates) {
+      const s = scoreName(c.name);
+      if (s > bestScore) {
+        bestScore = s;
+        best = c;
+      }
+    }
+    if (best && bestScore > 0) {
+      connection.release();
+      return res.json({ success: true, item: best });
+    }
+
+    // 3) Final fallback: scan a larger set (if needed) and use same scoring
+    const [allItems] = await connection.query('SELECT * FROM menu_items WHERE is_available = TRUE');
+    best = null;
+    bestScore = 0;
+    for (const c of allItems) {
+      const s = scoreName(c.name);
+      if (s > bestScore) {
+        bestScore = s;
+        best = c;
+      }
+    }
+    connection.release();
+    if (best && bestScore > 0) {
+      return res.json({ success: true, item: best });
+    }
+
+    return res.json({ success: true, item: null });
+  } catch (error) {
+    console.error('findMatch error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
 module.exports = {
   getMenuItems,
   getMenuItemById,
@@ -358,4 +430,5 @@ module.exports = {
   createMenuItem,
   updateMenuItem,
   deleteMenuItem,
+  findMatch,
 };

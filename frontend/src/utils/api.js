@@ -49,6 +49,7 @@ export const menuAPI = {
   getMenuItems: (params) => apiClient.get('/menu', { params }),
   getMenuItemById: (id) => apiClient.get(`/menu/${id}`),
   getCategories: () => apiClient.get('/menu/categories'),
+  findMatch: (name) => apiClient.get('/menu/find-match', { params: { name } }),
   createMenuItem: (data) => {
     if (data instanceof FormData) {
       return apiClient.post('/menu', data, { headers: { 'Content-Type': 'multipart/form-data' } });

@@ -111,7 +111,11 @@ export function CartProvider({ children }) {
     try {
       const initialKey = storageKeyForUserId(getStoredUserId());
       const raw = localStorage.getItem(initialKey);
-      return raw ? JSON.parse(raw) : [];
+      const parsed = raw ? JSON.parse(raw) : [];
+      // normalize stored items to include both qty and quantity
+      return Array.isArray(parsed)
+        ? parsed.map((it) => ({ ...it, qty: Number(it.qty ?? it.quantity ?? 0), quantity: Number(it.quantity ?? it.qty ?? 0) }))
+        : [];
     } catch (e) {
       console.warn("CartProvider: failed to parse stored cart, starting empty", e);
       return [];
@@ -123,7 +127,8 @@ export function CartProvider({ children }) {
     const newKey = storageKeyForUserId(derivedUserId);
     try {
       const raw = localStorage.getItem(newKey);
-      setItems(raw ? JSON.parse(raw) : []);
+      const parsed = raw ? JSON.parse(raw) : [];
+      setItems(Array.isArray(parsed) ? parsed.map((it) => ({ ...it, qty: Number(it.qty ?? it.quantity ?? 0), quantity: Number(it.quantity ?? it.qty ?? 0) })) : []);
     } catch (e) {
       console.warn("CartProvider: failed to load cart for new user, resetting to empty", e);
       setItems([]);
@@ -137,6 +142,7 @@ export function CartProvider({ children }) {
   useEffect(() => {
     try {
       const key = storageKeyForUserId(derivedUserId);
+      console.debug && console.debug('CartProvider persisting', { key, items });
       localStorage.setItem(key, JSON.stringify(items));
     } catch (e) {
       console.warn("CartProvider: could not persist cart to localStorage", e);
@@ -177,31 +183,43 @@ export function CartProvider({ children }) {
   /* -------------------- Cart operations -------------------- */
 
   function addItem(newItem, qty = 1) {
+    console.debug && console.debug('CartContext.addItem called', { newItem, qty });
     setItems((prev) => {
-      const id = newItem.id ?? newItem._id ?? newItem.productId ?? newItem.sku ?? JSON.stringify(newItem);
-      const existsIndex = prev.findIndex((it) => (it.id ?? it._id ?? it.productId) === id);
+      const isObject = newItem && typeof newItem === "object";
+      const id = isObject
+        ? String(newItem.id ?? newItem._id ?? newItem.productId ?? newItem.sku ?? JSON.stringify(newItem))
+        : String(newItem);
+      const existsIndex = prev.findIndex((it) => String(it.id ?? it._id ?? it.productId) === id);
+      let result;
       if (existsIndex > -1) {
         const copy = [...prev];
         // ensure using qty field for consistency
-        const existingQty = Number(copy[existsIndex].qty || 0);
-        copy[existsIndex] = { ...copy[existsIndex], qty: existingQty + qty };
-        return copy;
+        const existingQty = Number(copy[existsIndex].qty || copy[existsIndex].quantity || 0);
+        const newQty = existingQty + Number(qty || 0);
+        copy[existsIndex] = { ...copy[existsIndex], qty: newQty, quantity: newQty };
+        result = copy;
       } else {
-        return [...prev, { ...newItem, id, qty }];
+        // store both `qty` and `quantity` for compatibility across components
+        const stored = isObject ? { ...newItem, id, qty: Number(qty || 0), quantity: Number(qty || 0) } : { id, qty: Number(qty || 0), quantity: Number(qty || 0) };
+        result = [...prev, stored];
       }
+      console.debug && console.debug('CartContext.addItem result', { id, result });
+      return result;
     });
   }
 
   function removeItem(id) {
-    setItems((prev) => prev.filter((it) => (it.id ?? it._id ?? it.productId) !== id));
+    const sid = String(id);
+    setItems((prev) => prev.filter((it) => String(it.id ?? it._id ?? it.productId) !== sid));
   }
 
   function updateQty(id, qty) {
+    const sid = String(id);
     if (qty <= 0) {
-      removeItem(id);
+      removeItem(sid);
       return;
     }
-    setItems((prev) => prev.map((it) => ((it.id ?? it._id ?? it.productId) === id ? { ...it, qty } : it)));
+    setItems((prev) => prev.map((it) => (String(it.id ?? it._id ?? it.productId) === sid ? { ...it, qty: Number(qty), quantity: Number(qty) } : it)));
   }
 
   function clearCart() {
