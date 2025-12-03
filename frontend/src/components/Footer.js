@@ -13,13 +13,13 @@ export const Footer = () => {
               Premium catering services at your doorstep. Delicious food, real-time delivery tracking, and exceptional service.
             </p>
             <div className="flex gap-4">
-              <a href="#" className="text-purple-400 hover:text-purple-300">
+              <a href="www.facebook.com" className="text-purple-400 hover:text-purple-300">
                 Facebook
               </a>
-              <a href="#" className="text-purple-400 hover:text-purple-300">
+              <a href="www.twitter.com" className="text-purple-400 hover:text-purple-300">
                 Twitter
               </a>
-              <a href="#" className="text-purple-400 hover:text-purple-300">
+              <a href="www.instagram.com" className="text-purple-400 hover:text-purple-300">
                 Instagram
               </a>
             </div>

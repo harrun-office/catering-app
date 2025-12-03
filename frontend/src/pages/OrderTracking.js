@@ -21,13 +21,7 @@ export const OrderTracking = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
-    useEffect(() => {
-        fetchOrder();
-        const interval = setInterval(fetchOrder, 30000); // Poll every 30 seconds
-        return () => clearInterval(interval);
-    }, [orderId]);
-
-    const fetchOrder = async () => {
+    const fetchOrder = React.useCallback(async () => {
         try {
             let response;
             if (orderId) {
@@ -50,7 +44,13 @@ export const OrderTracking = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [orderId, navigate]);
+
+    useEffect(() => {
+        fetchOrder();
+        const interval = setInterval(fetchOrder, 30000); // Poll every 30 seconds
+        return () => clearInterval(interval);
+    }, [fetchOrder]);
 
     const getCurrentStepIndex = (status) => {
         if (status === 'cancelled') return -1;
@@ -106,8 +106,8 @@ export const OrderTracking = () => {
                                         <div key={step.status} className="flex flex-col items-center gap-2 bg-white px-2">
                                             <div
                                                 className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all duration-300 ${isCompleted
-                                                        ? 'bg-green-500 border-green-500 text-white'
-                                                        : 'bg-white border-gray-300 text-gray-300'
+                                                    ? 'bg-green-500 border-green-500 text-white'
+                                                    : 'bg-white border-gray-300 text-gray-300'
                                                     } ${isCurrent ? 'ring-4 ring-green-100 scale-110' : ''}`}
                                             >
                                                 <Icon size={20} />

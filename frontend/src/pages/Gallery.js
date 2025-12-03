@@ -12,7 +12,6 @@ const GALLERY_IMAGES = [
 ];
 
 export const Gallery = () => {
-  const navigate = useNavigate();
 
   return (
     <div className="container-main py-12">

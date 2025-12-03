@@ -74,7 +74,6 @@ export const AuthProvider = ({ children }) => {
   // ⭐⭐⭐ OPTIONAL FIX HERE ⭐⭐⭐
   const logout = useCallback(() => {
     // get userId BEFORE clearing auth
-    const uid = getStoredUserIdSimple();
 
     localStorage.removeItem('token');
     localStorage.removeItem('user');

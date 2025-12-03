@@ -1,39 +1,37 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { orderAPI } from '../utils/api';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { Alert } from '../components/Alert';
 import { Clock, MapPin, Package, DollarSign, XCircle } from 'lucide-react';
-import { AuthContext } from '../context/AuthContext';
 
 export const Orders = () => {
-  const { user } = useContext(AuthContext);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('all');
 
-  useEffect(() => {
-    fetchOrders();
-  }, [selectedStatus]);
-
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     try {
       setLoading(true);
       const params = selectedStatus === 'all' ? {} : { status: selectedStatus };
       const response = await orderAPI.getUserOrders(params);
-      setOrders(response.data.orders);
+      setOrders(response.data.orders || []);
     } catch (err) {
       setError('Failed to load orders');
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedStatus]);
+
+  useEffect(() => {
+    fetchOrders();
+  }, [fetchOrders]);
 
   const handleCancelOrder = async (orderId) => {
     if (window.confirm('Are you sure you want to cancel this order?')) {
       try {
         await orderAPI.cancelOrder(orderId);
-        setOrders(orders.filter((o) => o.id !== orderId));
+        setOrders((prev) => prev.filter((o) => o.id !== orderId));
       } catch (err) {
         setError('Failed to cancel order');
       }
@@ -77,8 +75,8 @@ export const Orders = () => {
               key={option.value}
               onClick={() => setSelectedStatus(option.value)}
               className={`px-4 py-2 rounded-lg font-semibold transition ${selectedStatus === option.value
-                  ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white'
-                  : 'bg-white border-2 border-gray-200 text-gray-700 hover:border-purple-600'
+                ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white'
+                : 'bg-white border-2 border-gray-200 text-gray-700 hover:border-purple-600'
                 }`}
             >
               {option.label}

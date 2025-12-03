@@ -1,7 +1,7 @@
 import React, { useState, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Menu, X, LogOut, LayoutDashboard, ShoppingBag, Users, BarChart3, Settings } from 'lucide-react';
+import { Menu, X, LogOut, LayoutDashboard, ShoppingBag, Users, BarChart3 } from 'lucide-react';
 
 const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/admin' },
@@ -33,10 +33,9 @@ export const AdminSidebar = ({ children }) => {
         key={path}
         to={path}
         onClick={() => setIsOpen(false)}
-        className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition border border-transparent ${
-            isActive
-              ? 'bg-white/15 text-white shadow-lg shadow-purple-900/20 border-white/20'
-              : 'text-white/80 hover:bg-white/10 hover:text-white'
+        className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition border border-transparent ${isActive
+            ? 'bg-white/15 text-white shadow-lg shadow-purple-900/20 border-white/20'
+            : 'text-white/80 hover:bg-white/10 hover:text-white'
           }`}
       >
         <Icon size={18} />
@@ -49,9 +48,8 @@ export const AdminSidebar = ({ children }) => {
     <div className="flex min-h-screen bg-slate-100">
       {/* Sidebar */}
       <div
-        className={`fixed inset-y-0 left-0 z-50 w-[min(22rem,92vw)] transform bg-gradient-to-b from-purple-900 via-purple-800 to-blue-900 text-white shadow-2xl transition-transform duration-300 ${
-          isOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
+        className={`fixed inset-y-0 left-0 z-50 w-[min(22rem,92vw)] transform bg-gradient-to-b from-purple-900 via-purple-800 to-blue-900 text-white shadow-2xl transition-transform duration-300 ${isOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}
       >
         <div className="flex h-full flex-col">
           <div className="flex items-center justify-between border-b border-white/10 px-6 py-6">

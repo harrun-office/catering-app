@@ -76,40 +76,7 @@ export const Cart = () => {
     return `${String(h).padStart(2, '0')}:${m} ${period}`;
   };
 
-  // Convert 12-hour "hh:mm AM/PM" to 24-hour "HH:MM"
-  const to24Hour = (time12Str) => {
-    if (!time12Str) return '';
-    const parts = time12Str.trim().split(' ');
-    if (parts.length !== 2) return '';
-    const [hm] = parts;
-    const [hh, mm] = hm.split(':').map((s) => parseInt(s, 10));
-    const period = parts[1].toUpperCase();
-    let h = hh % 12;
-    if (period === 'PM') h += 12;
-    return `${String(h).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
-  };
 
-  // Levenshtein distance for fuzzy matching
-  const levenshtein = (a = '', b = '') => {
-    const s = String(a || '');
-    const t = String(b || '');
-    const n = s.length;
-    const m = t.length;
-    if (n === 0) return m;
-    if (m === 0) return n;
-    const v0 = new Array(m + 1).fill(0);
-    const v1 = new Array(m + 1).fill(0);
-    for (let j = 0; j <= m; j++) v0[j] = j;
-    for (let i = 0; i < n; i++) {
-      v1[0] = i + 1;
-      for (let j = 0; j < m; j++) {
-        const cost = s[i] === t[j] ? 0 : 1;
-        v1[j + 1] = Math.min(v1[j] + 1, v0[j + 1] + 1, v0[j] + cost);
-      }
-      for (let j = 0; j <= m; j++) v0[j] = v1[j];
-    }
-    return v1[m];
-  };
 
   // Normalize items to a known shape (id, name, price, quantity, lineTotal)
   const items = itemsRaw.map((it, idx) => {

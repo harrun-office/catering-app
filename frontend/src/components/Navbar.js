@@ -21,7 +21,7 @@ import {
 
 
 export const Navbar = () => {
-  const { user, logout, isAuthenticated, isAdmin } = useContext(AuthContext);
+  const { logout, isAuthenticated, isAdmin } = useContext(AuthContext);
   const { count } = useContext(CartContext);
   const navigate = useNavigate();
   const location = useLocation();

@@ -1,7 +1,5 @@
 // src/components/MenuItem.jsx
 import React, { useContext, useMemo, useState } from "react";
-import { Heart } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 
 /* SVG fallback */
@@ -68,7 +66,7 @@ const resolveLocalImage = (img, itemName) => {
       const url = new URL(img);
       const text = url.searchParams.get("text");
       return trySlug(text);
-    } catch {}
+    } catch { }
   }
 
   if (itemName) {
@@ -114,10 +112,7 @@ export const resolveImageSrc = (img, itemName) => {
 };
 
 /* Component */
-export const MenuItem = ({ item = {}, onAddToCart = () => {}, onImgError }) => {
-  const navigate = useNavigate();
-  const { isAuthenticated } = useContext(AuthContext);
-  const [isFavorite, setIsFavorite] = useState(false);
+export const MenuItem = ({ item = {}, onAddToCart = () => { }, onImgError }) => {
 
   /* image safe resolver */
   const resolved = useMemo(() => {
@@ -147,11 +142,6 @@ export const MenuItem = ({ item = {}, onAddToCart = () => {}, onImgError }) => {
     }
   };
 
-  /* CLEAN BADGE — remove 0 always */
-  const rawBadge = item?.badge;
-  const badgeStr = String(rawBadge ?? "").trim();
-  const showBadge =
-    badgeStr !== "" && badgeStr !== "0" && !/^0+(\s*,\s*0+)*$/.test(badgeStr);
 
   return (
     <div className="card overflow-hidden hover:shadow-xl transition transform hover:-translate-y-2 duration-300 p-4 sm:p-6 flex flex-col h-full">

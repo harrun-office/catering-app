@@ -3,7 +3,6 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { Alert } from '../components/Alert';
-import { LoadingSpinner } from '../components/LoadingSpinner';
 import { User, Mail, Lock, Phone, Eye, EyeOff } from 'lucide-react';
 
 export const Register = () => {

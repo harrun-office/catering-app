@@ -6,7 +6,7 @@ import { LoadingSpinner } from '../components/LoadingSpinner';
 import { Alert } from '../components/Alert';
 import { menuAPI } from '../utils/api';
 import { useLocation, Link } from 'react-router-dom';
-import { Search, Filter, ShoppingCart } from 'lucide-react';
+import { Search, Filter } from 'lucide-react';
 
 // tiny inline SVG fallback (data URL) used when images missing
 const SVG_PLACEHOLDER =
@@ -62,14 +62,6 @@ const TESTIMONIALS = [
   { quote: 'The menu matched our theme perfectly. Guests couldn’t stop complimenting the food!', name: 'R. Singh', image: '/images/test3.jpg' },
 ];
 
-const GALLERY_IMAGES = [
-  '/images/g1.jpg',
-  '/images/g2.jpg',
-  '/images/g3.jpg',
-  '/images/g4.jpg',
-  '/images/g5.jpg',
-  '/images/g6.jpg',
-];
 
 const LOCAL_MENU_IMAGES = ['/images/pasta.jpg'];
 
@@ -491,10 +483,7 @@ export const Home = () => {
     }
   };
 
-  const cartCount = React.useMemo(
-    () => (Array.isArray(cartItems) ? cartItems.reduce((sum, item) => sum + (item.quantity || 0), 0) : 0),
-    [cartItems]
-  );
+
 
   return (
     <div className="min-h-screen bg-gray-50">
