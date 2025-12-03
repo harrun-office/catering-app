@@ -2,12 +2,58 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================
+   OKLCH Color System & Design Tokens
+   ============================================ */
+:root {
+  /* OKLCH Primary Colors - Elegant Teal/Cyan */
+  --color-primary: oklch(0.65 0.15 200);
+  --color-primary-light: oklch(0.75 0.12 200);
+  --color-primary-dark: oklch(0.55 0.18 200);
+
+  /* OKLCH Accent Colors - Warm Coral/Peach */
+  --color-accent: oklch(0.70 0.12 40);
+  --color-accent-light: oklch(0.80 0.10 40);
+  --color-accent-dark: oklch(0.60 0.14 40);
+
+  /* Neutral Colors */
+  --color-bg: oklch(0.98 0.005 260);
+  --color-surface: oklch(0.99 0.002 260);
+  --color-surface-2: oklch(0.96 0.008 260);
+  --color-text-strong: oklch(0.25 0.015 260);
+  --color-text-medium: oklch(0.45 0.010 260);
+  --color-text-light: oklch(0.65 0.008 260);
+
+  /* Glass Effect Colors */
+  --glass-bg: oklch(0.99 0.002 260 / 0.7);
+  --glass-border: oklch(0.95 0.005 260 / 0.3);
+
+  /* Spacing */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+
+  /* Shadows */
+  --shadow-sm: 0 2px 8px oklch(0.25 0.015 260 / 0.08);
+  --shadow-md: 0 4px 16px oklch(0.25 0.015 260 / 0.12);
+  --shadow-lg: 0 8px 32px oklch(0.25 0.015 260 / 0.16);
+  --shadow-xl: 0 16px 48px oklch(0.25 0.015 260 / 0.20);
+
+  /* Border Radius */
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+}
+
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
-/* smooth scrolling for in-page navigation */
+
 html {
   scroll-behavior: smooth;
 }
@@ -28,21 +74,24 @@ code {
 /* Hide scrollbars while preserving scroll */
 html,
 body {
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE/Edge */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 html::-webkit-scrollbar,
 body::-webkit-scrollbar {
-  display: none; /* WebKit */
+  display: none;
 }
 
-/* Animations */
+/* ============================================
+   Enhanced Animations
+   ============================================ */
 @keyframes slideIn {
   from {
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -53,47 +102,181 @@ body::-webkit-scrollbar {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
 }
 
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+@keyframes progress {
+  0% {
+    width: 0%;
+  }
+
+  100% {
+    width: 100%;
+  }
+}
+
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
 .animate-slide-in {
-  animation: slideIn 0.3s ease-out;
+  animation: slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .animate-fade-in {
   animation: fadeIn 0.3s ease-out;
 }
 
-/* Utility classes */
+.animate-scale-in {
+  animation: scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* ============================================
+   Glassmorphism Utilities
+   ============================================ */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  border: 1px solid var(--glass-border);
+}
+
+.glass-strong {
+  background: oklch(0.99 0.002 260 / 0.85);
+  backdrop-filter: blur(20px) saturate(200%);
+  -webkit-backdrop-filter: blur(20px) saturate(200%);
+  border: 1px solid oklch(0.95 0.005 260 / 0.4);
+}
+
+.glass-subtle {
+  background: oklch(0.99 0.002 260 / 0.5);
+  backdrop-filter: blur(8px) saturate(150%);
+  -webkit-backdrop-filter: blur(8px) saturate(150%);
+  border: 1px solid oklch(0.95 0.005 260 / 0.2);
+}
+
+/* ============================================
+   Enhanced Utility Classes
+   ============================================ */
 .text-shadow {
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+  text-shadow: 0 2px 8px oklch(0.25 0.015 260 / 0.15);
+}
+
+.text-shadow-strong {
+  text-shadow: 0 4px 16px oklch(0.25 0.015 260 / 0.25);
 }
 
 .gradient-text {
   background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .card {
-  @apply rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300;
+  @apply rounded-xl transition-all duration-300;
   background: var(--color-surface);
+  box-shadow: var(--shadow-md);
+  border: 1px solid oklch(0.95 0.005 260 / 0.5);
+}
+
+.card:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+.card-glass {
+  @apply glass rounded-xl transition-all duration-300;
+  box-shadow: var(--shadow-md);
+}
+
+.card-glass:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+  background: oklch(0.99 0.002 260 / 0.8);
 }
 
 .btn-primary {
-  @apply rounded-lg font-semibold hover:shadow-lg transition-all duration-300;
-  padding: var(--space-sm) var(--space-md);
-  background-image: linear-gradient(90deg, var(--color-primary), var(--color-accent));
+  @apply rounded-xl font-semibold transition-all duration-300;
+  padding: var(--space-sm) var(--space-lg);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
   color: white;
+  box-shadow: var(--shadow-md);
+  border: none;
+}
+
+.btn-primary:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-1px) scale(1.02);
+}
+
+.btn-primary:active {
+  transform: translateY(0) scale(0.98);
 }
 
 .btn-secondary {
-  @apply rounded-lg font-semibold hover:bg-gray-100 transition-colors duration-300;
-  padding: var(--space-sm) var(--space-md);
-  background: var(--color-surface-2);
+  @apply rounded-xl font-semibold transition-all duration-300;
+  padding: var(--space-sm) var(--space-lg);
+  background: var(--color-surface);
   color: var(--color-text-strong);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid oklch(0.90 0.008 260 / 0.3);
+}
+
+.btn-secondary:hover {
+  background: var(--color-surface-2);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+.btn-glass {
+  @apply glass rounded-xl font-semibold transition-all duration-300;
+  padding: var(--space-sm) var(--space-lg);
+  color: var(--color-text-strong);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-glass:hover {
+  background: oklch(0.99 0.002 260 / 0.9);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
 }
 
 .container-main {
@@ -102,34 +285,44 @@ body::-webkit-scrollbar {
 
 .badge {
   @apply inline-block px-3 py-1 text-sm font-semibold rounded-full;
+  box-shadow: var(--shadow-sm);
 }
 
 .badge-success {
-  @apply bg-green-100 text-green-800;
+  background: oklch(0.75 0.12 145);
+  color: oklch(0.30 0.08 145);
 }
 
 .badge-warning {
-  @apply bg-yellow-100 text-yellow-800;
+  background: oklch(0.80 0.12 85);
+  color: oklch(0.35 0.10 85);
 }
 
 .badge-danger {
-  @apply bg-red-100 text-red-800;
+  background: oklch(0.70 0.15 25);
+  color: oklch(0.30 0.12 25);
 }
 
 .badge-info {
-  @apply bg-blue-100 text-blue-800;
+  background: var(--color-primary-light);
+  color: var(--color-primary-dark);
 }
-/* === Lightbox styles === */
+
+/* ============================================
+   Lightbox Styles
+   ============================================ */
 .lightbox-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.75);
+  background: oklch(0.15 0.010 260 / 0.85);
+  backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 60;
   padding: 2rem;
 }
+
 .lightbox-content {
   position: relative;
   display: flex;
@@ -139,19 +332,22 @@ body::-webkit-scrollbar {
   max-width: 95%;
   max-height: 95%;
 }
+
 .lightbox-content img {
   max-width: 100%;
   max-height: 80vh;
-  border-radius: 8px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
 }
+
 .lightbox-close {
   position: absolute;
   top: -0.5rem;
   right: -0.5rem;
-  background: #fff;
-  color: #111827;
-  width: 2.4rem;
-  height: 2.4rem;
+  background: var(--color-surface);
+  color: var(--color-text-strong);
+  width: 2.8rem;
+  height: 2.8rem;
   border-radius: 9999px;
   border: none;
   font-size: 1.2rem;
@@ -159,112 +355,87 @@ body::-webkit-scrollbar {
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  box-shadow: var(--shadow-lg);
+  transition: all 0.2s ease;
 }
+
+.lightbox-close:hover {
+  transform: scale(1.1);
+  box-shadow: var(--shadow-xl);
+}
+
 .lightbox-nav {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  background: rgba(255,255,255,0.9);
-  color: #111827;
-  border: none;
-  width: 2.8rem;
-  height: 3.2rem;
-  border-radius: 8px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  color: var(--color-text-strong);
+  border: 1px solid var(--glass-border);
+  width: 3rem;
+  height: 3.5rem;
+  border-radius: var(--radius-md);
   font-size: 1.6rem;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  box-shadow: var(--shadow-md);
+  transition: all 0.2s ease;
 }
-.lightbox-nav.left { left: -3.2rem; }
-.lightbox-nav.right { right: -3.2rem; }
 
-/* hero dots style (small) */
+.lightbox-nav:hover {
+  background: oklch(0.99 0.002 260 / 0.9);
+  transform: translateY(-50%) scale(1.05);
+}
+
+.lightbox-nav.left {
+  left: -3.5rem;
+}
+
+.lightbox-nav.right {
+  right: -3.5rem;
+}
+
+/* Hero dots style */
 section#hero button[aria-label^="Go to slide"] {
   border: none;
   cursor: pointer;
+  transition: all 0.3s ease;
 }
 
-/* testimonials */
+section#hero button[aria-label^="Go to slide"]:hover {
+  transform: scale(1.2);
+}
+
+/* Testimonials */
 @media (min-width: 768px) {
-  .test-controls { display: block; }
+  .test-controls {
+    display: block;
+  }
 }
 
-/* ensure anchor jumps are smooth */
-html { scroll-behavior: smooth; }
-/* Sidebar layout */
-.app-sidebar {
-  position: fixed;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 18rem;           /* sidebar width (adjustable) */
-  background: linear-gradient(180deg, #2b0f6b 0%, #1f2a64 100%); /* optional gradient */
-  color: white;
-  z-index: 60;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  box-shadow: 0 8px 30px rgba(2,6,23,0.45);
-  padding: 1.25rem 0.75rem; /* vertical + horizontal */
-}
-
-/* Logo area centered horizontally */
-.app-sidebar .sidebar-logo {
-  height: 6.5rem; /* space for centered logo */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 0.5rem;
-  flex-shrink: 0;
-}
-
-/* logo image adjustments */
-.app-sidebar .sidebar-logo img {
-  max-height: 3.5rem;
-  width: auto;
-  display: block;
-}
-
-/* optional site title under logo */
-.app-sidebar .sidebar-title {
-  text-align: center;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  font-size: 0.95rem;
-  color: rgba(255,255,255,0.9);
-  margin-top: 0.25rem;
-}
-
-/* nav area inside sidebar (you can style links inside) */
-.app-sidebar nav {
-  margin-top: 0.75rem;
-  padding: 0.5rem;
-  flex: 1 1 auto;
-  overflow-y: auto;
-}
-
-/* sticky footer area inside sidebar (logout or copyright) */
-.app-sidebar .sidebar-footer {
-  margin-top: auto;
-  padding-top: 0.5rem;
-}
-
-/* main content area must be offset to the right of the sidebar */
-.main-with-sidebar {
-  margin-left: 18rem; /* same as .app-sidebar width */
-  transition: margin-left 0.2s ease;
-}
-
-/* responsive: small screens shrink sidebar width */
+/* ============================================
+   Responsive Enhancements
+   ============================================ */
 @media (max-width: 1024px) {
-  .app-sidebar { width: 14rem; }
-  .main-with-sidebar { margin-left: 14rem; }
+  :root {
+    --space-md: 0.875rem;
+    --space-lg: 1.25rem;
+  }
 }
+
 @media (max-width: 640px) {
-  /* On very small screens, collapse to a narrow left rail to preserve space */
-  .app-sidebar { width: 4.5rem; padding: 0.75rem 0.5rem; }
-  .app-sidebar .sidebar-title, .app-sidebar nav > * .label { display: none; } /* hide text labels */
-  .app-sidebar .sidebar-logo img { max-height: 2.2rem; }
-  .main-with-sidebar { margin-left: 4.5rem; }
+  :root {
+    --space-sm: 0.375rem;
+    --space-md: 0.75rem;
+    --space-lg: 1rem;
+  }
+
+  .btn-primary,
+  .btn-secondary,
+  .btn-glass {
+    padding: var(--space-sm) var(--space-md);
+    font-size: 0.875rem;
+  }
 }

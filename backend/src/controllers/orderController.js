@@ -13,10 +13,10 @@ const createOrder = async (req, res) => {
     // Basic validation & sanitization: map raw items into normalized shape
     const items = Array.isArray(rawItems)
       ? rawItems.map((it) => ({
-          menu_item_id: it?.menu_item_id !== undefined ? Number(it.menu_item_id) : Number(it?.id),
-          quantity: it?.quantity !== undefined ? Number(it.quantity) : Number(it?.qty),
-          special_instructions: it?.special_instructions || null,
-        }))
+        menu_item_id: it?.menu_item_id !== undefined ? Number(it.menu_item_id) : Number(it?.id),
+        quantity: it?.quantity !== undefined ? Number(it.quantity) : Number(it?.qty),
+        special_instructions: it?.special_instructions || null,
+      }))
       : [];
 
     // === NEW: Early numeric validation for menu_item_id and quantity ===
@@ -246,9 +246,47 @@ const cancelOrder = async (req, res) => {
   }
 };
 
+// Get active order for tracking
+const getActiveOrder = async (req, res) => {
+  try {
+    const connection = await pool.getConnection();
+    // Find the most recent order that is NOT delivered or cancelled
+    const [orders] = await connection.query(
+      'SELECT * FROM orders WHERE user_id = ? AND status NOT IN (?, ?) ORDER BY created_at DESC LIMIT 1',
+      [req.user.id, 'delivered', 'cancelled']
+    );
+
+    if (orders.length === 0) {
+      connection.release();
+      return res.json({ success: true, order: null });
+    }
+
+    const order = orders[0];
+
+    // Get items for this order
+    const [items] = await connection.query(
+      `SELECT oi.*, mi.name, mi.image FROM order_items oi 
+       JOIN menu_items mi ON oi.menu_item_id = mi.id 
+       WHERE oi.order_id = ?`,
+      [order.id]
+    );
+
+    connection.release();
+
+    res.json({
+      success: true,
+      order: { ...order, items },
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
 module.exports = {
   createOrder,
   getUserOrders,
   getOrderById,
   cancelOrder,
+  getActiveOrder,
 };

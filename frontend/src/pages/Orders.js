@@ -76,11 +76,10 @@ export const Orders = () => {
             <button
               key={option.value}
               onClick={() => setSelectedStatus(option.value)}
-              className={`px-4 py-2 rounded-lg font-semibold transition ${
-                selectedStatus === option.value
+              className={`px-4 py-2 rounded-lg font-semibold transition ${selectedStatus === option.value
                   ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white'
                   : 'bg-white border-2 border-gray-200 text-gray-700 hover:border-purple-600'
-              }`}
+                }`}
             >
               {option.label}
             </button>
@@ -161,7 +160,7 @@ export const Orders = () => {
                           <span>
                             {item.name} x {item.quantity}
                           </span>
-                          <span>₹{(item.total_price || item.unit_price * item.quantity).toFixed(2)}</span>
+                          <span>₹{Number(item.total_price || item.unit_price * item.quantity).toFixed(2)}</span>
                         </li>
                       ))}
                     </ul>

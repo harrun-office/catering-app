@@ -15,7 +15,10 @@ import {
   ChevronRight,
   Info,
   Image,
-  Phone
+
+  Phone,
+  Truck,
+  Clock
 } from 'lucide-react';
 
 
@@ -76,16 +79,19 @@ export const Navbar = () => {
     <>
       {/* SIDEBAR (desktop) */}
       <aside
-        className="hidden md:flex fixed inset-y-0 left-0 z-50 flex-col bg-gradient-to-b
-        from-purple-900 via-purple-800 to-blue-900 text-white shadow-2xl p-4 transition-all duration-300"
-        style={{ width: sidebarWidth }}
+        className="hidden md:flex fixed inset-y-0 left-0 z-50 flex-col glass-strong text-gray-800 p-4 transition-all duration-300"
+        style={{
+          width: sidebarWidth,
+          background: 'linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%)',
+          boxShadow: 'var(--shadow-xl)'
+        }}
       >
         {/* HEADER: LOGO + TOGGLE */}
         <div className={`flex-shrink-0 flex items-center ${collapsed ? 'flex-col justify-center gap-4 py-4' : 'justify-between px-2'} h-24 mb-2 transition-all`}>
           {/* LOGO */}
           <div className="flex items-center justify-center">
             {logoError ? (
-              <span className="text-3xl">🍽️</span>
+              <span className="text-3xl">🧑‍🍳</span>
             ) : (
               <img
                 src={collapsed ? "/images/logo-small.svg" : "/images/logo.svg"}
@@ -113,10 +119,10 @@ export const Navbar = () => {
         )}
 
         {/* NAV LINKS */}
-        <nav className="flex-1 overflow-y-auto space-y-1 mt-4">
+        <nav className="flex-1 overflow-y-auto space-y-1 mt-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
           <button
             onClick={() => goToSection("hero")}
-            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/10 transition"
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:glass transition-all duration-300 hover:scale-105 hover:shadow-md text-gray-800"
           >
             <HomeIcon size={18} />
             {!collapsed && <span>Home</span>}
@@ -124,7 +130,7 @@ export const Navbar = () => {
 
           <button
             onClick={() => goToSection("menu")}
-            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/10 transition"
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:glass transition-all duration-300 hover:scale-105 hover:shadow-md text-gray-800"
           >
             <MenuIcon size={18} />
             {!collapsed && <span>Menu</span>}
@@ -132,14 +138,14 @@ export const Navbar = () => {
 
           <button
             onClick={() => goToSection("about")}
-            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/10 transition"
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:glass transition-all duration-300 hover:scale-105 hover:shadow-md text-gray-800"
           >
             <Info size={18} />
             {!collapsed && <span>About</span>}
           </button>
           <button
             onClick={() => goToSection("gallery")}
-            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/10 transition"
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:glass transition-all duration-300 hover:scale-105 hover:shadow-md text-gray-800"
           >
             <Image size={18} />
             {!collapsed && <span>Gallery</span>}
@@ -147,21 +153,39 @@ export const Navbar = () => {
 
           <button
             onClick={() => goToSection("contact")}
-            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/10 transition"
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:glass transition-all duration-300 hover:scale-105 hover:shadow-md text-gray-800"
           >
             <Phone size={18} />
             {!collapsed && <span>Contact</span>}
           </button>
 
+          {/* TRACKING */}
+          <Link
+            to="/tracking"
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:glass transition-all duration-300 hover:scale-105 hover:shadow-md text-gray-800"
+          >
+            <Truck size={18} />
+            {!collapsed && <span>Track Order</span>}
+          </Link>
+
+          {/* ORDER HISTORY */}
+          <Link
+            to="/orders"
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:glass transition-all duration-300 hover:scale-105 hover:shadow-md text-gray-800"
+          >
+            <Clock size={18} />
+            {!collapsed && <span>Order History</span>}
+          </Link>
+
           {/* CART */}
           <Link
             to="/cart"
-            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/10 transition relative"
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:glass transition-all duration-300 hover:scale-105 hover:shadow-md text-gray-800 relative"
           >
             <ShoppingCart size={18} />
             {!collapsed && <span>Cart</span>}
             {count > 0 && (
-              <span className="absolute right-3 -top-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+              <span className="absolute right-3 -top-2 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center animate-scale-in" style={{ background: 'var(--color-accent)', boxShadow: 'var(--shadow-md)' }}>
                 {count}
               </span>
             )}
@@ -222,20 +246,20 @@ export const Navbar = () => {
 
       {/* MOBILE NAV (unchanged) */}
       <nav className="md:hidden fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-md">
-        <div className="container-main flex items-center justify-between py-3">
+        <div className="container-main flex items-center justify-between py-3 relative">
           <button
             onClick={() => setMobileOpen((s) => !s)}
-            className="p-2 rounded-md bg-white/10"
+            className="p-2 rounded-md bg-white/10 z-10"
           >
             <MenuIcon size={18} />
           </button>
 
-          <Link to="/" className="flex items-center gap-2 text-lg font-bold">
-            <span>🍽️</span>
-            <span>CaterHub</span>
+          <Link to="/" className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 flex items-center gap-2 text-lg font-bold">
+            <span>🧑‍�</span>
+            <span>Cater Hub</span>
           </Link>
 
-          <Link to="/cart" className="relative">
+          <Link to="/cart" className="relative z-10">
             <ShoppingCart size={20} />
             {count > 0 && (
               <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">

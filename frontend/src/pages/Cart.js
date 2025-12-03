@@ -218,11 +218,6 @@ export const Cart = () => {
           );
           return;
         }
-        // If we successfully linked everything, we need to re-evaluate 'items' because state updates 
-        // in React are async. However, since we just called addItem/removeItem, the 'items' variable 
-        // in this closure is STALE. 
-        // We should really return here and let the user click "Place Order" again, or we need to 
-        // wait for the context to update. For safety, let's ask the user to retry.
         setLoading(false);
         setSuccessMessage("Items updated. Please click Place Order again.");
         return;
@@ -251,12 +246,11 @@ export const Cart = () => {
 
       if (response?.data?.success) {
         clearCart();
-        navigate(`/order-confirmation/${response.data.order.id}`);
+        navigate('/tracking');
       } else {
         setError(response?.data?.message || 'Failed to place order');
       }
     } catch (err) {
-      console.error('handleCheckout unexpected error:', err);
       setError(err?.response?.data?.message || 'Failed to place order');
     } finally {
       setLoading(false);
@@ -336,9 +330,6 @@ export const Cart = () => {
                         onChange={(e) => {
                           const val = e.target.value;
                           if (val === '') {
-                            // Allow empty string temporarily for UX, but we can't store it in context as number
-                            // So we might need local state or just default to 1 on blur.
-                            // For now, let's just update to 1 if empty to avoid NaN
                             updateQuantity(item.id, 1);
                           } else {
                             updateQuantity(item.id, Math.max(1, parseInt(val, 10)));

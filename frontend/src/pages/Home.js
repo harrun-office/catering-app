@@ -18,15 +18,14 @@ const SVG_PLACEHOLDER =
 // --------------------
 // Inline Toasts component (self-contained)
 // --------------------
-const Toasts = ({ toasts = [], removeToast = () => {} }) => {
+const Toasts = ({ toasts = [], removeToast = () => { } }) => {
   return (
     <div aria-live="polite" className="fixed right-4 bottom-6 z-50 flex flex-col gap-3">
       {toasts.map((t) => (
         <div
           key={t.id}
-          className={`min-w-[200px] max-w-sm rounded-lg shadow-lg overflow-hidden border ${
-            t.type === 'error' ? 'bg-red-50 border-red-200' : 'bg-white border-gray-100'
-          }`}
+          className={`min-w-[200px] max-w-sm rounded-lg shadow-lg overflow-hidden border ${t.type === 'error' ? 'bg-red-50 border-red-200' : 'bg-white border-gray-100'
+            }`}
         >
           <div className="flex items-start gap-3 p-3">
             <div className="flex-1">
@@ -221,11 +220,44 @@ export const Home = () => {
   const startHeroTimer = () => {
     stopHeroTimer();
     heroTimerRef.current = setInterval(() => {
-      setHeroIndex((i) => (i + 1) % HERO_IMAGES.length);
-    }, 5000);
+      setHeroIndex((i) => {
+        const nextIndex = (i + 1) % HERO_IMAGES.length;
+        console.log('Carousel changing from', i, 'to', nextIndex);
+        return nextIndex;
+      });
+    }, 3500);
   };
   const stopHeroTimer = () => {
     if (heroTimerRef.current) clearInterval(heroTimerRef.current);
+  };
+
+  // Swipe support
+  const touchStart = useRef(null);
+  const touchEnd = useRef(null);
+
+  const onTouchStart = (e) => {
+    touchEnd.current = null;
+    touchStart.current = e.targetTouches[0].clientX;
+  };
+
+  const onTouchMove = (e) => {
+    touchEnd.current = e.targetTouches[0].clientX;
+  };
+
+  const onTouchEnd = () => {
+    if (!touchStart.current || !touchEnd.current) return;
+    const distance = touchStart.current - touchEnd.current;
+    const isLeftSwipe = distance > 50;
+    const isRightSwipe = distance < -50;
+
+    if (isLeftSwipe) {
+      setHeroIndex((i) => (i + 1) % HERO_IMAGES.length);
+      startHeroTimer();
+    }
+    if (isRightSwipe) {
+      setHeroIndex((i) => (i - 1 + HERO_IMAGES.length) % HERO_IMAGES.length);
+      startHeroTimer();
+    }
   };
 
   // Testimonials timer
@@ -324,100 +356,100 @@ export const Home = () => {
     setToasts((t) => t.filter((x) => x.id !== id));
   };
 
-// Home.js — improved handleAddToCart (resolve menu id before adding)
-const handleAddToCart = async (item) => {
-  try {
-    // helper to try server-side resolution
-    const tryResolveMenuId = async (nameOrItem) => {
-      try {
-        // 1) server-side "findMatch"
-        if (menuAPI.findMatch) {
-          try {
-            const fm = await menuAPI.findMatch(nameOrItem);
-            if (fm?.data?.item && (typeof fm.data.item.id === 'number' || typeof fm.data.item.id === 'string')) {
-              return Number(fm.data.item.id);
+  // Home.js — improved handleAddToCart (resolve menu id before adding)
+  const handleAddToCart = async (item) => {
+    try {
+      // helper to try server-side resolution
+      const tryResolveMenuId = async (nameOrItem) => {
+        try {
+          // 1) server-side "findMatch"
+          if (menuAPI.findMatch) {
+            try {
+              const fm = await menuAPI.findMatch(nameOrItem);
+              if (fm?.data?.item && (typeof fm.data.item.id === 'number' || typeof fm.data.item.id === 'string')) {
+                return Number(fm.data.item.id);
+              }
+            } catch (e) {
+              // ignore and continue
             }
-          } catch (e) {
-            // ignore and continue
           }
-        }
 
-        // 2) search API
-        const res = await menuAPI.getMenuItems({ search: nameOrItem, limit: 12 });
-        const list = res?.data?.items || [];
-        if (!list.length) return null;
+          // 2) search API
+          const res = await menuAPI.getMenuItems({ search: nameOrItem, limit: 12 });
+          const list = res?.data?.items || [];
+          if (!list.length) return null;
 
-        // prefer exact normalized match
-        const norm = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
-        const sName = norm(nameOrItem);
-        const exact = list.find((it) => norm(it.name) === sName);
-        if (exact) return Number(exact.id);
+          // prefer exact normalized match
+          const norm = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+          const sName = norm(nameOrItem);
+          const exact = list.find((it) => norm(it.name) === sName);
+          if (exact) return Number(exact.id);
 
-        // fallback: choose best token-match candidate
-        const tokens = sName.split(' ').filter(Boolean);
-        let best = null;
-        let bestScore = -Infinity;
-        for (const cand of list) {
-          const cn = norm(cand.name);
-          let score = 0;
-          if (cn.includes(sName)) score += 5;
-          for (const t of tokens) if (cn.includes(t)) score += 1;
-          if (score > bestScore) {
-            bestScore = score;
-            best = cand;
+          // fallback: choose best token-match candidate
+          const tokens = sName.split(' ').filter(Boolean);
+          let best = null;
+          let bestScore = -Infinity;
+          for (const cand of list) {
+            const cn = norm(cand.name);
+            let score = 0;
+            if (cn.includes(sName)) score += 5;
+            for (const t of tokens) if (cn.includes(t)) score += 1;
+            if (score > bestScore) {
+              bestScore = score;
+              best = cand;
+            }
           }
+          if (best && bestScore > 0) return Number(best.id);
+        } catch (err) {
+          console.error('tryResolveMenuId error', err);
         }
-        if (best && bestScore > 0) return Number(best.id);
-      } catch (err) {
-        console.error('tryResolveMenuId error', err);
+        return null;
+      };
+
+      // prefer numeric id if already present
+      let menuItemId = Number(item.id);
+      if (!Number.isFinite(menuItemId) || menuItemId <= 0) {
+        const resolved = await tryResolveMenuId(item.name ?? item.id);
+        if (resolved && Number.isFinite(resolved) && resolved > 0) menuItemId = resolved;
       }
-      return null;
-    };
 
-    // prefer numeric id if already present
-    let menuItemId = Number(item.id);
-    if (!Number.isFinite(menuItemId) || menuItemId <= 0) {
-      const resolved = await tryResolveMenuId(item.name ?? item.id);
-      if (resolved && Number.isFinite(resolved) && resolved > 0) menuItemId = resolved;
-    }
+      // If resolved to numeric id — add numeric item to cart
+      if (Number.isFinite(menuItemId) && menuItemId > 0) {
+        addItem(
+          {
+            id: Number(menuItemId),
+            name: item.name,
+            price: Number(item.price) || 0,
+            image: item.image,
+          },
+          1
+        );
+        setSuccessMessage(`${item.name} added to cart!`);
+        showToast(`${item.name} added to cart!`, 'success', 3200);
+        setTimeout(() => setSuccessMessage(''), 3000);
+        return;
+      }
 
-    // If resolved to numeric id — add numeric item to cart
-    if (Number.isFinite(menuItemId) && menuItemId > 0) {
+      // fallback: keep local-preview behavior (unchanged)
+      const fallbackId = String(item.id ?? item.name ?? `local-${Date.now()}`);
       addItem(
         {
-          id: Number(menuItemId),
+          id: fallbackId,
           name: item.name,
           price: Number(item.price) || 0,
           image: item.image,
+          _isLocalShowcase: true,
         },
         1
       );
       setSuccessMessage(`${item.name} added to cart!`);
-      showToast(`${item.name} added to cart!`, 'success', 3200);
+      showToast(`${item.name} added to cart`, 'success', 4200);
       setTimeout(() => setSuccessMessage(''), 3000);
-      return;
+    } catch (err) {
+      console.error('handleAddToCart error:', err);
+      showToast('Could not add item to cart. Please try again.', 'error', 4500);
     }
-
-    // fallback: keep local-preview behavior (unchanged)
-    const fallbackId = String(item.id ?? item.name ?? `local-${Date.now()}`);
-    addItem(
-      {
-        id: fallbackId,
-        name: item.name,
-        price: Number(item.price) || 0,
-        image: item.image,
-        _isLocalShowcase: true,
-      },
-      1
-    );
-    setSuccessMessage(`${item.name} added to cart!`);
-    showToast(`${item.name} added to cart`, 'success', 4200);
-    setTimeout(() => setSuccessMessage(''), 3000);
-  } catch (err) {
-    console.error('handleAddToCart error:', err);
-    showToast('Could not add item to cart. Please try again.', 'error', 4500);
-  }
-};
+  };
 
 
 
@@ -442,24 +474,34 @@ const handleAddToCart = async (item) => {
 
       {/* HERO */}
       <section id="hero" className="relative px-4 md:px-0">
-        <div className="relative h-[420px] md:h-[520px] overflow-hidden rounded-[36px] border-4 border-white/30 shadow-[0_25px_70px_rgba(15,23,42,0.35)] bg-slate-900/30">
+        <div
+          className="relative h-[420px] md:h-[520px] overflow-hidden rounded-[36px] border-4 border-white/30 shadow-[0_25px_70px_rgba(15,23,42,0.35)] bg-slate-900/30 group"
+          onMouseEnter={stopHeroTimer}
+          onMouseLeave={startHeroTimer}
+          onTouchStart={onTouchStart}
+          onTouchMove={onTouchMove}
+          onTouchEnd={onTouchEnd}
+        >
           {HERO_IMAGES.map((h, i) => (
             <div
               key={h.src}
               aria-hidden={i !== heroIndex}
-              className={`absolute inset-0 transition-transform duration-700 ease-in-out transform rounded-[32px] ${
-                i === heroIndex ? 'translate-x-0 opacity-100 z-10' : i < heroIndex ? '-translate-x-full opacity-0 z-0' : 'translate-x-full opacity-0 z-0'
-              }`}
+              className={`absolute inset-0 transition-all duration-1000 ease-in-out transform rounded-[32px] ${i === heroIndex
+                ? 'translate-x-0 opacity-100 z-10 scale-100'
+                : 'opacity-0 z-0 scale-95'
+                }`}
             >
               <img src={h.src} alt={h.alt} onError={handleImgError} className="w-full h-full object-cover" />
-              <div className="absolute inset-0 bg-black/35 flex items-center">
-                <div className="container-main text-white">
-                  <h1 className="text-3xl md:text-5xl font-bold drop-shadow-lg">{h.caption}</h1>
-                  <p className="mt-3 max-w-2xl text-sm md:text-lg text-white/90">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex items-center">
+                <div className="container-main text-white pl-8 md:pl-16">
+                  <h1 className={`text-4xl md:text-6xl font-bold drop-shadow-lg transform transition-all duration-500 delay-75 ${i === heroIndex ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
+                    {h.caption}
+                  </h1>
+                  <p className={`mt-4 max-w-2xl text-lg md:text-xl text-white/90 transform transition-all duration-500 delay-150 ${i === heroIndex ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
                     Fresh, flavour-first meals, customizable menus, and a friendly team that cares about every detail.
                   </p>
 
-                  <div className="mt-6 flex gap-3">
+                  <div className={`mt-8 flex gap-4 transform transition-all duration-500 delay-200 ${i === heroIndex ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
                     <a
                       href="#menu"
                       onClick={(e) => {
@@ -467,11 +509,11 @@ const handleAddToCart = async (item) => {
                         const el = document.getElementById('menu');
                         if (el) el.scrollIntoView({ behavior: 'smooth' });
                       }}
-                      className="btn-primary"
+                      className="btn-primary text-lg px-8 py-3 shadow-lg hover:shadow-purple-500/50 transition-all"
                     >
                       Browse Menu
                     </a>
-                    <Link to="/contact" className="btn-secondary">
+                    <Link to="/contact" className="btn-secondary text-lg px-8 py-3 backdrop-blur-sm bg-white/10 hover:bg-white/20 border-white/30 text-white">
                       Contact Us
                     </Link>
                   </div>
@@ -480,19 +522,45 @@ const handleAddToCart = async (item) => {
             </div>
           ))}
 
-          {/* Hero controls */}
-          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2 z-20">
-            {HERO_IMAGES.map((_, i) => (
-              <button
-                key={i}
-                aria-label={`Go to slide ${i + 1}`}
-                onClick={() => {
-                  setHeroIndex(i);
-                  startHeroTimer();
-                }}
-                className={`w-3 h-3 rounded-full ${i === heroIndex ? 'bg-white' : 'bg-white/50'}`}
-              />
-            ))}
+          {/* Navigation Arrows */}
+          <button
+            onClick={() => {
+              setHeroIndex((i) => (i - 1 + HERO_IMAGES.length) % HERO_IMAGES.length);
+              startHeroTimer();
+            }}
+            className="absolute left-4 top-1/2 -translate-y-1/2 z-20 p-3 rounded-full bg-black/20 text-white hover:bg-black/40 backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 -translate-x-4 group-hover:translate-x-0"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
+          </button>
+          <button
+            onClick={() => {
+              setHeroIndex((i) => (i + 1) % HERO_IMAGES.length);
+              startHeroTimer();
+            }}
+            className="absolute right-4 top-1/2 -translate-y-1/2 z-20 p-3 rounded-full bg-black/20 text-white hover:bg-black/40 backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>
+          </button>
+
+          {/* Hero controls & Progress */}
+          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex flex-col items-center gap-4 z-20">
+            <div className="flex gap-3">
+              {HERO_IMAGES.map((_, i) => (
+                <button
+                  key={i}
+                  aria-label={`Go to slide ${i + 1}`}
+                  onClick={() => {
+                    setHeroIndex(i);
+                    startHeroTimer();
+                  }}
+                  className={`relative h-1.5 rounded-full transition-all duration-300 overflow-hidden ${i === heroIndex ? 'w-12 bg-white/30' : 'w-6 bg-white/30 hover:bg-white/50'}`}
+                >
+                  {i === heroIndex && (
+                    <div className="absolute inset-0 bg-white animate-[progress_3.5s_linear_infinite]" />
+                  )}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </section>

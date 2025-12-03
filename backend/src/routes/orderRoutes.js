@@ -1,12 +1,13 @@
 const express = require('express');
-const { createOrder, getUserOrders, getOrderById, cancelOrder } = require('../controllers/orderController');
-const { authenticateUser } = require('../middleware/auth');
+const orderController = require('../controllers/orderController');
+const { authenticateUser: protect } = require('../middleware/auth');
 
 const router = express.Router();
 
-router.post('/', authenticateUser, createOrder);
-router.get('/', authenticateUser, getUserOrders);
-router.get('/:id', authenticateUser, getOrderById);
-router.put('/:id/cancel', authenticateUser, cancelOrder);
+router.post('/', protect, orderController.createOrder);
+router.get('/', protect, orderController.getUserOrders);
+router.get('/active', protect, orderController.getActiveOrder); // New endpoint
+router.get('/:id', protect, orderController.getOrderById);
+router.put('/:id/cancel', protect, orderController.cancelOrder);
 
 module.exports = router;

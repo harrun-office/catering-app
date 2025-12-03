@@ -69,6 +69,7 @@ export const menuAPI = {
 export const orderAPI = {
   createOrder: (data) => apiClient.post('/orders', data),
   getUserOrders: (params) => apiClient.get('/orders', { params }),
+  getActiveOrder: () => apiClient.get('/orders/active'),
   getOrderById: (id) => apiClient.get(`/orders/${id}`),
   cancelOrder: (id) => apiClient.put(`/orders/${id}/cancel`),
 };
