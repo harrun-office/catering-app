@@ -81,7 +81,7 @@ export const Register = () => {
     const lower = /[a-z]/;
     const upper = /[A-Z]/;
     const digit = /\d/;
-    const special = /[!@#$%^&*(),.?":{}|<>_\-\\\/\[\];'`+=~]/;
+    const special = /[!@#$%^&*(),.?":{}|<>_\\/\[\];'`+=~-]/;
     if (!lower.test(pw) || !upper.test(pw) || !digit.test(pw) || !special.test(pw)) {
       return 'Password must include uppercase, lowercase, number and special character.';
     }
