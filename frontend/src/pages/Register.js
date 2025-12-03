@@ -26,9 +26,95 @@ export const Register = () => {
     });
   };
 
+  // Validation helpers
+  const validateName = (name) => {
+    if (!name || name.trim().length === 0) {
+      return 'This field is required.';
+    }
+    const trimmed = name.trim();
+    if (trimmed.length < 2) {
+      return 'Must be at least 2 characters.';
+    }
+    // allow letters, spaces, hyphens, apostrophes
+    const nameRe = /^[A-Za-zÀ-ÖØ-öø-ÿ' -]+$/;
+    if (!nameRe.test(trimmed)) {
+      return 'Only letters, spaces, hyphens and apostrophes allowed.';
+    }
+    return null;
+  };
+
+  // Email rule: must start with a letter and be a valid email form.
+  // This will reject local parts that start with a digit like "1@gmail.com".
+  const validateEmail = (email) => {
+    if (!email || email.trim().length === 0) {
+      return 'Email is required.';
+    }
+    const e = email.trim();
+    // Local part must start with a letter and be at least 2 chars
+    // and follow common RFC-like constraints for simple validation.
+    const emailRe = /^[A-Za-z][A-Za-z0-9._%+-]{1,}@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+    if (!emailRe.test(e)) {
+      return 'Enter a valid email address (must start with a letter).';
+    }
+    return null;
+  };
+
+  const validatePhone = (phone) => {
+    if (!phone || phone.trim().length === 0) {
+      return null; // phone optional
+    }
+    const digits = phone.replace(/[\s()-]/g, '');
+    const phoneRe = /^\+?\d{10,15}$/; // allow leading +, 10-15 digits
+    if (!phoneRe.test(digits)) {
+      return 'Enter a valid phone number (10–15 digits, optional +).';
+    }
+    return null;
+  };
+
+  const validatePassword = (pw) => {
+    if (!pw || pw.length === 0) {
+      return 'Password is required.';
+    }
+    if (pw.length < 8) {
+      return 'Password must be at least 8 characters.';
+    }
+    // at least one lowercase, one uppercase, one digit, one special char
+    const lower = /[a-z]/;
+    const upper = /[A-Z]/;
+    const digit = /\d/;
+    const special = /[!@#$%^&*(),.?":{}|<>_\-\\\/\[\];'`+=~]/;
+    if (!lower.test(pw) || !upper.test(pw) || !digit.test(pw) || !special.test(pw)) {
+      return 'Password must include uppercase, lowercase, number and special character.';
+    }
+    return null;
+  };
+
+  const validateAll = (data) => {
+    const newErrors = {};
+    const firstNameErr = validateName(data.first_name);
+    if (firstNameErr) newErrors.first_name = firstNameErr;
+    const lastNameErr = validateName(data.last_name);
+    if (lastNameErr) newErrors.last_name = lastNameErr;
+    const emailErr = validateEmail(data.email);
+    if (emailErr) newErrors.email = emailErr;
+    const phoneErr = validatePhone(data.phone);
+    if (phoneErr) newErrors.phone = phoneErr;
+    const passwordErr = validatePassword(data.password);
+    if (passwordErr) newErrors.password = passwordErr;
+
+    return newErrors;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrors({});
+
+    // client-side validation
+    const validationErrors = validateAll(formData);
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
 
     const result = await register(formData);
     if (result.success) {

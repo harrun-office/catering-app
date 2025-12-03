@@ -8,8 +8,8 @@ import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import { ProtectedRoute } from './utils/ProtectedRoute';
 import { RoleGate } from './utils/RoleGate';
-import Navbar from './components/Navbar';
-import { Footer } from './components/Footer';
+
+import { MainLayout } from './components/MainLayout';
 import { AdminSidebar } from './components/AdminSidebar';
 import { Login } from './pages/Login';
 import { Register } from './pages/Register';
@@ -23,25 +23,6 @@ import { AdminUsers } from './pages/AdminUsers';
 import AdminMenu from './pages/AdminMenu';
 import { ScrollToTop } from './components/ScrollToTop';
 import './styles/index.css';
-
-function MainLayout({ children }) {
-  return (
-    <>
-      <Navbar />
-      <div className="flex flex-col min-h-screen" style={{ marginLeft: "var(--sidebar-width)" }}>
-        {/* Desktop Header */}
-        <header className="hidden md:flex items-center justify-center glass py-5 sticky top-0 z-30" style={{ boxShadow: 'var(--shadow-md)' }}>
-          <h1 className="text-2xl font-bold gradient-text tracking-wide">Cater Hub</h1>
-        </header>
-
-        <main className="flex-1 p-4">
-          {children}
-        </main>
-        <Footer />
-      </div>
-    </>
-  );
-}
 
 function App() {
   return (
@@ -156,9 +137,9 @@ function App() {
             {/* Fallback */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
-        </Router>
-      </CartProvider>
-    </AuthProvider>
+        </Router >
+      </CartProvider >
+    </AuthProvider >
   );
 }
 

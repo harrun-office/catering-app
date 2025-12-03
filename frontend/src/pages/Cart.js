@@ -1,5 +1,5 @@
 // src/pages/Cart.jsx
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CartContext as _CartContext } from '../context/CartContext';
 import { AuthContext } from '../context/AuthContext';
@@ -34,6 +34,26 @@ export const Cart = () => {
     notes: '',
   });
 
+  // For controlling date min (no past dates)
+  const [minDate, setMinDate] = useState('');
+
+  // For AM/PM toggle when selecting time
+  const [time24, setTime24] = useState('12:00'); // internal 24-hour representation (HH:MM)
+  const [ampm, setAmpm] = useState('PM'); // 'AM' or 'PM'
+
+  useEffect(() => {
+    // set min date to today's date in yyyy-mm-dd
+    const now = new Date();
+    const yyyy = now.getFullYear();
+    const mm = String(now.getMonth() + 1).padStart(2, '0');
+    const dd = String(now.getDate()).padStart(2, '0');
+    const todayStr = `${yyyy}-${mm}-${dd}`;
+    setMinDate(todayStr);
+
+    // initialize formData.delivery_date to today if empty (optional)
+    // (We won't force it, only set min)
+  }, []);
+
   // Helpers
   const toNumber = (v, fallback = 0) => {
     const n = Number(v);
@@ -42,6 +62,31 @@ export const Cart = () => {
 
   const fmt = (n) => {
     return toNumber(n, 0).toFixed(2);
+  };
+
+  // Convert 24-hour "HH:MM" to "hh:mm AM/PM"
+  const to12Hour = (time24Str) => {
+    if (!time24Str) return '';
+    const [hh, mm] = String(time24Str).split(':');
+    let h = parseInt(hh, 10);
+    const m = mm || '00';
+    const period = h >= 12 ? 'PM' : 'AM';
+    h = h % 12;
+    if (h === 0) h = 12;
+    return `${String(h).padStart(2, '0')}:${m} ${period}`;
+  };
+
+  // Convert 12-hour "hh:mm AM/PM" to 24-hour "HH:MM"
+  const to24Hour = (time12Str) => {
+    if (!time12Str) return '';
+    const parts = time12Str.trim().split(' ');
+    if (parts.length !== 2) return '';
+    const [hm] = parts;
+    const [hh, mm] = hm.split(':').map((s) => parseInt(s, 10));
+    const period = parts[1].toUpperCase();
+    let h = hh % 12;
+    if (period === 'PM') h += 12;
+    return `${String(h).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
   };
 
   // Levenshtein distance for fuzzy matching
@@ -128,6 +173,55 @@ export const Cart = () => {
     });
   };
 
+  // Reverse geocode using Google Maps Geocoding API
+  const reverseGeocode = async (lat, lng) => {
+    try {
+      const key = process.env.REACT_APP_GOOGLE_MAPS_API_KEY || '';
+      if (!key) {
+        throw new Error('Google Maps API key not configured. Set REACT_APP_GOOGLE_MAPS_API_KEY.');
+      }
+      const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${key}`;
+      const res = await fetch(url);
+      if (!res.ok) {
+        throw new Error('Failed to call geocoding API');
+      }
+      const data = await res.json();
+      if (data.status === 'OK' && data.results && data.results.length > 0) {
+        // Pick the most relevant formatted_address
+        return data.results[0].formatted_address;
+      }
+      throw new Error('No address found for this location');
+    } catch (err) {
+      console.error('reverseGeocode error', err);
+      throw err;
+    }
+  };
+
+  // Use browser geolocation to set delivery_address
+  const useCurrentLocation = async () => {
+    setError('');
+    setLoading(true);
+    try {
+      if (!navigator.geolocation) {
+        throw new Error('Geolocation is not supported by your browser.');
+      }
+      const getPos = () =>
+        new Promise((resolve, reject) =>
+          navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 15000 })
+        );
+      const pos = await getPos();
+      const { latitude, longitude } = pos.coords;
+      const address = await reverseGeocode(latitude, longitude);
+      setFormData((prev) => ({ ...prev, delivery_address: address }));
+      setSuccessMessage('Delivery address updated from your current location.');
+      setTimeout(() => setSuccessMessage(''), 3000);
+    } catch (err) {
+      setError(err.message || 'Failed to get location. Please enter address manually.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Optimized linkPreviewItems
   const linkPreviewItems = async () => {
     setError('');
@@ -191,8 +285,6 @@ export const Cart = () => {
 
     if (stillMissing.length > 0) {
       // Don't set error here, just return it. Let the caller decide if it's a blocker.
-      // But if called explicitly via button, we might want to show it.
-      // We'll return it and let the UI show a summary if needed.
     }
 
     return { stillMissing };
@@ -204,6 +296,16 @@ export const Cart = () => {
     setLoading(true);
 
     try {
+      // 0) Ensure delivery_time in formData is represented as "hh:mm AM/PM"
+      // If user used time24 + ampm controls, compose it
+      if (time24) {
+        // convert internal 24h time to 12h with AM/PM
+        const formatted = to12Hour(time24);
+        if (formatted) {
+          setFormData((prev) => ({ ...prev, delivery_time: formatted }));
+        }
+      }
+
       // 1) Check for preview items
       const previewItems = items.filter((it) => !Number.isFinite(Number(it.id)) || it._isLocalShowcase);
       if (previewItems.length > 0) {
@@ -223,23 +325,59 @@ export const Cart = () => {
         return;
       }
 
-      // 2) Auth check
+      // 2) Date validation: do not allow placing order before current date
+      if (formData.delivery_date) {
+        const selected = new Date(formData.delivery_date + 'T00:00:00');
+        const now = new Date();
+        // Normalize to local date parts
+        const selY = selected.getFullYear();
+        const selM = selected.getMonth();
+        const selD = selected.getDate();
+        const nowY = now.getFullYear();
+        const nowM = now.getMonth();
+        const nowD = now.getDate();
+        const selectedDateOnly = new Date(selY, selM, selD);
+        const todayDateOnly = new Date(nowY, nowM, nowD);
+        if (selectedDateOnly < todayDateOnly) {
+          setLoading(false);
+          setError('Delivery date cannot be before today. Please choose a valid delivery date.');
+          return;
+        }
+      } else {
+        setLoading(false);
+        setError('Please select a delivery date.');
+        return;
+      }
+
+      // 3) Auth check
       if (!isAuthenticated) {
         setLoading(false);
         navigate('/login', { state: { from: '/cart' } });
         return;
       }
 
-      // 3) Build normalized items
+      // 4) Build normalized items
       const normalizedItems = items.map(item => ({
         menu_item_id: Number(item.id),
         quantity: Number(item.quantity)
       }));
 
-      // 4) Build order payload
+      // Ensure delivery_time is set and in "hh:mm AM/PM" format
+      let finalDeliveryTime = formData.delivery_time;
+      if (!finalDeliveryTime && time24) {
+        finalDeliveryTime = to12Hour(time24);
+      }
+      if (!finalDeliveryTime) {
+        setLoading(false);
+        setError('Please select a delivery time.');
+        return;
+      }
+
+      // 5) Build order payload
       const orderData = {
         items: normalizedItems,
         ...formData,
+        delivery_time: finalDeliveryTime,
       };
 
       const response = await orderAPI.createOrder(orderData);
@@ -251,7 +389,7 @@ export const Cart = () => {
         setError(response?.data?.message || 'Failed to place order');
       }
     } catch (err) {
-      setError(err?.response?.data?.message || 'Failed to place order');
+      setError(err?.response?.data?.message || err.message || 'Failed to place order');
     } finally {
       setLoading(false);
     }
@@ -410,6 +548,25 @@ export const Cart = () => {
                     rows="3"
                     required
                   />
+                  <div className="flex gap-2 mt-2">
+                    <button
+                      type="button"
+                      onClick={useCurrentLocation}
+                      className="btn-secondary px-3 py-2"
+                      disabled={loading}
+                    >
+                      Use Current Location
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFormData(prev => ({ ...prev, delivery_address: '' }));
+                      }}
+                      className="btn-neutral px-3 py-2"
+                    >
+                      Clear Address
+                    </button>
+                  </div>
                 </div>
 
                 <div>
@@ -421,19 +578,59 @@ export const Cart = () => {
                     onChange={handleChange}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-600"
                     required
+                    min={minDate}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Delivery Time</label>
-                  <input
-                    type="time"
-                    name="delivery_time"
-                    value={formData.delivery_time}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-600"
-                    required
-                  />
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Delivery Time (AM/PM)</label>
+                  <div className="flex gap-2">
+                    {/* time input for convenience (24h) but we convert to AM/PM and store that format */}
+                    <input
+                      type="time"
+                      name="time24"
+                      value={time24}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setTime24(val);
+                        // update formData.delivery_time to be "hh:mm AM/PM"
+                        const formatted = to12Hour(val);
+                        setFormData(prev => ({ ...prev, delivery_time: formatted }));
+                      }}
+                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-600"
+                      required
+                    />
+                    {/* Provide explicit AM/PM toggle in case user wants to override */}
+                    <select
+                      name="ampm"
+                      value={formData.delivery_time ? formData.delivery_time.split(' ')[1] || ampm : ampm}
+                      onChange={(e) => {
+                        const chosen = e.target.value;
+                        setAmpm(chosen);
+                        // adjust time24 accordingly:
+                        // take current time24, convert to 12-hour pieces, set period accordingly
+                        if (time24) {
+                          // current 24h to hh:mm AM/PM
+                          let [hStr, mStr] = time24.split(':');
+                          let h = parseInt(hStr, 10);
+                          // convert to 12h then replace period
+                          let hh12 = h % 12;
+                          if (hh12 === 0) hh12 = 12;
+                          const new12 = `${String(hh12).padStart(2, '0')}:${mStr} ${chosen}`;
+                          setFormData(prev => ({ ...prev, delivery_time: new12 }));
+                        } else {
+                          // no time24 set yet, set a default
+                          setFormData(prev => ({ ...prev, delivery_time: `12:00 ${chosen}` }));
+                          setTime24('12:00');
+                        }
+                      }}
+                      className="w-24 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-600"
+                    >
+                      <option>AM</option>
+                      <option>PM</option>
+                    </select>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">Time will be submitted as hh:mm AM/PM (e.g. 02:30 PM)</p>
                 </div>
 
                 <div>

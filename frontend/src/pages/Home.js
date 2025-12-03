@@ -115,7 +115,7 @@ const BIRYANI_FEATURES = [
     price: 479,
     servings: 4,
     rating: 4.8,
-    image: '/images/paneer-biryani.jpg',
+    image: '/images/veg-biryani.jpg',
     preparation_time: 58,
     is_available: true,
   },
@@ -163,7 +163,7 @@ const MANDHI_FEATURES = [
     price: 799,
     servings: 6,
     rating: 4.9,
-    image: '/images/mixed-mandhi.jpg',
+    image: '/images/chicken-mandhi.jpg',
     preparation_time: 85,
     is_available: true,
   },
@@ -309,6 +309,35 @@ export const Home = () => {
         if (!raw) return { ...it, image: '' };
 
         if (/^https?:\/\//i.test(raw)) return { ...it, image: raw };
+
+        // Handle /uploads/images/ paths - replace with /images/
+        if (raw.startsWith('/uploads/images/')) {
+          const filename = raw.replace('/uploads/images/', '');
+
+          // Handle timestamped filenames (e.g., 1764570850911-choco-pie.jpg)
+          // Extract the actual name after the timestamp
+          const timestampMatch = filename.match(/^\d+-(.+)$/);
+          if (timestampMatch) {
+            const actualName = timestampMatch[1]; // e.g., "choco-pie.jpg"
+            // Try to find a similar image
+            const baseName = actualName.replace(/\.(jpg|jpeg|png|gif|webp)$/i, ''); // "choco-pie"
+
+            // Map common variations to existing images
+            const imageMap = {
+              'choco-pie': 'choco-pie.jpg',
+              'chocolate-pie': 'chocolate-cake.jpg',
+              'choco-cake': 'chocolate-cake.jpg',
+              'vanilla-cake': 'cheesecake.jpg',
+              'strawberry-cake': 'cheesecake.jpg',
+            };
+
+            const mappedImage = imageMap[baseName] || actualName;
+            return { ...it, image: `/images/${mappedImage}` };
+          }
+
+          return { ...it, image: `/images/${filename}` };
+        }
+
         if (raw.startsWith('/')) return { ...it, image: raw };
         if (/^[A-Za-z]:\\/.test(raw) || raw.includes('\\')) {
           const name = getBasename(raw);
@@ -731,18 +760,7 @@ export const Home = () => {
         </section>
       </div>
 
-      {/* Floating cart button */}
-      <Link
-        to="/cart"
-        className="fixed bottom-6 right-6 z-40 flex items-center gap-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-2xl rounded-full px-5 py-3 hover:shadow-purple-300/60 hover:-translate-y-1 transition"
-        aria-label="Go to cart"
-      >
-        <ShoppingCart size={20} />
-        <span className="text-sm font-semibold">Cart</span>
-        <span className="bg-white text-purple-700 text-xs font-bold rounded-full px-2 py-1 min-w-[32px] text-center">
-          {cartCount}
-        </span>
-      </Link>
+
     </div>
   );
 };

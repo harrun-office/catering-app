@@ -6,9 +6,6 @@ import { CartContext } from '../context/CartContext';
 // new
 import {
   ShoppingCart,
-  LogOut,
-  User,
-  BarChart3,
   Home as HomeIcon,
   Menu as MenuIcon,
   ChevronLeft,
@@ -177,64 +174,9 @@ export const Navbar = () => {
             {!collapsed && <span>Order History</span>}
           </Link>
 
-          {/* CART */}
-          <Link
-            to="/cart"
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:glass transition-all duration-300 hover:scale-105 hover:shadow-md text-gray-800 relative"
-          >
-            <ShoppingCart size={18} />
-            {!collapsed && <span>Cart</span>}
-            {count > 0 && (
-              <span className="absolute right-3 -top-2 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center animate-scale-in" style={{ background: 'var(--color-accent)', boxShadow: 'var(--shadow-md)' }}>
-                {count}
-              </span>
-            )}
-          </Link>
 
-          {/* AUTH */}
-          {isAuthenticated ? (
-            <>
-              {isAdmin && (
-                <Link
-                  to="/admin"
-                  className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/10 transition"
-                >
-                  <BarChart3 size={18} />
-                  {!collapsed && <span>Admin</span>}
-                </Link>
-              )}
 
-              <div className="w-full flex items-center gap-3 px-3 py-2">
-                <User size={18} />
-                {!collapsed && <span>{user?.first_name}</span>}
-              </div>
 
-              <button
-                onClick={handleLogout}
-                className="w-full mt-2 bg-red-500 hover:bg-red-600 px-3 py-2 rounded-lg flex items-center justify-center gap-2 text-sm font-semibold"
-              >
-                <LogOut size={18} />
-                {!collapsed && <span>Logout</span>}
-              </button>
-            </>
-          ) : (
-            !collapsed && (
-              <div className="space-y-2 mt-2">
-                <Link
-                  to="/login"
-                  className="block text-center bg-white text-purple-700 px-3 py-2 rounded-lg font-semibold"
-                >
-                  Login
-                </Link>
-                <Link
-                  to="/register"
-                  className="block text-center border border-white px-3 py-2 rounded-lg font-semibold"
-                >
-                  Register
-                </Link>
-              </div>
-            )
-          )}
         </nav>
 
         {!collapsed && (
