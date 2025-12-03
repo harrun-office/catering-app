@@ -1,6 +1,6 @@
 // src/components/MenuItem.jsx
-import React, { useContext, useMemo, useState } from "react";
-import { AuthContext } from "../context/AuthContext";
+import React, { useMemo } from "react";
+
 
 /* SVG fallback */
 const SVG_PLACEHOLDER =

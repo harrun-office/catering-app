@@ -162,7 +162,7 @@ const MANDHI_FEATURES = [
 ];
 
 export const Home = () => {
-  const { addItem, items: cartItems } = useContext(CartContext);
+  const { addItem } = useContext(CartContext);
   const [items, setItems] = useState([]);
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);

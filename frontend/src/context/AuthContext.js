@@ -3,22 +3,7 @@ import { authAPI } from '../utils/api';
 
 // === Helper: Extract userId from stored "user" before logout ===
 // (This avoids dependency on CartContext)
-function getStoredUserIdSimple() {
-  try {
-    const raw = localStorage.getItem('user');
-    if (!raw) return null;
-    const u = JSON.parse(raw);
 
-    return (
-      u?.id ||
-      u?.userId ||
-      u?._id ||
-      null
-    );
-  } catch {
-    return null;
-  }
-}
 
 export const AuthContext = createContext();
 

@@ -1,6 +1,5 @@
 // src/pages/Gallery.jsx
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 
 const GALLERY_IMAGES = [
   '/images/g1.jpg',
