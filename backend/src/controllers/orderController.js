@@ -2,33 +2,77 @@ const pool = require('../config/database');
 const { validateOrder } = require('../utils/validators');
 
 // Create order
+// Assumes:
+// - `pool` is a mysql2/promise pool
+// - `validateOrder` is imported and works as expected
+// - express.json() middleware is enabled globally
+
 const createOrder = async (req, res) => {
   try {
-    const { items: rawItems, delivery_date, delivery_time, delivery_address, notes } = req.body;
+    // Basic safety: ensure body exists
+    if (!req.body || typeof req.body !== 'object') {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid request body',
+      });
+    }
 
-    // Debug: log incoming items structure when troubleshooting order failures
-    console.debug && console.debug('createOrder incoming rawItems:', JSON.stringify(rawItems));
-    console.debug && console.debug('createOrder full payload:', JSON.stringify(req.body));
+    // Auth check: avoids req.user being undefined and throwing
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({
+        success: false,
+        message: 'User not authenticated',
+      });
+    }
 
-    // Basic validation & sanitization: map raw items into normalized shape
+    const {
+      items: rawItems,
+      delivery_date,
+      delivery_time,
+      delivery_address,
+      notes,
+    } = req.body;
+
+    // Debug logs (only in non-production to avoid noise)
+    if (process.env.NODE_ENV !== 'production') {
+      try {
+        console.debug('createOrder incoming rawItems:', JSON.stringify(rawItems));
+        console.debug('createOrder full payload:', JSON.stringify(req.body));
+      } catch (e) {
+        console.warn('Failed to stringify request body for debugging:', e?.message || e);
+      }
+    }
+
+    // Normalize items
     const items = Array.isArray(rawItems)
       ? rawItems.map((it) => ({
-        menu_item_id: it?.menu_item_id !== undefined ? Number(it.menu_item_id) : Number(it?.id),
-        quantity: it?.quantity !== undefined ? Number(it.quantity) : Number(it?.qty),
-        special_instructions: it?.special_instructions || null,
-      }))
+          menu_item_id:
+            it?.menu_item_id !== undefined
+              ? Number(it.menu_item_id)
+              : Number(it?.id),
+          quantity:
+            it?.quantity !== undefined
+              ? Number(it.quantity)
+              : Number(it?.qty),
+          special_instructions: it?.special_instructions || null,
+        }))
       : [];
 
-    // === NEW: Early numeric validation for menu_item_id and quantity ===
+    // Early validation for items
     if (!Array.isArray(items) || items.length === 0) {
-      return res.status(400).json({ success: false, message: 'No items provided' });
+      return res.status(400).json({
+        success: false,
+        message: 'No items provided',
+      });
     }
 
     for (const [idx, it] of items.entries()) {
       if (!Number.isFinite(it.menu_item_id) || it.menu_item_id <= 0) {
         return res.status(400).json({
           success: false,
-          message: `Invalid menu_item_id for item at index ${idx}: ${JSON.stringify(rawItems?.[idx] ?? it)}`,
+          message: `Invalid menu_item_id for item at index ${idx}: ${JSON.stringify(
+            rawItems?.[idx] ?? it
+          )}`,
         });
       }
       if (!Number.isFinite(it.quantity) || it.quantity <= 0) {
@@ -38,36 +82,53 @@ const createOrder = async (req, res) => {
         });
       }
     }
-    // === END NEW VALIDATION ===
 
-    const errors = validateOrder({ items, delivery_date, delivery_address });
-    if (Object.keys(errors).length > 0) {
+    // Validation wrapper to avoid validateOrder throwing causing 500
+    let errors;
+    try {
+      errors = validateOrder({ items, delivery_date, delivery_address });
+    } catch (e) {
+      console.error('validateOrder crashed:', e?.stack || e?.message || e);
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid order data',
+      });
+    }
+
+    if (errors && Object.keys(errors).length > 0) {
       return res.status(400).json({ success: false, errors });
     }
 
     const connection = await pool.getConnection();
-    await connection.beginTransaction();
 
     try {
+      await connection.beginTransaction();
+
       // Calculate totals
       let subtotal = 0;
       const itemDetails = [];
 
       for (const item of items) {
-        // fetch price and validate existence
-        const [menuItems] = await connection.query('SELECT price FROM menu_items WHERE id = ?', [item.menu_item_id]);
+        // Fetch price and validate item existence
+        const [menuItems] = await connection.query(
+          'SELECT price FROM menu_items WHERE id = ?',
+          [item.menu_item_id]
+        );
 
-        if (menuItems.length === 0) {
-          // return a clear client error for invalid item
+        if (!Array.isArray(menuItems) || menuItems.length === 0) {
           await connection.rollback();
           connection.release();
-          return res.status(400).json({ success: false, message: `Menu item not found: ${item.menu_item_id}` });
+          return res.status(400).json({
+            success: false,
+            message: `Menu item not found: ${item.menu_item_id}`,
+          });
         }
 
         const price = Number(menuItems[0].price) || 0;
         const qty = Number(item.quantity) || 0;
         const itemTotal = price * qty;
         subtotal += itemTotal;
+
         itemDetails.push({
           menu_item_id: item.menu_item_id,
           quantity: qty,
@@ -81,13 +142,29 @@ const createOrder = async (req, res) => {
       const deliveryCharge = subtotal > 500 ? 0 : 50; // Free delivery above 500
       const totalAmount = subtotal + tax + deliveryCharge;
 
-      // Generate order number
+      // Generate order number (you can replace with any scheme)
       const orderNumber = `ORD-${Date.now()}`;
 
-      // Create order
+      // Insert into orders table
       const [orderResult] = await connection.query(
-        'INSERT INTO orders (user_id, order_number, subtotal, tax, delivery_charge, total_amount, delivery_address, delivery_date, delivery_time, notes, status, payment_status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-        [req.user.id, orderNumber, subtotal, tax, deliveryCharge, totalAmount, delivery_address, delivery_date, delivery_time, notes, 'pending', 'pending']
+        `INSERT INTO orders 
+          (user_id, order_number, subtotal, tax, delivery_charge, total_amount, 
+           delivery_address, delivery_date, delivery_time, notes, status, payment_status)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          req.user.id,
+          orderNumber,
+          subtotal,
+          tax,
+          deliveryCharge,
+          totalAmount,
+          delivery_address,
+          delivery_date,
+          delivery_time,
+          notes || null,
+          'pending',
+          'pending',
+        ]
       );
 
       const orderId = orderResult.insertId;
@@ -95,14 +172,24 @@ const createOrder = async (req, res) => {
       // Insert order items
       for (const item of itemDetails) {
         await connection.query(
-          'INSERT INTO order_items (order_id, menu_item_id, quantity, unit_price, total_price, special_instructions) VALUES (?, ?, ?, ?, ?, ?)',
-          [orderId, item.menu_item_id, item.quantity, item.unit_price, item.total_price, item.special_instructions]
+          `INSERT INTO order_items 
+            (order_id, menu_item_id, quantity, unit_price, total_price, special_instructions)
+           VALUES (?, ?, ?, ?, ?, ?)`,
+          [
+            orderId,
+            item.menu_item_id,
+            item.quantity,
+            item.unit_price,
+            item.total_price,
+            item.special_instructions,
+          ]
         );
       }
 
       await connection.commit();
+      connection.release();
 
-      res.status(201).json({
+      return res.status(201).json({
         success: true,
         message: 'Order created successfully',
         order: {
@@ -117,22 +204,36 @@ const createOrder = async (req, res) => {
         },
       });
     } catch (error) {
-      await connection.rollback();
-      throw error;
-    } finally {
+      // Inner DB/logic error
+      try {
+        await connection.rollback();
+      } catch (rollbackErr) {
+        console.error('Rollback failed:', rollbackErr?.stack || rollbackErr?.message || rollbackErr);
+      }
       connection.release();
+      throw error; // bubble up to outer catch
     }
   } catch (error) {
-    // Log payload + error to help debug malformed requests that reach the catch
+    // Outer catch: any unexpected error ends up here
     console.error('createOrder failed. payload:', {
       body: req.body,
       user: req.user?.id,
     });
     console.error('createOrder error:', error && (error.stack || error.message || error));
 
-    res.status(500).json({ success: false, message: 'Server error' });
+    // In production keep it generic; in dev you can expose more if you want
+    return res.status(500).json({
+      success: false,
+      message:
+        process.env.NODE_ENV === 'development'
+          ? error.message || 'Server error'
+          : 'Server error',
+    });
   }
 };
+
+module.exports = { createOrder };
+
 
 
 // Get user orders
