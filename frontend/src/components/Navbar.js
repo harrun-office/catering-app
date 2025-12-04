@@ -79,8 +79,9 @@ export const Navbar = () => {
         className="hidden md:flex fixed inset-y-0 left-0 z-50 flex-col glass-strong text-gray-800 p-4 transition-all duration-300"
         style={{
           width: sidebarWidth,
-          background: 'linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%)',
-          boxShadow: 'var(--shadow-xl)'
+          background: 'var(--color-primary)',
+          boxShadow: 'var(--shadow-xl)',
+          borderRight: '3px solid var(--color-accent)'
         }}
       >
         {/* HEADER: LOGO + TOGGLE */}
@@ -188,7 +189,8 @@ export const Navbar = () => {
 
       {/* MOBILE NAV */}
       <nav className="md:hidden fixed top-0 left-0 right-0 z-50 text-white shadow-md" style={{
-        background: 'linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%)'
+        background: 'var(--color-primary)',
+        borderBottom: '3px solid var(--color-accent)'
       }}>
         <div className="container-main flex items-center justify-between py-3 relative">
           <button

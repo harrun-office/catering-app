@@ -527,10 +527,7 @@ export const Home = () => {
                         const el = document.getElementById('menu');
                         if (el) el.scrollIntoView({ behavior: 'smooth' });
                       }}
-                      className="btn-primary text-lg px-8 py-3 shadow-lg transition-all"
-                      style={{
-                        boxShadow: '0 6px 20px oklch(0.55 0.20 25 / 0.4)'
-                      }}
+                      className="btn-primary text-lg px-8 py-3 transition-all"
                     >
                       Browse Menu
                     </a>
@@ -666,8 +663,9 @@ export const Home = () => {
               onClick={() => setSelectedCategory(null)}
               className={`px-4 py-2 rounded-lg font-semibold transition-all duration-300 ${selectedCategory === null ? 'text-white shadow-md' : 'bg-white border hover:shadow-sm'}`}
               style={selectedCategory === null ? {
-                background: 'var(--gradient-primary)',
-                boxShadow: '0 4px 12px oklch(0.55 0.20 25 / 0.3)'
+                background: 'var(--color-primary)',
+                boxShadow: '0 4px 12px oklch(0.50 0.18 200 / 0.4)',
+                border: '2px solid var(--color-primary-dark)'
               } : {}}
             >
               All Items
@@ -678,8 +676,9 @@ export const Home = () => {
                 onClick={() => setSelectedCategory(c.id)}
                 className={`px-4 py-2 rounded-lg font-semibold transition-all duration-300 ${selectedCategory === c.id ? 'text-white shadow-md' : 'bg-white border hover:shadow-sm'}`}
                 style={selectedCategory === c.id ? {
-                  background: 'var(--gradient-primary)',
-                  boxShadow: '0 4px 12px oklch(0.55 0.20 25 / 0.3)'
+                  background: 'var(--color-primary)',
+                  boxShadow: '0 4px 12px oklch(0.50 0.18 200 / 0.4)',
+                  border: '2px solid var(--color-primary-dark)'
                 } : {}}
               >
                 {c.name}
@@ -777,7 +776,8 @@ export const Home = () => {
         {/* CTA */}
         <section className="mb-24 text-center">
           <div className="card p-8 md:p-12" style={{
-            background: 'linear-gradient(135deg, oklch(0.99 0.002 60), oklch(0.98 0.003 55))'
+            background: 'var(--color-surface)',
+            border: '3px solid var(--color-primary-light)'
           }}>
             <h3 className="text-3xl font-bold mb-3 gradient-text-warm">Ready to delight your guests?</h3>
             <p className="text-gray-600 mb-8 text-lg">Contact us for a custom quote and menu tasting.</p>
