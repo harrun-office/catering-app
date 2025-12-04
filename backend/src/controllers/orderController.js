@@ -1,12 +1,52 @@
 const pool = require('../config/database');
 const { validateOrder } = require('../utils/validators');
 
+// Helper: normalize delivery_time to MySQL TIME format ("HH:MM:SS")
+function normalizeTimeToMySQL(timeStr) {
+  if (!timeStr) return null; // or make this required if your schema needs it
+
+  const t = String(timeStr).trim();
+
+  // Case 1: 24h "HH:MM" or "HH:MM:SS"
+  const twentyFourHourMatch = /^([01]?\d|2[0-3]):([0-5]\d)(?::([0-5]\d))?$/.exec(t);
+  if (twentyFourHourMatch) {
+    const hh = twentyFourHourMatch[1].padStart(2, '0');
+    const mm = twentyFourHourMatch[2].padStart(2, '0');
+    const ss = (twentyFourHourMatch[3] || '00').padStart(2, '0');
+    return `${hh}:${mm}:${ss}`;
+  }
+
+  // Case 2: 12h format "h:mm AM/PM" or "hh:mm am/pm"
+  const twelveHourMatch = /^(\d{1,2}):([0-5]\d)\s*(AM|PM)$/i.exec(t);
+  if (twelveHourMatch) {
+    let hour = parseInt(twelveHourMatch[1], 10);
+    const minute = twelveHourMatch[2];
+    const ampm = twelveHourMatch[3].toUpperCase();
+
+    if (hour < 1 || hour > 12) {
+      throw new Error(`Invalid 12-hour time hour: ${hour}`);
+    }
+
+    if (ampm === 'AM') {
+      if (hour === 12) hour = 0;        // 12:xx AM -> 00:xx
+    } else if (ampm === 'PM') {
+      if (hour !== 12) hour += 12;      // 1-11 PM -> 13-23
+    }
+
+    const hh = String(hour).padStart(2, '0');
+    const mm = String(minute).padStart(2, '0');
+    return `${hh}:${mm}:00`;
+  }
+
+  // If neither format matched, it's invalid
+  throw new Error(`Invalid time format: "${timeStr}"`);
+}
+
 // Create order
 // Assumes:
 // - `pool` is a mysql2/promise pool
 // - `validateOrder` is imported and works as expected
 // - express.json() middleware is enabled globally
-
 const createOrder = async (req, res) => {
   try {
     // Basic safety: ensure body exists
@@ -83,10 +123,26 @@ const createOrder = async (req, res) => {
       }
     }
 
+    // Normalize time to MySQL format and catch invalid formats
+    let mysqlDeliveryTime = null;
+    try {
+      mysqlDeliveryTime = normalizeTimeToMySQL(delivery_time);
+    } catch (timeError) {
+      return res.status(400).json({
+        success: false,
+        message: timeError.message,
+      });
+    }
+
     // Validation wrapper to avoid validateOrder throwing causing 500
     let errors;
     try {
-      errors = validateOrder({ items, delivery_date, delivery_address });
+      errors = validateOrder({
+        items,
+        delivery_date,
+        delivery_address,
+        delivery_time: mysqlDeliveryTime,
+      });
     } catch (e) {
       console.error('validateOrder crashed:', e?.stack || e?.message || e);
       return res.status(400).json({
@@ -160,7 +216,7 @@ const createOrder = async (req, res) => {
           totalAmount,
           delivery_address,
           delivery_date,
-          delivery_time,
+          mysqlDeliveryTime,   // ✅ normalized time here
           notes || null,
           'pending',
           'pending',
@@ -208,7 +264,10 @@ const createOrder = async (req, res) => {
       try {
         await connection.rollback();
       } catch (rollbackErr) {
-        console.error('Rollback failed:', rollbackErr?.stack || rollbackErr?.message || rollbackErr);
+        console.error(
+          'Rollback failed:',
+          rollbackErr?.stack || rollbackErr?.message || rollbackErr
+        );
       }
       connection.release();
       throw error; // bubble up to outer catch
@@ -219,7 +278,10 @@ const createOrder = async (req, res) => {
       body: req.body,
       user: req.user?.id,
     });
-    console.error('createOrder error:', error && (error.stack || error.message || error));
+    console.error(
+      'createOrder error:',
+      error && (error.stack || error.message || error)
+    );
 
     // In production keep it generic; in dev you can expose more if you want
     return res.status(500).json({
@@ -232,15 +294,13 @@ const createOrder = async (req, res) => {
   }
 };
 
-module.exports = { createOrder };
-
-
-
 // Get user orders
 const getUserOrders = async (req, res) => {
   try {
     const { page = 1, limit = 10, status } = req.query;
-    const offset = (page - 1) * limit;
+    const pageNum = parseInt(page, 10) || 1;
+    const limitNum = parseInt(limit, 10) || 10;
+    const offset = (pageNum - 1) * limitNum;
 
     let query = 'SELECT * FROM orders WHERE user_id = ?';
     const params = [req.user.id];
@@ -251,7 +311,7 @@ const getUserOrders = async (req, res) => {
     }
 
     query += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
-    params.push(parseInt(limit), offset);
+    params.push(limitNum, offset);
 
     const connection = await pool.getConnection();
     const [orders] = await connection.query(query, params);
@@ -267,7 +327,10 @@ const getUserOrders = async (req, res) => {
       order.items = items;
     }
 
-    const [[{ total }]] = await connection.query('SELECT COUNT(*) as total FROM orders WHERE user_id = ?', [req.user.id]);
+    const [[{ total }]] = await connection.query(
+      'SELECT COUNT(*) as total FROM orders WHERE user_id = ?',
+      [req.user.id]
+    );
     connection.release();
 
     res.json({
@@ -275,9 +338,9 @@ const getUserOrders = async (req, res) => {
       orders,
       pagination: {
         total,
-        page: parseInt(page),
-        limit: parseInt(limit),
-        pages: Math.ceil(total / limit),
+        page: pageNum,
+        limit: limitNum,
+        pages: Math.ceil(total / limitNum),
       },
     });
   } catch (error) {
@@ -292,11 +355,16 @@ const getOrderById = async (req, res) => {
     const { id } = req.params;
 
     const connection = await pool.getConnection();
-    const [orders] = await connection.query('SELECT * FROM orders WHERE id = ? AND user_id = ?', [id, req.user.id]);
+    const [orders] = await connection.query(
+      'SELECT * FROM orders WHERE id = ? AND user_id = ?',
+      [id, req.user.id]
+    );
 
     if (orders.length === 0) {
       connection.release();
-      return res.status(404).json({ success: false, message: 'Order not found' });
+      return res
+        .status(404)
+        .json({ success: false, message: 'Order not found' });
     }
 
     const [items] = await connection.query(
@@ -325,19 +393,33 @@ const cancelOrder = async (req, res) => {
 
     const connection = await pool.getConnection();
 
-    const [orders] = await connection.query('SELECT status FROM orders WHERE id = ? AND user_id = ?', [id, req.user.id]);
+    const [orders] = await connection.query(
+      'SELECT status FROM orders WHERE id = ? AND user_id = ?',
+      [id, req.user.id]
+    );
 
     if (orders.length === 0) {
       connection.release();
-      return res.status(404).json({ success: false, message: 'Order not found' });
+      return res
+        .status(404)
+        .json({ success: false, message: 'Order not found' });
     }
 
-    if (orders[0].status !== 'pending' && orders[0].status !== 'confirmed') {
+    if (
+      orders[0].status !== 'pending' &&
+      orders[0].status !== 'confirmed'
+    ) {
       connection.release();
-      return res.status(400).json({ success: false, message: 'Order cannot be cancelled' });
+      return res.status(400).json({
+        success: false,
+        message: 'Order cannot be cancelled',
+      });
     }
 
-    await connection.query('UPDATE orders SET status = ? WHERE id = ?', ['cancelled', id]);
+    await connection.query('UPDATE orders SET status = ? WHERE id = ?', [
+      'cancelled',
+      id,
+    ]);
     connection.release();
 
     res.json({ success: true, message: 'Order cancelled successfully' });
