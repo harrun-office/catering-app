@@ -29,6 +29,10 @@ const path = require('path');
 // Serve uploaded images
 app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 
+app.get('/api', (req, res) => {
+  res.send('server started');
+});
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/menu', menuRoutes);
