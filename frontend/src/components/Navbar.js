@@ -79,9 +79,8 @@ export const Navbar = () => {
         className="hidden md:flex fixed inset-y-0 left-0 z-50 flex-col glass-strong text-gray-800 p-4 transition-all duration-300"
         style={{
           width: sidebarWidth,
-          background: 'var(--color-primary)',
-          boxShadow: 'var(--shadow-xl)',
-          borderRight: '3px solid var(--color-accent)'
+          background: 'linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%)',
+          boxShadow: 'var(--shadow-xl)'
         }}
       >
         {/* HEADER: LOGO + TOGGLE */}
@@ -187,11 +186,8 @@ export const Navbar = () => {
         )}
       </aside>
 
-      {/* MOBILE NAV */}
-      <nav className="md:hidden fixed top-0 left-0 right-0 z-50 text-white shadow-md" style={{
-        background: 'var(--color-primary)',
-        borderBottom: '3px solid var(--color-accent)'
-      }}>
+      {/* MOBILE NAV (unchanged) */}
+      <nav className="md:hidden fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-md">
         <div className="container-main flex items-center justify-between py-3 relative">
           <button
             onClick={() => setMobileOpen((s) => !s)}

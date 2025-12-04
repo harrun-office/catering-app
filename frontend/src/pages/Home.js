@@ -486,7 +486,7 @@ export const Home = () => {
 
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: 'var(--color-bg)' }}>
+    <div className="min-h-screen bg-gray-50">
       {/* Toasts container */}
       <Toasts toasts={toasts} removeToast={removeToast} />
 
@@ -527,7 +527,7 @@ export const Home = () => {
                         const el = document.getElementById('menu');
                         if (el) el.scrollIntoView({ behavior: 'smooth' });
                       }}
-                      className="btn-primary text-lg px-8 py-3 transition-all"
+                      className="btn-primary text-lg px-8 py-3 shadow-lg hover:shadow-purple-500/50 transition-all"
                     >
                       Browse Menu
                     </a>
@@ -590,32 +590,26 @@ export const Home = () => {
 
         {/* Quick features */}
         <section className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-          <div className="card p-6 text-center hover:scale-105 transition-transform duration-300">
-            <div className="text-4xl mb-3">🥬</div>
-            <h3 className="font-bold text-lg mb-2 gradient-text-warm">Fresh Ingredients</h3>
+          <div className="bg-white rounded-lg p-6 text-center">
+            <h3 className="font-bold text-lg mb-2">Fresh Ingredients</h3>
             <p className="text-sm text-gray-600">Sourcing local produce and preparing dishes to order.</p>
           </div>
-          <div className="card p-6 text-center hover:scale-105 transition-transform duration-300">
-            <div className="text-4xl mb-3">🍽️</div>
-            <h3 className="font-bold text-lg mb-2 gradient-text-warm">Custom Menus</h3>
+          <div className="bg-white rounded-lg p-6 text-center">
+            <h3 className="font-bold text-lg mb-2">Custom Menus</h3>
             <p className="text-sm text-gray-600">Vegan, gluten-free, or party platters — we create a menu that fits you.</p>
           </div>
-          <div className="card p-6 text-center hover:scale-105 transition-transform duration-300">
-            <div className="text-4xl mb-3">⭐</div>
-            <h3 className="font-bold text-lg mb-2 gradient-text-warm">Trusted Service</h3>
+          <div className="bg-white rounded-lg p-6 text-center">
+            <h3 className="font-bold text-lg mb-2">Trusted Service</h3>
             <p className="text-sm text-gray-600">On-time delivery, professional presentation, and friendly staff.</p>
           </div>
         </section>
 
         {/* Biryani section */}
         <section className="mb-12">
-          <div className="flex flex-wrap items-center justify-between gap-4 mb-4 pl-4" style={{
-            borderLeft: '4px solid',
-            borderColor: 'var(--color-primary)'
-          }}>
+          <div className="flex flex-wrap items-center justify-between gap-4 mb-4 border-l-4 border-purple-500 pl-4">
             <div>
-              <p className="text-sm uppercase tracking-wide font-semibold" style={{ color: 'var(--color-primary)' }}>Signature Feast</p>
-              <h2 className="text-2xl font-bold gradient-text-warm">Biryani & Dum Delights</h2>
+              <p className="text-sm uppercase tracking-wide text-purple-500 font-semibold">Signature Feast</p>
+              <h2 className="text-2xl font-bold">Biryani & Dum Delights</h2>
               <p className="text-sm text-gray-600 mt-1">Hand-layered rice, saffron aromas, and slow-cooked proteins ready for gatherings.</p>
             </div>
           </div>
@@ -628,13 +622,10 @@ export const Home = () => {
 
         {/* Mandhi section */}
         <section className="mb-12">
-          <div className="flex flex-wrap items-center justify-between gap-4 mb-4 pl-4" style={{
-            borderLeft: '4px solid',
-            borderColor: 'var(--color-accent)'
-          }}>
+          <div className="flex flex-wrap items-center justify-between gap-4 mb-4 border-l-4 border-orange-400 pl-4">
             <div>
-              <p className="text-sm uppercase tracking-wide font-semibold" style={{ color: 'var(--color-accent-dark)' }}>Arabic Table</p>
-              <h2 className="text-2xl font-bold gradient-text-warm">Mandhi & Smoky Platters</h2>
+              <p className="text-sm uppercase tracking-wide text-orange-500 font-semibold">Arabic Table</p>
+              <h2 className="text-2xl font-bold">Mandhi & Smoky Platters</h2>
               <p className="text-sm text-gray-600 mt-1">Pit-roasted meats over spiced rice, topped with roasted nuts and caramelized onions.</p>
             </div>
           </div>
@@ -647,26 +638,18 @@ export const Home = () => {
 
         {/* Menu */}
         <section id="menu" className="mb-12">
-          <div className="flex items-center gap-4 mb-6 pl-4" style={{
-            borderLeft: '4px solid',
-            borderColor: 'var(--color-primary)'
-          }}>
-            <Filter size={20} style={{ color: 'var(--color-primary)' }} />
+          <div className="flex items-center gap-4 mb-6 border-l-4 border-purple-500 pl-4">
+            <Filter size={20} className="text-purple-500" />
             <div>
-              <p className="text-xs uppercase tracking-[0.4em]" style={{ color: 'var(--color-primary-light)' }}>Signature List</p>
-              <h2 className="text-2xl font-bold gradient-text-warm">Our Menu</h2>
+              <p className="text-xs uppercase tracking-[0.4em] text-purple-400">Signature List</p>
+              <h2 className="text-2xl font-bold text-gray-900">Our Menu</h2>
             </div>
           </div>
 
           <div className="flex gap-3 flex-wrap mb-6">
             <button
               onClick={() => setSelectedCategory(null)}
-              className={`px-4 py-2 rounded-lg font-semibold transition-all duration-300 ${selectedCategory === null ? 'text-white shadow-md' : 'bg-white border hover:shadow-sm'}`}
-              style={selectedCategory === null ? {
-                background: 'var(--color-primary)',
-                boxShadow: '0 4px 12px oklch(0.50 0.18 200 / 0.4)',
-                border: '2px solid var(--color-primary-dark)'
-              } : {}}
+              className={`px-4 py-2 rounded-lg font-semibold ${selectedCategory === null ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white' : 'bg-white border'}`}
             >
               All Items
             </button>
@@ -674,12 +657,7 @@ export const Home = () => {
               <button
                 key={c.id}
                 onClick={() => setSelectedCategory(c.id)}
-                className={`px-4 py-2 rounded-lg font-semibold transition-all duration-300 ${selectedCategory === c.id ? 'text-white shadow-md' : 'bg-white border hover:shadow-sm'}`}
-                style={selectedCategory === c.id ? {
-                  background: 'var(--color-primary)',
-                  boxShadow: '0 4px 12px oklch(0.50 0.18 200 / 0.4)',
-                  border: '2px solid var(--color-primary-dark)'
-                } : {}}
+                className={`px-4 py-2 rounded-lg font-semibold ${selectedCategory === c.id ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white' : 'bg-white border'}`}
               >
                 {c.name}
               </button>
@@ -687,25 +665,8 @@ export const Home = () => {
           </div>
 
           <div className="relative max-w-2xl mb-6">
-            <Search className="absolute left-4 top-3" size={20} style={{ color: 'var(--color-primary-light)' }} />
-            <input 
-              value={searchTerm} 
-              onChange={(e) => setSearchTerm(e.target.value)} 
-              placeholder="Search for dishes..." 
-              className="w-full pl-12 pr-4 py-3 rounded-lg text-gray-800 border-2 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2" 
-              style={{
-                borderColor: 'oklch(0.90 0.008 50 / 0.5)',
-                focusRingColor: 'var(--color-primary)'
-              }}
-              onFocus={(e) => {
-                e.target.style.borderColor = 'var(--color-primary)';
-                e.target.style.boxShadow = '0 0 0 3px oklch(0.55 0.20 25 / 0.1)';
-              }}
-              onBlur={(e) => {
-                e.target.style.borderColor = 'oklch(0.90 0.008 50 / 0.5)';
-                e.target.style.boxShadow = 'none';
-              }}
-            />
+            <Search className="absolute left-4 top-3 text-gray-400" size={20} />
+            <input value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="Search for dishes..." className="w-full pl-12 pr-4 py-3 rounded-lg text-gray-800 border" />
           </div>
 
           {loading ? (
@@ -730,44 +691,31 @@ export const Home = () => {
 
         {/* Testimonials slider */}
         <section className="mb-12">
-          <div className="pl-4 mb-4" style={{
-            borderLeft: '4px solid',
-            borderColor: 'var(--color-primary)'
-          }}>
-            <p className="text-xs uppercase tracking-[0.4em]" style={{ color: 'var(--color-primary-light)' }}>Voices</p>
-            <h2 className="text-2xl font-bold gradient-text-warm">Testimonials</h2>
+          <div className="border-l-4 border-purple-500 pl-4 mb-4">
+            <p className="text-xs uppercase tracking-[0.4em] text-purple-400">Voices</p>
+            <h2 className="text-2xl font-bold text-gray-900">Testimonials</h2>
           </div>
           <div
-            className="card p-6 flex items-center gap-6 overflow-hidden"
+            className="relative bg-white rounded-lg p-6 shadow flex items-center gap-6 overflow-hidden"
             onMouseEnter={stopTestimonialTimer}
             onMouseLeave={startTestimonialTimer}
           >
-            <button 
-              aria-label="previous testimonial" 
-              onClick={() => setTestIndex((i) => (i - 1 + TESTIMONIALS.length) % TESTIMONIALS.length)} 
-              className="hidden md:block px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors text-2xl font-bold"
-              style={{ color: 'var(--color-primary)' }}
-            >
+            <button aria-label="previous testimonial" onClick={() => setTestIndex((i) => (i - 1 + TESTIMONIALS.length) % TESTIMONIALS.length)} className="hidden md:block px-3 py-2">
               ‹
             </button>
 
             <div className="flex-1">
-              <p className="text-lg italic text-gray-700">"{TESTIMONIALS[testIndex].quote}"</p>
+              <p className="text-lg italic">“{TESTIMONIALS[testIndex].quote}”</p>
               <div className="flex items-center gap-3 mt-4">
-                <img src={TESTIMONIALS[testIndex].image} alt={TESTIMONIALS[testIndex].name} onError={handleImgError} className="w-12 h-12 rounded-full object-cover ring-2 ring-offset-2" style={{ ringColor: 'var(--color-primary-light)' }} />
+                <img src={TESTIMONIALS[testIndex].image} alt={TESTIMONIALS[testIndex].name} onError={handleImgError} className="w-12 h-12 rounded-full object-cover" />
                 <div>
-                  <p className="font-semibold text-gray-900">{TESTIMONIALS[testIndex].name}</p>
+                  <p className="font-semibold">{TESTIMONIALS[testIndex].name}</p>
                   <p className="text-sm text-gray-600">Satisfied Customer</p>
                 </div>
               </div>
             </div>
 
-            <button 
-              aria-label="next testimonial" 
-              onClick={() => setTestIndex((i) => (i + 1) % TESTIMONIALS.length)} 
-              className="hidden md:block px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors text-2xl font-bold"
-              style={{ color: 'var(--color-primary)' }}
-            >
+            <button aria-label="next testimonial" onClick={() => setTestIndex((i) => (i + 1) % TESTIMONIALS.length)} className="hidden md:block px-3 py-2">
               ›
             </button>
           </div>
@@ -775,33 +723,28 @@ export const Home = () => {
 
         {/* CTA */}
         <section className="mb-24 text-center">
-          <div className="card p-8 md:p-12" style={{
-            background: 'var(--color-surface)',
-            border: '3px solid var(--color-primary-light)'
-          }}>
-            <h3 className="text-3xl font-bold mb-3 gradient-text-warm">Ready to delight your guests?</h3>
-            <p className="text-gray-600 mb-8 text-lg">Contact us for a custom quote and menu tasting.</p>
-            <div className="flex items-center justify-center gap-4 flex-wrap">
-              <button
-                onClick={() => {
-                  const el = document.getElementById('contact');
-                  if (el) el.scrollIntoView({ behavior: 'smooth' });
-                  else window.location.href = '/contact';
-                }}
-                className="btn-primary px-8 py-4 text-lg"
-              >
-                Request a Quote
-              </button>
-              <button
-                onClick={() => {
-                  const el = document.getElementById('menu');
-                  if (el) el.scrollIntoView({ behavior: 'smooth' });
-                }}
-                className="btn-secondary px-8 py-4 text-lg"
-              >
-                Browse Menu
-              </button>
-            </div>
+          <h3 className="text-2xl font-bold mb-3">Ready to delight your guests?</h3>
+          <p className="text-gray-600 mb-6">Contact us for a custom quote and menu tasting.</p>
+          <div className="flex items-center justify-center gap-4">
+            <button
+              onClick={() => {
+                const el = document.getElementById('contact');
+                if (el) el.scrollIntoView({ behavior: 'smooth' });
+                else window.location.href = '/contact';
+              }}
+              className="btn-primary px-6 py-3"
+            >
+              Request a Quote
+            </button>
+            <button
+              onClick={() => {
+                const el = document.getElementById('menu');
+                if (el) el.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="btn-secondary px-6 py-3"
+            >
+              Browse Menu
+            </button>
           </div>
         </section>
       </div>

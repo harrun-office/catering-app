@@ -168,31 +168,31 @@ export const MenuItem = ({ item = {}, onAddToCart = () => { }, onImgError }) => 
 
         {/* BADGES */}
         <div className="absolute top-3 left-3 flex flex-col gap-2">
-          {item?.badge && (
-            <span className="bg-white/95 px-3 py-1 text-xs rounded-lg font-bold shadow-md" style={{
-              color: 'var(--color-primary-dark)'
-            }}>
-              {item.badge}
+
+          {/* FIXED: badge never shows 0 */}
+          {/*{showBadge && (
+            <span className="bg-white/90 text-purple-700 px-3 py-1 text-xs rounded font-semibold shadow">
+              {badgeStr}
             </span>
           )}
 
-          <div className="flex gap-2 flex-wrap">
+          <div className="flex gap-2">
             {item?.is_vegetarian && (
-              <span className="badge-veg px-2 py-1 text-xs rounded">
+              <span className="bg-green-500 text-white px-2 py-1 text-xs rounded font-semibold">
                 VEG
               </span>
             )}
             {item?.is_vegan && (
-              <span className="badge-vegan px-2 py-1 text-xs rounded">
+              <span className="bg-yellow-500 text-white px-2 py-1 text-xs rounded font-semibold">
                 VEGAN
               </span>
             )}
             {item?.is_gluten_free && (
-              <span className="badge-gluten-free px-2 py-1 text-xs rounded">
+              <span className="bg-orange-500 text-white px-2 py-1 text-xs rounded font-semibold">
                 GLUTEN FREE
               </span>
             )}
-          </div>
+          </div> */}
         </div>
       </div>
 
@@ -208,7 +208,7 @@ export const MenuItem = ({ item = {}, onAddToCart = () => { }, onImgError }) => 
 
         <div className="flex items-center justify-between mb-4">
           <div>
-            <p className="text-2xl font-bold" style={{ color: 'var(--color-primary)' }}>₹{item?.price}</p>
+            <p className="text-2xl font-bold text-purple-600">₹{item?.price}</p>
             {item?.servings && (
               <p className="text-xs text-gray-500">Serves {item.servings}</p>
             )}

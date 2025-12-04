@@ -4,32 +4,25 @@
 
 /* ============================================
    OKLCH Color System & Design Tokens
-   Bold & Distinctive Food Theme - Stands Out!
    ============================================ */
 :root {
-  /* Bold Primary - Vibrant Teal/Turquoise (Unique & Fresh) */
-  --color-primary: oklch(0.50 0.18 200);
-  --color-primary-light: oklch(0.65 0.16 200);
-  --color-primary-dark: oklch(0.40 0.20 200);
+  /* OKLCH Primary Colors - Modern Purple */
+  --color-primary: oklch(0.60 0.20 300);
+  --color-primary-light: oklch(0.70 0.18 300);
+  --color-primary-dark: oklch(0.50 0.22 300);
 
-  /* Bold Accent - Energetic Coral/Orange (Appetite & Energy) */
-  --color-accent: oklch(0.65 0.20 40);
-  --color-accent-light: oklch(0.75 0.18 40);
-  --color-accent-dark: oklch(0.55 0.22 40);
-  
-  /* Bold Secondary Colors - High Contrast */
-  --color-success: oklch(0.60 0.20 150); /* Vibrant Green */
-  --color-warning: oklch(0.70 0.20 80); /* Bright Yellow */
-  --color-danger: oklch(0.55 0.25 15); /* Bold Red */
-  --color-info: oklch(0.55 0.18 250); /* Electric Blue */
+  /* OKLCH Accent Colors - Vibrant Pink */
+  --color-accent: oklch(0.70 0.20 340);
+  --color-accent-light: oklch(0.80 0.18 340);
+  --color-accent-dark: oklch(0.60 0.22 340);
 
-  /* Neutral Colors - Warm Tones */
-  --color-bg: oklch(0.99 0.003 60); /* Warm off-white */
-  --color-surface: oklch(1.0 0.001 60); /* Pure warm white */
-  --color-surface-2: oklch(0.97 0.005 50); /* Warm light gray */
-  --color-text-strong: oklch(0.20 0.010 30); /* Deep warm brown */
-  --color-text-medium: oklch(0.40 0.008 40); /* Medium warm gray */
-  --color-text-light: oklch(0.60 0.006 50); /* Light warm gray */
+  /* Neutral Colors */
+  --color-bg: oklch(0.98 0.005 260);
+  --color-surface: oklch(0.99 0.002 260);
+  --color-surface-2: oklch(0.96 0.008 260);
+  --color-text-strong: oklch(0.25 0.015 260);
+  --color-text-medium: oklch(0.45 0.010 260);
+  --color-text-light: oklch(0.65 0.008 260);
 
   /* Glass Effect Colors */
   --glass-bg: oklch(0.99 0.002 260 / 0.7);
@@ -42,16 +35,11 @@
   --space-lg: 1.5rem;
   --space-xl: 2rem;
 
-  /* Shadows - Warmer, softer shadows */
-  --shadow-sm: 0 2px 8px oklch(0.25 0.015 30 / 0.08);
-  --shadow-md: 0 4px 16px oklch(0.25 0.015 30 / 0.12);
-  --shadow-lg: 0 8px 32px oklch(0.25 0.015 30 / 0.16);
-  --shadow-xl: 0 16px 48px oklch(0.25 0.015 30 / 0.20);
-  
-  /* Solid bold colors - no gradients for standout look */
-  --gradient-primary: var(--color-primary); /* Solid primary */
-  --gradient-warm: var(--color-accent); /* Solid accent */
-  --gradient-fresh: var(--color-success); /* Solid success */
+  /* Shadows */
+  --shadow-sm: 0 2px 8px oklch(0.25 0.015 260 / 0.08);
+  --shadow-md: 0 4px 16px oklch(0.25 0.015 260 / 0.12);
+  --shadow-lg: 0 8px 32px oklch(0.25 0.015 260 / 0.16);
+  --shadow-xl: 0 16px 48px oklch(0.25 0.015 260 / 0.20);
 
   /* Border Radius */
   --radius-sm: 0.5rem;
@@ -75,9 +63,8 @@ body {
     'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: linear-gradient(to bottom, var(--color-bg), oklch(0.98 0.004 55));
+  background-color: var(--color-bg);
   color: var(--color-text-strong);
-  background-attachment: fixed;
 }
 
 code {
@@ -154,6 +141,7 @@ body::-webkit-scrollbar {
 }
 
 @keyframes float {
+
   0%,
   100% {
     transform: translateY(0px);
@@ -161,24 +149,6 @@ body::-webkit-scrollbar {
 
   50% {
     transform: translateY(-10px);
-  }
-}
-
-@keyframes pulse-glow {
-  0%, 100% {
-    box-shadow: 0 0 20px oklch(0.55 0.20 25 / 0.3);
-  }
-  50% {
-    box-shadow: 0 0 30px oklch(0.55 0.20 25 / 0.5);
-  }
-}
-
-@keyframes shimmer-food {
-  0% {
-    background-position: -200% center;
-  }
-  100% {
-    background-position: 200% center;
   }
 }
 
@@ -196,45 +166,6 @@ body::-webkit-scrollbar {
 
 .animate-float {
   animation: float 3s ease-in-out infinite;
-}
-
-.animate-pulse-glow {
-  animation: pulse-glow 2s ease-in-out infinite;
-}
-
-/* Food-themed image hover effect */
-.menu-item-img {
-  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.menu-item-img:hover {
-  transform: scale(1.1);
-}
-
-/* Enhanced button with food theme */
-.btn-food-primary {
-  @apply btn-primary;
-  background: var(--gradient-primary);
-  position: relative;
-  overflow: hidden;
-}
-
-.btn-food-primary::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.3);
-  transform: translate(-50%, -50%);
-  transition: width 0.6s, height 0.6s;
-}
-
-.btn-food-primary:hover::after {
-  width: 300px;
-  height: 300px;
 }
 
 /* ============================================
@@ -273,50 +204,22 @@ body::-webkit-scrollbar {
 }
 
 .gradient-text {
-  color: var(--color-primary);
-  font-weight: 800;
-}
-
-.gradient-text-warm {
-  color: var(--color-accent);
-  font-weight: 800;
-}
-
-.gradient-text-fresh {
-  color: var(--color-success);
-  font-weight: 800;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .card {
   @apply rounded-xl transition-all duration-300;
   background: var(--color-surface);
   box-shadow: var(--shadow-md);
-  border: 1px solid oklch(0.95 0.005 50 / 0.5);
-  position: relative;
-  overflow: hidden;
-}
-
-.card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: var(--color-primary);
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform 0.3s ease;
-}
-
-.card:hover::before {
-  transform: scaleX(1);
+  border: 1px solid oklch(0.95 0.005 260 / 0.5);
 }
 
 .card:hover {
-  box-shadow: 0 8px 24px oklch(0.50 0.18 200 / 0.25);
-  transform: translateY(-4px);
-  border: 2px solid var(--color-primary-light);
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
 }
 
 .card-glass {
@@ -333,26 +236,19 @@ body::-webkit-scrollbar {
 .btn-primary {
   @apply rounded-xl font-semibold transition-all duration-300;
   padding: var(--space-sm) var(--space-lg);
-  background: var(--color-primary);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
   color: white;
-  box-shadow: 0 4px 12px oklch(0.50 0.18 200 / 0.4);
-  border: 2px solid var(--color-primary-dark);
-  position: relative;
-  overflow: hidden;
-  font-weight: 700;
-  letter-spacing: 0.5px;
+  box-shadow: var(--shadow-md);
+  border: none;
 }
 
 .btn-primary:hover {
-  background: var(--color-primary-dark);
-  box-shadow: 0 6px 20px oklch(0.50 0.18 200 / 0.5);
-  transform: translateY(-2px) scale(1.02);
-  border-color: var(--color-primary);
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-1px) scale(1.02);
 }
 
 .btn-primary:active {
   transform: translateY(0) scale(0.98);
-  box-shadow: 0 2px 8px oklch(0.50 0.18 200 / 0.4);
 }
 
 .btn-secondary {
@@ -393,49 +289,23 @@ body::-webkit-scrollbar {
 }
 
 .badge-success {
-  background: var(--color-success);
-  color: white;
-  box-shadow: 0 2px 8px oklch(0.65 0.15 145 / 0.3);
+  background: oklch(0.75 0.12 145);
+  color: oklch(0.30 0.08 145);
 }
 
 .badge-warning {
-  background: var(--color-warning);
-  color: oklch(0.30 0.10 85);
-  box-shadow: 0 2px 8px oklch(0.75 0.15 85 / 0.3);
+  background: oklch(0.80 0.12 85);
+  color: oklch(0.35 0.10 85);
 }
 
 .badge-danger {
-  background: var(--color-danger);
-  color: white;
-  box-shadow: 0 2px 8px oklch(0.55 0.22 20 / 0.3);
+  background: oklch(0.70 0.15 25);
+  color: oklch(0.30 0.12 25);
 }
 
 .badge-info {
   background: var(--color-primary-light);
-  color: white;
-  box-shadow: 0 2px 8px oklch(0.65 0.18 25 / 0.3);
-}
-
-/* Food-themed badges */
-.badge-veg {
-  background: var(--color-success);
-  color: white;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-}
-
-.badge-vegan {
-  background: var(--color-warning);
-  color: oklch(0.30 0.10 85);
-  font-weight: 700;
-  letter-spacing: 0.5px;
-}
-
-.badge-gluten-free {
-  background: var(--color-accent);
-  color: white;
-  font-weight: 700;
-  letter-spacing: 0.5px;
+  color: var(--color-primary-dark);
 }
 
 /* ============================================
