@@ -186,8 +186,10 @@ export const Navbar = () => {
         )}
       </aside>
 
-      {/* MOBILE NAV (unchanged) */}
-      <nav className="md:hidden fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-md">
+      {/* MOBILE NAV */}
+      <nav className="md:hidden fixed top-0 left-0 right-0 z-50 text-white shadow-md" style={{
+        background: 'linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%)'
+      }}>
         <div className="container-main flex items-center justify-between py-3 relative">
           <button
             onClick={() => setMobileOpen((s) => !s)}

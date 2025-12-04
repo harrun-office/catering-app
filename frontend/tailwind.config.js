@@ -4,18 +4,23 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Colors use CSS variables defined in overrides.css (OKLCH-based)
+        // Food Industry Colors - OKLCH-based CSS variables
         primary: 'var(--color-primary)',
-        'primary-600': 'var(--color-primary-600)',
+        'primary-light': 'var(--color-primary-light)',
+        'primary-dark': 'var(--color-primary-dark)',
         accent: 'var(--color-accent)',
-        'accent-600': 'var(--color-accent-600)',
+        'accent-light': 'var(--color-accent-light)',
+        'accent-dark': 'var(--color-accent-dark)',
         surface: 'var(--color-surface)',
         'surface-2': 'var(--color-surface-2)',
         bg: 'var(--color-bg)',
         'text-strong': 'var(--color-text-strong)',
+        'text-medium': 'var(--color-text-medium)',
+        'text-light': 'var(--color-text-light)',
         success: 'var(--color-success)',
         warning: 'var(--color-warning)',
         danger: 'var(--color-danger)',
+        info: 'var(--color-info)',
       },
       container: {
         center: true,

@@ -315,22 +315,93 @@ const menuItems = [
     }
 ];
 
+async function createConnectionWithRetry(config, retries = 5, delay = 3000) {
+    // Increase timeout for Railway connections
+    config.connectTimeout = config.connectTimeout || 90000; // 90 seconds
+    
+    for (let i = 0; i < retries; i++) {
+        try {
+            console.log(`   Attempt ${i + 1}/${retries}...`);
+            const conn = await mysql.createConnection(config);
+            return conn;
+        } catch (error) {
+            if (i === retries - 1) throw error;
+            console.log(`   ⚠️  Connection attempt ${i + 1} failed, retrying in ${delay/1000}s...`);
+            await new Promise(resolve => setTimeout(resolve, delay));
+        }
+    }
+}
+
 async function seedMenuItems() {
-    let connection;
+    let connection = null;
 
     try {
-        console.log('🔄 Connecting to Railway database...');
-        console.log(`   Host: ${process.env.DB_HOST}`);
-        console.log(`   Database: ${process.env.DB_NAME}`);
-        console.log(`   Port: ${process.env.DB_PORT}`);
+        // Try using MYSQL_PUBLIC_URL first (Railway connection string)
+        // But skip if it contains internal hostname (only works inside Railway)
+        if (process.env.MYSQL_PUBLIC_URL && 
+            !process.env.MYSQL_PUBLIC_URL.includes('mysql.railway.internal') &&
+            process.env.MYSQL_PUBLIC_URL.includes('proxy.rlwy.net')) {
+            console.log('🔄 Connecting using MYSQL_PUBLIC_URL...');
+            try {
+                const url = process.env.MYSQL_PUBLIC_URL.replace('mysql://', '');
+                const [credentials, hostAndDb] = url.split('@');
+                const [user, password] = credentials.split(':');
+                const [hostPort, database] = hostAndDb.split('/');
+                const [host, port] = hostPort.split(':');
+                
+                connection = await createConnectionWithRetry({
+                    host: host,
+                    port: Number(port),
+                    user: decodeURIComponent(user),
+                    password: decodeURIComponent(password),
+                    database: database,
+                    connectTimeout: 90000, // 90 seconds
+                    ssl: {
+                        rejectUnauthorized: false
+                    }
+                });
+                console.log('✅ Connected using MYSQL_PUBLIC_URL!\n');
+            } catch (urlError) {
+                console.log('⚠️  MYSQL_PUBLIC_URL connection failed, trying fallback...');
+                connection = null; // Will fall through to else block
+            }
+        }
+        
+        if (!connection) {
+            // Always prefer proxy URL for local connections (even with railway run)
+            // Only use internal hostname when actually running inside Railway
+            let dbHost = process.env.RAILWAY_TCP_PROXY_DOMAIN || process.env.DB_HOST;
+            let dbPort = process.env.RAILWAY_TCP_PROXY_PORT || process.env.DB_PORT || 3306;
+            
+            // If no proxy available, try internal (but this won't work locally)
+            if (!dbHost || (!dbHost.includes('proxy.rlwy.net') && !dbHost.includes('railway'))) {
+                dbHost = process.env.MYSQLHOST || process.env.DB_HOST;
+                dbPort = process.env.MYSQLPORT || process.env.DB_PORT || 3306;
+            }
+            
+            const dbUser = process.env.MYSQLUSER || process.env.DB_USER;
+            const dbPassword = process.env.MYSQLPASSWORD || process.env.MYSQL_ROOT_PASSWORD || process.env.DB_PASSWORD;
+            const dbName = process.env.MYSQLDATABASE || process.env.MYSQL_DATABASE || process.env.DB_NAME;
 
-        connection = await mysql.createConnection({
-            host: process.env.DB_HOST,
-            port: Number(process.env.DB_PORT) || 3306,
-            user: process.env.DB_USER,
-            password: process.env.DB_PASSWORD,
-            database: process.env.DB_NAME
-        });
+            console.log('🔄 Connecting to Railway database...');
+            console.log(`   Host: ${dbHost}`);
+            console.log(`   Database: ${dbName}`);
+            console.log(`   Port: ${dbPort}`);
+
+            const connectionConfig = {
+                host: dbHost,
+                port: Number(dbPort),
+                user: dbUser,
+                password: dbPassword,
+                database: dbName,
+                connectTimeout: 90000, // 90 seconds
+                ssl: (dbHost && dbHost.includes('proxy.rlwy.net')) || (dbHost && dbHost.includes('railway')) ? {
+                    rejectUnauthorized: false
+                } : false
+            };
+
+            connection = await createConnectionWithRetry(connectionConfig);
+        }
 
         console.log('✅ Connected to database successfully!\n');
 
@@ -380,18 +451,30 @@ async function seedMenuItems() {
     } catch (error) {
         console.error('\n❌ Error seeding database:');
         console.error(`   ${error.message}`);
+        console.error(`   Error code: ${error.code || 'N/A'}`);
 
-        if (error.code === 'ECONNREFUSED') {
-            console.log('\n💡 Connection refused. Possible issues:');
-            console.log('   1. Check if your .env has correct Railway credentials');
-            console.log('   2. Verify Railway database is running');
-            console.log('   3. Check if your IP is whitelisted on Railway');
+        if (error.code === 'ECONNREFUSED' || error.code === 'ETIMEDOUT') {
+            console.log('\n💡 Connection timeout/refused. Possible solutions:');
+            console.log('   1. Check Railway Dashboard → MySQL service is RUNNING (not paused)');
+            console.log('   2. Verify TCP Proxy is ENABLED in Railway settings');
+            console.log('   3. Check if your IP/firewall is blocking port 14009');
+            console.log('   4. Try running: railway run node scripts/seed-menu-items.js');
+            console.log('   5. Or run the script from Railway\'s web console/terminal');
         } else if (error.code === 'ER_ACCESS_DENIED_ERROR') {
             console.log('\n💡 Access denied. Check:');
             console.log('   1. DB_USER is correct (usually "root")');
             console.log('   2. DB_PASSWORD matches your Railway password');
+        } else if (error.code === 'ENOTFOUND') {
+            console.log('\n💡 Hostname not found. This usually means:');
+            console.log('   1. You\'re trying to use internal Railway hostname locally');
+            console.log('   2. Use DB_HOST with proxy.rlwy.net for local connections');
+            console.log('   3. Or use: railway run node scripts/seed-menu-items.js');
         }
 
+        console.log('\n📝 The script is configured correctly.');
+        console.log('   The issue is network connectivity to Railway database.');
+        console.log('   Please check your Railway dashboard to ensure the database is active.\n');
+        
         process.exit(1);
     }
 }

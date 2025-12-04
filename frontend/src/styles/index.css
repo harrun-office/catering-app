@@ -4,25 +4,32 @@
 
 /* ============================================
    OKLCH Color System & Design Tokens
+   Food Industry Theme - Warm & Appetizing
    ============================================ */
 :root {
-  /* OKLCH Primary Colors - Modern Purple */
-  --color-primary: oklch(0.60 0.20 300);
-  --color-primary-light: oklch(0.70 0.18 300);
-  --color-primary-dark: oklch(0.50 0.22 300);
+  /* OKLCH Primary Colors - Warm Tomato Red (Appetite & Energy) */
+  --color-primary: oklch(0.55 0.20 25);
+  --color-primary-light: oklch(0.65 0.18 25);
+  --color-primary-dark: oklch(0.45 0.22 25);
 
-  /* OKLCH Accent Colors - Vibrant Pink */
-  --color-accent: oklch(0.70 0.20 340);
-  --color-accent-light: oklch(0.80 0.18 340);
-  --color-accent-dark: oklch(0.60 0.22 340);
+  /* OKLCH Accent Colors - Rich Orange (Warmth & Comfort) */
+  --color-accent: oklch(0.70 0.18 65);
+  --color-accent-light: oklch(0.80 0.16 65);
+  --color-accent-dark: oklch(0.60 0.20 65);
+  
+  /* Food Industry Secondary Colors */
+  --color-success: oklch(0.65 0.15 145); /* Fresh Green */
+  --color-warning: oklch(0.75 0.15 85); /* Golden Yellow */
+  --color-danger: oklch(0.55 0.22 20); /* Deep Red */
+  --color-info: oklch(0.60 0.12 240); /* Calming Blue */
 
-  /* Neutral Colors */
-  --color-bg: oklch(0.98 0.005 260);
-  --color-surface: oklch(0.99 0.002 260);
-  --color-surface-2: oklch(0.96 0.008 260);
-  --color-text-strong: oklch(0.25 0.015 260);
-  --color-text-medium: oklch(0.45 0.010 260);
-  --color-text-light: oklch(0.65 0.008 260);
+  /* Neutral Colors - Warm Tones */
+  --color-bg: oklch(0.99 0.003 60); /* Warm off-white */
+  --color-surface: oklch(1.0 0.001 60); /* Pure warm white */
+  --color-surface-2: oklch(0.97 0.005 50); /* Warm light gray */
+  --color-text-strong: oklch(0.20 0.010 30); /* Deep warm brown */
+  --color-text-medium: oklch(0.40 0.008 40); /* Medium warm gray */
+  --color-text-light: oklch(0.60 0.006 50); /* Light warm gray */
 
   /* Glass Effect Colors */
   --glass-bg: oklch(0.99 0.002 260 / 0.7);
@@ -35,11 +42,16 @@
   --space-lg: 1.5rem;
   --space-xl: 2rem;
 
-  /* Shadows */
-  --shadow-sm: 0 2px 8px oklch(0.25 0.015 260 / 0.08);
-  --shadow-md: 0 4px 16px oklch(0.25 0.015 260 / 0.12);
-  --shadow-lg: 0 8px 32px oklch(0.25 0.015 260 / 0.16);
-  --shadow-xl: 0 16px 48px oklch(0.25 0.015 260 / 0.20);
+  /* Shadows - Warmer, softer shadows */
+  --shadow-sm: 0 2px 8px oklch(0.25 0.015 30 / 0.08);
+  --shadow-md: 0 4px 16px oklch(0.25 0.015 30 / 0.12);
+  --shadow-lg: 0 8px 32px oklch(0.25 0.015 30 / 0.16);
+  --shadow-xl: 0 16px 48px oklch(0.25 0.015 30 / 0.20);
+  
+  /* Food-themed gradient */
+  --gradient-primary: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+  --gradient-warm: linear-gradient(135deg, oklch(0.65 0.18 25), oklch(0.75 0.16 65));
+  --gradient-fresh: linear-gradient(135deg, oklch(0.70 0.15 145), oklch(0.75 0.15 85));
 
   /* Border Radius */
   --radius-sm: 0.5rem;
@@ -63,8 +75,9 @@ body {
     'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: var(--color-bg);
+  background: linear-gradient(to bottom, var(--color-bg), oklch(0.98 0.004 55));
   color: var(--color-text-strong);
+  background-attachment: fixed;
 }
 
 code {
@@ -141,7 +154,6 @@ body::-webkit-scrollbar {
 }
 
 @keyframes float {
-
   0%,
   100% {
     transform: translateY(0px);
@@ -149,6 +161,24 @@ body::-webkit-scrollbar {
 
   50% {
     transform: translateY(-10px);
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px oklch(0.55 0.20 25 / 0.3);
+  }
+  50% {
+    box-shadow: 0 0 30px oklch(0.55 0.20 25 / 0.5);
+  }
+}
+
+@keyframes shimmer-food {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
   }
 }
 
@@ -166,6 +196,45 @@ body::-webkit-scrollbar {
 
 .animate-float {
   animation: float 3s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Food-themed image hover effect */
+.menu-item-img {
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.menu-item-img:hover {
+  transform: scale(1.1);
+}
+
+/* Enhanced button with food theme */
+.btn-food-primary {
+  @apply btn-primary;
+  background: var(--gradient-primary);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-food-primary::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.btn-food-primary:hover::after {
+  width: 300px;
+  height: 300px;
 }
 
 /* ============================================
@@ -204,7 +273,21 @@ body::-webkit-scrollbar {
 }
 
 .gradient-text {
-  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gradient-text-warm {
+  background: var(--gradient-warm);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gradient-text-fresh {
+  background: var(--gradient-fresh);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -214,12 +297,32 @@ body::-webkit-scrollbar {
   @apply rounded-xl transition-all duration-300;
   background: var(--color-surface);
   box-shadow: var(--shadow-md);
-  border: 1px solid oklch(0.95 0.005 260 / 0.5);
+  border: 1px solid oklch(0.95 0.005 50 / 0.5);
+  position: relative;
+  overflow: hidden;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--gradient-primary);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s ease;
+}
+
+.card:hover::before {
+  transform: scaleX(1);
 }
 
 .card:hover {
-  box-shadow: var(--shadow-lg);
-  transform: translateY(-2px);
+  box-shadow: 0 8px 24px oklch(0.55 0.20 25 / 0.15);
+  transform: translateY(-4px);
+  border-color: oklch(0.90 0.008 50 / 0.6);
 }
 
 .card-glass {
@@ -236,15 +339,32 @@ body::-webkit-scrollbar {
 .btn-primary {
   @apply rounded-xl font-semibold transition-all duration-300;
   padding: var(--space-sm) var(--space-lg);
-  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+  background: var(--gradient-primary);
   color: white;
   box-shadow: var(--shadow-md);
   border: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.btn-primary:hover::before {
+  left: 100%;
 }
 
 .btn-primary:hover {
-  box-shadow: var(--shadow-lg);
-  transform: translateY(-1px) scale(1.02);
+  box-shadow: 0 6px 20px oklch(0.55 0.20 25 / 0.3);
+  transform: translateY(-2px) scale(1.02);
 }
 
 .btn-primary:active {
@@ -289,23 +409,49 @@ body::-webkit-scrollbar {
 }
 
 .badge-success {
-  background: oklch(0.75 0.12 145);
-  color: oklch(0.30 0.08 145);
+  background: var(--color-success);
+  color: white;
+  box-shadow: 0 2px 8px oklch(0.65 0.15 145 / 0.3);
 }
 
 .badge-warning {
-  background: oklch(0.80 0.12 85);
-  color: oklch(0.35 0.10 85);
+  background: var(--color-warning);
+  color: oklch(0.30 0.10 85);
+  box-shadow: 0 2px 8px oklch(0.75 0.15 85 / 0.3);
 }
 
 .badge-danger {
-  background: oklch(0.70 0.15 25);
-  color: oklch(0.30 0.12 25);
+  background: var(--color-danger);
+  color: white;
+  box-shadow: 0 2px 8px oklch(0.55 0.22 20 / 0.3);
 }
 
 .badge-info {
   background: var(--color-primary-light);
-  color: var(--color-primary-dark);
+  color: white;
+  box-shadow: 0 2px 8px oklch(0.65 0.18 25 / 0.3);
+}
+
+/* Food-themed badges */
+.badge-veg {
+  background: var(--color-success);
+  color: white;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.badge-vegan {
+  background: var(--color-warning);
+  color: oklch(0.30 0.10 85);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.badge-gluten-free {
+  background: var(--color-accent);
+  color: white;
+  font-weight: 700;
+  letter-spacing: 0.5px;
 }
 
 /* ============================================
