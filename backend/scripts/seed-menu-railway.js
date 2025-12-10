@@ -9,8 +9,8 @@ const menuItems = [
         description: "Crispy spring rolls with sweet dipping sauce",
         price: 50.00,
         image: "https://via.placeholder.com/300x200?text=Spring+Rolls",
-        servings: 1, preparation_time: 1,
-        is_vegetarian: 0, is_vegan: 0, is_gluten_free: 0,
+        servings: null, preparation_time: null,
+        is_vegetarian: 1, is_vegan: 1, is_gluten_free: 0,
         rating: 0.0, total_ratings: 0, is_available: 1,
         created_at: "2025-11-26 15:25:43", updated_at: "2025-12-01 12:02:10"
     },
@@ -19,8 +19,8 @@ const menuItems = [
         description: "Toasted bread with tomato and basil",
         price: 280.00,
         image: "https://via.placeholder.com/300x200?text=Bruschetta",
-        servings: 1, preparation_time: 1,
-        is_vegetarian: 0, is_vegan: 0, is_gluten_free: 0,
+        servings: null, preparation_time: null,
+        is_vegetarian: 1, is_vegan: 1, is_gluten_free: 0,
         rating: 0.0, total_ratings: 0, is_available: 1,
         created_at: "2025-11-26 15:25:43", updated_at: "2025-12-03 12:12:44"
     },
@@ -29,7 +29,7 @@ const menuItems = [
         description: "Spicy buffalo wings with ranch dip",
         price: 350.00,
         image: "https://via.placeholder.com/300x200?text=Chicken+Wings",
-        servings: 0, preparation_time: 0,
+        servings: null, preparation_time: null,
         is_vegetarian: 0, is_vegan: 0, is_gluten_free: 0,
         rating: 0.0, total_ratings: 0, is_available: 1,
         created_at: "2025-11-26 15:25:43", updated_at: "2025-12-03 12:12:44"
@@ -39,7 +39,7 @@ const menuItems = [
         description: "Garlic shrimp skewers",
         price: 450.00,
         image: "https://via.placeholder.com/300x200?text=Shrimp+Appetizer",
-        servings: 0, preparation_time: 0,
+        servings: null, preparation_time: null,
         is_vegetarian: 0, is_vegan: 0, is_gluten_free: 0,
         rating: 0.0, total_ratings: 0, is_available: 1,
         created_at: "2025-11-26 15:25:43", updated_at: "2025-12-03 12:12:44"
@@ -49,7 +49,7 @@ const menuItems = [
         description: "Fresh salmon fillet with lemon butter",
         price: 1450.00,
         image: "https://via.placeholder.com/300x200?text=Grilled+Salmon",
-        servings: 0, preparation_time: 0,
+        servings: null, preparation_time: null,
         is_vegetarian: 0, is_vegan: 0, is_gluten_free: 0,
         rating: 0.0, total_ratings: 0, is_available: 1,
         created_at: "2025-11-26 15:25:43", updated_at: "2025-12-03 12:12:44"
@@ -59,7 +59,7 @@ const menuItems = [
         description: "Prime cut steak with herb butter",
         price: 1800.00,
         image: "https://via.placeholder.com/300x200?text=Ribeye+Steak",
-        servings: 0, preparation_time: 0,
+        servings: null, preparation_time: null,
         is_vegetarian: 0, is_vegan: 0, is_gluten_free: 0,
         rating: 0.0, total_ratings: 0, is_available: 1,
         created_at: "2025-11-26 15:25:43", updated_at: "2025-12-03 12:12:44"
@@ -320,21 +320,41 @@ async function seedMenuItems() {
     let connection;
 
     try {
-        // Always use individual variables from .env for local connections
-        // MYSQL_URL contains Railway's internal hostname which doesn't work locally
-        console.log('🔄 Connecting to Railway database using .env variables...');
-        console.log(`   Host: ${process.env.DB_HOST}`);
-        console.log(`   Database: ${process.env.DB_NAME}`);
-        console.log(`   Port: ${process.env.DB_PORT}\n`);
+        // When running via 'railway run', use Railway's internal variables
+        // Otherwise use .env variables (for local connections)
+        let dbHost, dbPort, dbUser, dbPassword, dbName;
+        
+        if (process.env.MYSQLHOST) {
+            // Running on Railway - use internal connection
+            dbHost = process.env.MYSQLHOST;
+            dbPort = process.env.MYSQLPORT || 3306;
+            dbUser = process.env.MYSQLUSER;
+            dbPassword = process.env.MYSQLPASSWORD || process.env.MYSQL_ROOT_PASSWORD;
+            dbName = process.env.MYSQLDATABASE;
+            console.log('🔄 Connecting to Railway database (internal connection)...');
+        } else {
+            // Running locally - use .env variables
+            dbHost = process.env.DB_HOST;
+            dbPort = process.env.DB_PORT || 3306;
+            dbUser = process.env.DB_USER;
+            dbPassword = process.env.DB_PASSWORD;
+            dbName = process.env.DB_NAME;
+            console.log('🔄 Connecting to Railway database using .env variables...');
+        }
+        
+        console.log(`   Host: ${dbHost}`);
+        console.log(`   Database: ${dbName}`);
+        console.log(`   Port: ${dbPort}`);
+        console.log('   ⏳ Please wait, this may take 30-60 seconds...\n');
 
         const connectionConfig = {
-            host: process.env.DB_HOST,
-            port: Number(process.env.DB_PORT || 3306),
-            user: process.env.DB_USER,
-            password: process.env.DB_PASSWORD,
-            database: process.env.DB_NAME,
-            connectTimeout: 60000, // 60 seconds
-            ssl: {
+            host: dbHost,
+            port: Number(dbPort),
+            user: dbUser,
+            password: dbPassword,
+            database: dbName,
+            connectTimeout: 90000, // 90 seconds
+            ssl: process.env.MYSQLHOST ? false : { // No SSL for internal Railway connections
                 rejectUnauthorized: false
             }
         };

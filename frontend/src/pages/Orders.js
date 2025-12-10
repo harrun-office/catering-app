@@ -64,7 +64,7 @@ export const Orders = () => {
   return (
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="container-main">
-        <h1 className="text-3xl font-bold text-gray-800 mb-8">My Orders</h1>
+        <h1 className="text-3xl font-bold text-[#FC4300] mb-8">My Orders</h1>
 
         {error && <Alert type="error" message={error} onClose={() => setError('')} />}
 
@@ -75,8 +75,8 @@ export const Orders = () => {
               key={option.value}
               onClick={() => setSelectedStatus(option.value)}
               className={`px-4 py-2 rounded-lg font-semibold transition ${selectedStatus === option.value
-                ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white'
-                : 'bg-white border-2 border-gray-200 text-gray-700 hover:border-purple-600'
+                ? 'bg-[#FC4300] text-white'
+                : 'bg-white border-2 border-gray-200 text-gray-700 hover:border-[#FC4300]'
                 }`}
             >
               {option.label}
@@ -91,7 +91,7 @@ export const Orders = () => {
         ) : orders.length === 0 ? (
           <div className="text-center py-12 bg-white rounded-lg">
             <Package size={64} className="mx-auto text-gray-300 mb-4" />
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">No Orders Yet</h2>
+            <h2 className="text-2xl font-bold text-[#FC4300] mb-2">No Orders Yet</h2>
             <p className="text-gray-600">Start ordering delicious food from our menu!</p>
           </div>
         ) : (
@@ -102,7 +102,7 @@ export const Orders = () => {
                 <div className="bg-gradient-to-r from-purple-50 to-blue-50 p-6 border-b flex justify-between items-start">
                   <div>
                     <p className="text-sm text-gray-600">Order Number</p>
-                    <h3 className="text-2xl font-bold text-gray-800">{order.order_number}</h3>
+                    <h3 className="text-2xl font-bold text-[#FC4300]">{order.order_number}</h3>
                   </div>
                   <div className="text-right">
                     <span className={`inline-block px-4 py-2 rounded-full font-semibold text-sm ${getStatusColor(order.status)}`}>
@@ -115,7 +115,7 @@ export const Orders = () => {
                 <div className="p-6">
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                     <div className="flex items-center gap-3">
-                      <Clock className="text-purple-600" />
+                      <Clock className="text-[#FC4300]" />
                       <div>
                         <p className="text-xs text-gray-600">Ordered</p>
                         <p className="font-semibold text-gray-800">
@@ -125,7 +125,7 @@ export const Orders = () => {
                     </div>
 
                     <div className="flex items-center gap-3">
-                      <MapPin className="text-purple-600" />
+                      <MapPin className="text-[#FC4300]" />
                       <div>
                         <p className="text-xs text-gray-600">Delivery</p>
                         <p className="font-semibold text-gray-800">{order.delivery_date}</p>
@@ -133,15 +133,15 @@ export const Orders = () => {
                     </div>
 
                     <div className="flex items-center gap-3">
-                      <DollarSign className="text-purple-600" />
+                      <DollarSign className="text-[#FC4300]" />
                       <div>
                         <p className="text-xs text-gray-600">Total</p>
-                        <p className="font-semibold text-gray-800">₹{order.total_amount}</p>
+                        <p className="font-semibold text-[#FC4300]">₹{order.total_amount}</p>
                       </div>
                     </div>
 
                     <div className="flex items-center gap-3">
-                      <Package className="text-purple-600" />
+                      <Package className="text-[#FC4300]" />
                       <div>
                         <p className="text-xs text-gray-600">Items</p>
                         <p className="font-semibold text-gray-800">{order.items?.length || 0} items</p>
@@ -158,7 +158,7 @@ export const Orders = () => {
                           <span>
                             {item.name} x {item.quantity}
                           </span>
-                          <span>₹{Number(item.total_price || item.unit_price * item.quantity).toFixed(2)}</span>
+                          <span className="font-semibold text-[#FC4300]">₹{Number(item.total_price || item.unit_price * item.quantity).toFixed(2)}</span>
                         </li>
                       ))}
                     </ul>

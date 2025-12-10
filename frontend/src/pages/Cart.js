@@ -417,7 +417,7 @@ export const Cart = () => {
 
                     <div className="flex-1">
                       <h3 className="font-bold text-lg text-gray-800">{item.name}</h3>
-                      <p className="text-purple-600 font-bold text-lg">₹{fmt(item.price)}</p>
+                      <p className="text-[#FC4300] font-bold text-lg">₹{fmt(item.price)}</p>
                     </div>
 
                     <div className="flex items-center gap-3">
@@ -454,7 +454,7 @@ export const Cart = () => {
                     </div>
 
                     <div className="text-right">
-                      <p className="font-bold text-lg text-gray-800">₹{fmt(item.price * item.quantity)}</p>
+                      <p className="text-[#FC4300] font-bold text-lg">₹{fmt(item.price * item.quantity)}</p>
                     </div>
 
                     <button onClick={() => removeItem(item.id)} className="text-red-600 hover:text-red-800 p-2" aria-label={`Remove ${item.name}`}>
@@ -475,21 +475,21 @@ export const Cart = () => {
               <div className="space-y-3 mb-4 pb-4 border-b">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Subtotal:</span>
-                  <span className="font-semibold">₹{fmt(total)}</span>
+                  <span className="font-semibold text-[#FC4300]">₹{fmt(total)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Tax (5%):</span>
-                  <span className="font-semibold">₹{fmt(tax)}</span>
+                  <span className="font-semibold text-[#FC4300]">₹{fmt(tax)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Delivery Charge:</span>
-                  <span className="font-semibold">{deliveryCharge === 0 ? 'FREE' : `₹${fmt(deliveryCharge)}`}</span>
+                  <span className="font-semibold text-[#FC4300]">{deliveryCharge === 0 ? 'FREE' : `₹${fmt(deliveryCharge)}`}</span>
                 </div>
               </div>
 
               <div className="flex justify-between text-lg font-bold text-gray-800 mb-6">
                 <span>Total:</span>
-                <span className="text-purple-600">₹{fmt(finalTotal)}</span>
+                <span className="text-[#FC4300]">₹{fmt(finalTotal)}</span>
               </div>
 
               {total <= 500 && (
@@ -511,7 +511,7 @@ export const Cart = () => {
                     value={formData.delivery_address}
                     onChange={handleChange}
                     placeholder="Enter your delivery address"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-600 resize-none"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#FC4300] focus:ring-2 focus:ring-[#FC4300]/20 resize-none"
                     rows="3"
                     required
                   />
@@ -543,7 +543,7 @@ export const Cart = () => {
                     name="delivery_date"
                     value={formData.delivery_date}
                     onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-600"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#FC4300] focus:ring-2 focus:ring-[#FC4300]/20"
                     required
                     min={minDate}
                   />
@@ -564,7 +564,7 @@ export const Cart = () => {
                         const formatted = to12Hour(val);
                         setFormData(prev => ({ ...prev, delivery_time: formatted }));
                       }}
-                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-600"
+                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#FC4300] focus:ring-2 focus:ring-[#FC4300]/20"
                       required
                     />
                     {/* Provide explicit AM/PM toggle in case user wants to override */}
@@ -591,7 +591,7 @@ export const Cart = () => {
                           setTime24('12:00');
                         }
                       }}
-                      className="w-24 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-600"
+                      className="w-24 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#FC4300] focus:ring-2 focus:ring-[#FC4300]/20"
                     >
                       <option>AM</option>
                       <option>PM</option>
@@ -607,7 +607,7 @@ export const Cart = () => {
                     value={formData.notes}
                     onChange={handleChange}
                     placeholder="Any special requests?"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-600 resize-none"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#FC4300] focus:ring-2 focus:ring-[#FC4300]/20 resize-none"
                     rows="2"
                   />
                 </div>

@@ -130,7 +130,7 @@ export const Register = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center py-12 px-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 animate-slide-in">
-        <h1 className="text-3xl font-bold text-center mb-2 gradient-text">Join CaterHub</h1>
+        <h1 className="text-3xl font-bold text-center mb-2 text-[#FC4300]">Join CaterHub</h1>
         <p className="text-center text-gray-600 mb-8">Create your account to get started</p>
 
         {errors.general && <Alert type="error" message={errors.general} />}
@@ -148,7 +148,7 @@ export const Register = () => {
                   value={formData.first_name}
                   onChange={handleChange}
                   placeholder="John"
-                  className="w-full pl-10 pr-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-purple-600 transition"
+                  className="w-full pl-10 pr-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-[#FC4300] focus:ring-2 focus:ring-[#FC4300]/20 transition"
                   required
                 />
               </div>
@@ -165,7 +165,7 @@ export const Register = () => {
                   value={formData.last_name}
                   onChange={handleChange}
                   placeholder="Doe"
-                  className="w-full pl-10 pr-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-purple-600 transition"
+                  className="w-full pl-10 pr-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-[#FC4300] focus:ring-2 focus:ring-[#FC4300]/20 transition"
                   required
                 />
               </div>
@@ -219,7 +219,7 @@ export const Register = () => {
                 value={formData.password}
                 onChange={handleChange}
                 placeholder="••••••••"
-                className="w-full pl-10 pr-10 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-purple-600 transition"
+                className="w-full pl-10 pr-10 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-[#FC4300] focus:ring-2 focus:ring-[#FC4300]/20 transition"
                 required
               />
               <button
@@ -246,7 +246,7 @@ export const Register = () => {
         {/* Login Link */}
         <p className="text-center text-gray-600 mt-6">
           Already have an account?{' '}
-          <Link to="/login" className="text-purple-600 font-semibold hover:underline">
+          <Link to="/login" className="text-[#FC4300] font-semibold hover:underline">
             Sign in here
           </Link>
         </p>

@@ -208,7 +208,7 @@ export const MenuItem = ({ item = {}, onAddToCart = () => { }, onImgError }) => 
 
         <div className="flex items-center justify-between mb-4">
           <div>
-            <p className="text-2xl font-bold text-purple-600">₹{item?.price}</p>
+            <p className="text-2xl font-bold text-[#FC4300]">₹{item?.price}</p>
             {item?.servings && (
               <p className="text-xs text-gray-500">Serves {item.servings}</p>
             )}

@@ -7,12 +7,12 @@ INSERT INTO menu_items
  is_vegetarian, is_vegan, is_gluten_free, rating, total_ratings, is_available,
  created_at, updated_at)
 VALUES
-(1, 1, 'Spring Roll', 'Crispy spring rolls with sweet dipping sauce', 50.00, 'https://via.placeholder.com/300x200?text=Spring+Rolls', 1, 1, 0, 0, 0, 0.0, 0, 1, '2025-11-26 15:25:43', '2025-12-01 12:02:10'),
-(2, 1, 'Bruschetta', 'Toasted bread with tomato and basil', 280.00, 'https://via.placeholder.com/300x200?text=Bruschetta', 1, 1, 0, 0, 0, 0.0, 0, 1, '2025-11-26 15:25:43', '2025-12-03 12:12:44'),
-(3, 1, 'Chicken Wings', 'Spicy buffalo wings with ranch dip', 350.00, 'https://via.placeholder.com/300x200?text=Chicken+Wings', 0, 0, 0, 0, 0, 0.0, 0, 1, '2025-11-26 15:25:43', '2025-12-03 12:12:44'),
-(4, 1, 'Shrimp Appetizer', 'Garlic shrimp skewers', 450.00, 'https://via.placeholder.com/300x200?text=Shrimp+Appetizer', 0, 0, 0, 0, 0, 0.0, 0, 1, '2025-11-26 15:25:43', '2025-12-03 12:12:44'),
-(5, 2, 'Grilled Salmon', 'Fresh salmon fillet with lemon butter', 1450.00, 'https://via.placeholder.com/300x200?text=Grilled+Salmon', 0, 0, 0, 0, 0, 0.0, 0, 1, '2025-11-26 15:25:43', '2025-12-03 12:12:44'),
-(6, 2, 'Ribeye Steak', 'Prime cut steak with herb butter', 1800.00, 'https://via.placeholder.com/300x200?text=Ribeye+Steak', 0, 0, 0, 0, 0, 0.0, 0, 1, '2025-11-26 15:25:43', '2025-12-03 12:12:44'),
+(1, 1, 'Spring Roll', 'Crispy spring rolls with sweet dipping sauce', 50.00, 'https://via.placeholder.com/300x200?text=Spring+Rolls', NULL, NULL, 1, 1, 0, 0.0, 0, 1, '2025-11-26 15:25:43', '2025-12-01 12:02:10'),
+(2, 1, 'Bruschetta', 'Toasted bread with tomato and basil', 280.00, 'https://via.placeholder.com/300x200?text=Bruschetta', NULL, NULL, 1, 1, 0, 0.0, 0, 1, '2025-11-26 15:25:43', '2025-12-03 12:12:44'),
+(3, 1, 'Chicken Wings', 'Spicy buffalo wings with ranch dip', 350.00, 'https://via.placeholder.com/300x200?text=Chicken+Wings', NULL, NULL, 0, 0, 0, 0.0, 0, 1, '2025-11-26 15:25:43', '2025-12-03 12:12:44'),
+(4, 1, 'Shrimp Appetizer', 'Garlic shrimp skewers', 450.00, 'https://via.placeholder.com/300x200?text=Shrimp+Appetizer', NULL, NULL, 0, 0, 0, 0.0, 0, 1, '2025-11-26 15:25:43', '2025-12-03 12:12:44'),
+(5, 2, 'Grilled Salmon', 'Fresh salmon fillet with lemon butter', 1450.00, 'https://via.placeholder.com/300x200?text=Grilled+Salmon', NULL, NULL, 0, 0, 0, 0.0, 0, 1, '2025-11-26 15:25:43', '2025-12-03 12:12:44'),
+(6, 2, 'Ribeye Steak', 'Prime cut steak with herb butter', 1800.00, 'https://via.placeholder.com/300x200?text=Ribeye+Steak', NULL, NULL, 0, 0, 0, 0.0, 0, 1, '2025-11-26 15:25:43', '2025-12-03 12:12:44'),
 (7, 2, 'Chicken Parmesan', 'Breaded chicken with marinara and cheese', 650.00, 'https://via.placeholder.com/300x200?text=Chicken+Parmesan', 0, 0, 0, 0, 0, 0.0, 0, 1, '2025-11-26 15:25:43', '2025-12-03 12:12:44'),
 (8, 2, 'Vegetable Stir Fry', 'Mixed vegetables with rice', 450.00, 'https://via.placeholder.com/300x200?text=Vegetable+Stir+Fry', 1, 1, 0, 0, 0, 0.0, 0, 1, '2025-11-26 15:25:43', '2025-12-03 12:12:44'),
 (9, 3, 'Chocolate Cake', 'Rich chocolate layer cake', 250.00, 'https://via.placeholder.com/300x200?text=Chocolate+Cake', 1, 0, 0, 0, 0, 0.0, 0, 1, '2025-11-26 15:25:43', '2025-12-03 12:12:44'),

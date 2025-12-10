@@ -53,10 +53,21 @@ export const AdminSidebar = ({ children }) => {
       >
         <div className="flex h-full flex-col">
           <div className="flex items-center justify-between border-b border-white/10 px-6 py-6">
-            <div>
-              <p className="text-xs uppercase tracking-[0.2em] text-white/70">CaterHub Admin</p>
-              <h1 className="text-2xl font-bold">Control Center</h1>
-              <p className="text-sm text-white/70 mt-1">Hello, {user?.first_name || 'Admin'}</p>
+            <div className="flex items-center gap-4">
+              <img
+                src="/images/logo-caterhub-removebg-preview.png"
+                alt="CaterHub"
+                className="h-48 w-auto object-contain"
+                style={{
+                  backgroundColor: 'transparent',
+                  mixBlendMode: 'normal'
+                }}
+              />
+              <div>
+                <p className="text-xs uppercase tracking-[0.2em] text-white/70">CaterHub Admin</p>
+                <h1 className="text-2xl font-bold">Control Center</h1>
+                <p className="text-sm text-white/70 mt-1">Hello, {user?.first_name || 'Admin'}</p>
+              </div>
             </div>
             <button className="rounded-full bg-white/10 p-2" onClick={() => setIsOpen(false)} aria-label="Close sidebar">
               <X size={20} />

@@ -176,6 +176,7 @@ export function CartProvider({ children }) {
     clear: clearCart,
     replaceCartFromServer,
     totalQuantity,
+    count: totalQuantity, // Alias for totalQuantity for cart icon badge
     totalPrice,
     total: totalPrice,
     total_amount: totalPrice,

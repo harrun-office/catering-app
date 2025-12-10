@@ -214,7 +214,6 @@ export const Home = () => {
     heroTimerRef.current = setInterval(() => {
       setHeroIndex((i) => {
         const nextIndex = (i + 1) % HERO_IMAGES.length;
-        console.log('Carousel changing from', i, 'to', nextIndex);
         return nextIndex;
       });
     }, 3500);
@@ -486,16 +485,17 @@ export const Home = () => {
 
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#F7F7F7] pt-0">
       {/* Toasts container */}
       <Toasts toasts={toasts} removeToast={removeToast} />
 
       {/* HERO */}
-      <section id="hero" className="relative px-4 md:px-0">
+      <section
+        id="hero"
+        className="relative container-main px-0 mt-0 max-w-6xl mx-auto"
+      >
         <div
-          className="relative h-[420px] md:h-[520px] overflow-hidden rounded-[36px] border-4 border-white/30 shadow-[0_25px_70px_rgba(15,23,42,0.35)] bg-slate-900/30 group"
-          onMouseEnter={stopHeroTimer}
-          onMouseLeave={startHeroTimer}
+        className="relative h-[360px] md:h-[460px] overflow-hidden rounded-3xl shadow-[0_12px_32px_rgba(0,0,0,0.16)] bg-white/30 backdrop-blur-[6px] group"
           onTouchStart={onTouchStart}
           onTouchMove={onTouchMove}
           onTouchEnd={onTouchEnd}
@@ -527,11 +527,11 @@ export const Home = () => {
                         const el = document.getElementById('menu');
                         if (el) el.scrollIntoView({ behavior: 'smooth' });
                       }}
-                      className="btn-primary text-lg px-8 py-3 shadow-lg hover:shadow-purple-500/50 transition-all"
+                      className="btn-primary text-lg px-8 py-3 hover:-translate-y-0.5"
                     >
                       Browse Menu
                     </a>
-                    <Link to="/contact" className="btn-secondary text-lg px-8 py-3 backdrop-blur-sm bg-white/10 hover:bg-white/20 border-white/30 text-white">
+                    <Link to="/contact" className="btn-secondary text-lg px-8 py-3 hover:-translate-y-0.5">
                       Contact Us
                     </Link>
                   </div>
@@ -546,7 +546,7 @@ export const Home = () => {
               setHeroIndex((i) => (i - 1 + HERO_IMAGES.length) % HERO_IMAGES.length);
               startHeroTimer();
             }}
-            className="absolute left-4 top-1/2 -translate-y-1/2 z-20 p-3 rounded-full bg-black/20 text-white hover:bg-black/40 backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 -translate-x-4 group-hover:translate-x-0"
+            className="absolute left-4 top-1/2 -translate-y-1/2 z-20 p-3 rounded-full bg-white/70 text-[#FF6A28] hover:bg-white shadow-lg backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 -translate-x-4 group-hover:translate-x-0"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
           </button>
@@ -555,7 +555,7 @@ export const Home = () => {
               setHeroIndex((i) => (i + 1) % HERO_IMAGES.length);
               startHeroTimer();
             }}
-            className="absolute right-4 top-1/2 -translate-y-1/2 z-20 p-3 rounded-full bg-black/20 text-white hover:bg-black/40 backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0"
+            className="absolute right-4 top-1/2 -translate-y-1/2 z-20 p-3 rounded-full bg-white/70 text-[#FF6A28] hover:bg-white shadow-lg backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>
           </button>
@@ -590,26 +590,27 @@ export const Home = () => {
 
         {/* Quick features */}
         <section className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-          <div className="bg-white rounded-lg p-6 text-center">
-            <h3 className="font-bold text-lg mb-2">Fresh Ingredients</h3>
+          <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg p-6 text-center border border-orange-200 shadow-md hover:shadow-lg transition-all">
+            <h3 className="font-bold text-lg mb-2 bg-gradient-to-r from-[#FF6A28] to-[#FF8B4A] bg-clip-text text-transparent">Fresh Ingredients</h3>
             <p className="text-sm text-gray-600">Sourcing local produce and preparing dishes to order.</p>
           </div>
-          <div className="bg-white rounded-lg p-6 text-center">
-            <h3 className="font-bold text-lg mb-2">Custom Menus</h3>
+          <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg p-6 text-center border border-orange-200 shadow-md hover:shadow-lg transition-all">
+            <h3 className="font-bold text-lg mb-2 bg-gradient-to-r from-[#FF6A28] to-[#FF8B4A] bg-clip-text text-transparent">Custom Menus</h3>
             <p className="text-sm text-gray-600">Vegan, gluten-free, or party platters — we create a menu that fits you.</p>
           </div>
-          <div className="bg-white rounded-lg p-6 text-center">
-            <h3 className="font-bold text-lg mb-2">Trusted Service</h3>
+          <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg p-6 text-center border border-orange-200 shadow-md hover:shadow-lg transition-all">
+            <h3 className="font-bold text-lg mb-2 bg-gradient-to-r from-[#FF6A28] to-[#FF8B4A] bg-clip-text text-transparent">Trusted Service</h3>
             <p className="text-sm text-gray-600">On-time delivery, professional presentation, and friendly staff.</p>
           </div>
         </section>
 
         {/* Biryani section */}
         <section className="mb-12">
-          <div className="flex flex-wrap items-center justify-between gap-4 mb-4 border-l-4 border-purple-500 pl-4">
+          <div className="flex flex-wrap items-center justify-between gap-4 mb-4 pl-4 relative">
+            <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#FF6A28] rounded-full"></div>
             <div>
-              <p className="text-sm uppercase tracking-wide text-purple-500 font-semibold">Signature Feast</p>
-              <h2 className="text-2xl font-bold">Biryani & Dum Delights</h2>
+              <p className="text-sm uppercase tracking-wide text-[#FF6A28] font-semibold">Signature Feast</p>
+              <h2 className="text-2xl font-bold bg-gradient-to-r from-[#FF6A28] to-[#FF8B4A] bg-clip-text text-transparent">Biryani & Dum Delights</h2>
               <p className="text-sm text-gray-600 mt-1">Hand-layered rice, saffron aromas, and slow-cooked proteins ready for gatherings.</p>
             </div>
           </div>
@@ -622,10 +623,11 @@ export const Home = () => {
 
         {/* Mandhi section */}
         <section className="mb-12">
-          <div className="flex flex-wrap items-center justify-between gap-4 mb-4 border-l-4 border-orange-400 pl-4">
+          <div className="flex flex-wrap items-center justify-between gap-4 mb-4 pl-4 relative">
+            <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#FF6A28] rounded-full"></div>
             <div>
-              <p className="text-sm uppercase tracking-wide text-orange-500 font-semibold">Arabic Table</p>
-              <h2 className="text-2xl font-bold">Mandhi & Smoky Platters</h2>
+              <p className="text-sm uppercase tracking-wide text-[#FF6A28] font-semibold">Arabic Table</p>
+              <h2 className="text-2xl font-bold bg-gradient-to-r from-[#FF6A28] to-[#FF8B4A] bg-clip-text text-transparent">Mandhi & Smoky Platters</h2>
               <p className="text-sm text-gray-600 mt-1">Pit-roasted meats over spiced rice, topped with roasted nuts and caramelized onions.</p>
             </div>
           </div>
@@ -638,18 +640,19 @@ export const Home = () => {
 
         {/* Menu */}
         <section id="menu" className="mb-12">
-          <div className="flex items-center gap-4 mb-6 border-l-4 border-purple-500 pl-4">
-            <Filter size={20} className="text-purple-500" />
+          <div className="flex items-center gap-4 mb-6 pl-4 relative">
+            <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#FF6A28] rounded-full"></div>
+            <Filter size={20} className="text-[#FF6A28]" />
             <div>
-              <p className="text-xs uppercase tracking-[0.4em] text-purple-400">Signature List</p>
-              <h2 className="text-2xl font-bold text-gray-900">Our Menu</h2>
+              <p className="text-xs uppercase tracking-[0.4em] text-[#FF6A28]">Signature List</p>
+              <h2 className="text-2xl font-bold bg-gradient-to-r from-[#FF6A28] to-[#FF8B4A] bg-clip-text text-transparent">Our Menu</h2>
             </div>
           </div>
 
           <div className="flex gap-3 flex-wrap mb-6">
             <button
               onClick={() => setSelectedCategory(null)}
-              className={`px-4 py-2 rounded-lg font-semibold ${selectedCategory === null ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white' : 'bg-white border'}`}
+              className={`px-4 py-2 rounded-lg font-semibold transition-all ${selectedCategory === null ? 'bg-[#FF6A28] text-white shadow-lg' : 'bg-white border border-orange-200 text-gray-700 hover:border-[#FF6A28] hover:bg-orange-50'}`}
             >
               All Items
             </button>
@@ -657,7 +660,7 @@ export const Home = () => {
               <button
                 key={c.id}
                 onClick={() => setSelectedCategory(c.id)}
-                className={`px-4 py-2 rounded-lg font-semibold ${selectedCategory === c.id ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white' : 'bg-white border'}`}
+                className={`px-4 py-2 rounded-lg font-semibold transition-all ${selectedCategory === c.id ? 'bg-[#FF6A28] text-white shadow-lg' : 'bg-white border border-orange-200 text-gray-700 hover:border-[#FF6A28] hover:bg-orange-50'}`}
               >
                 {c.name}
               </button>
@@ -665,8 +668,8 @@ export const Home = () => {
           </div>
 
           <div className="relative max-w-2xl mb-6">
-            <Search className="absolute left-4 top-3 text-gray-400" size={20} />
-            <input value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="Search for dishes..." className="w-full pl-12 pr-4 py-3 rounded-lg text-gray-800 border" />
+            <Search className="absolute left-4 top-3 text-[#FF6A28]" size={20} />
+            <input value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="Search for dishes..." className="w-full pl-12 pr-4 py-3 rounded-lg text-gray-800 border border-orange-100 focus:border-[#FF6A28] focus:ring-2 focus:ring-[#FF6A28]/20 transition-all bg-white/80" />
           </div>
 
           {loading ? (
@@ -674,9 +677,9 @@ export const Home = () => {
               <LoadingSpinner size="lg" text="Loading delicious items..." />
             </div>
           ) : items.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-2xl text-gray-600">No items found</p>
-              <p className="text-gray-500 mt-2">Try adjusting your search or filters</p>
+            <div className="text-center py-12 bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-8 border border-orange-200">
+              <p className="text-2xl bg-gradient-to-r from-[#FF6A28] to-[#FF8B4A] bg-clip-text text-transparent font-semibold">No items found</p>
+              <p className="text-gray-600 mt-2">Try adjusting your search or filters</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -691,16 +694,21 @@ export const Home = () => {
 
         {/* Testimonials slider */}
         <section className="mb-12">
-          <div className="border-l-4 border-purple-500 pl-4 mb-4">
-            <p className="text-xs uppercase tracking-[0.4em] text-purple-400">Voices</p>
-            <h2 className="text-2xl font-bold text-gray-900">Testimonials</h2>
+          <div className="pl-4 mb-4 relative">
+            <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#FF6A28] rounded-full"></div>
+            <p className="text-xs uppercase tracking-[0.4em] text-[#FF6A28]">Voices</p>
+            <h2 className="text-2xl font-bold bg-gradient-to-r from-[#FF6A28] to-[#FF8B4A] bg-clip-text text-transparent">Testimonials</h2>
           </div>
           <div
-            className="relative bg-white rounded-lg p-6 shadow flex items-center gap-6 overflow-hidden"
+            className="relative bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg p-6 shadow-lg border border-orange-200 flex items-center gap-6 overflow-hidden"
             onMouseEnter={stopTestimonialTimer}
             onMouseLeave={startTestimonialTimer}
           >
-            <button aria-label="previous testimonial" onClick={() => setTestIndex((i) => (i - 1 + TESTIMONIALS.length) % TESTIMONIALS.length)} className="hidden md:block px-3 py-2">
+            <button
+              aria-label="previous testimonial"
+              onClick={() => setTestIndex((i) => (i - 1 + TESTIMONIALS.length) % TESTIMONIALS.length)}
+              className="hidden md:block px-3 py-2 text-[#FF6A28] hover:text-[#E85A1F]"
+            >
               ‹
             </button>
 
@@ -715,24 +723,28 @@ export const Home = () => {
               </div>
             </div>
 
-            <button aria-label="next testimonial" onClick={() => setTestIndex((i) => (i + 1) % TESTIMONIALS.length)} className="hidden md:block px-3 py-2">
+            <button
+              aria-label="next testimonial"
+              onClick={() => setTestIndex((i) => (i + 1) % TESTIMONIALS.length)}
+              className="hidden md:block px-3 py-2 text-[#FF6A28] hover:text-[#E85A1F]"
+            >
               ›
             </button>
           </div>
         </section>
 
         {/* CTA */}
-        <section className="mb-24 text-center">
-          <h3 className="text-2xl font-bold mb-3">Ready to delight your guests?</h3>
-          <p className="text-gray-600 mb-6">Contact us for a custom quote and menu tasting.</p>
-          <div className="flex items-center justify-center gap-4">
+        <section className="mb-24 text-center bg-gradient-to-r from-[#FF6A28] to-[#ff8a4c] rounded-2xl p-8 md:p-12 shadow-xl">
+          <h3 className="text-2xl md:text-3xl font-bold mb-3 text-white">Ready to delight your guests?</h3>
+          <p className="text-white/90 mb-6 text-lg">Contact us for a custom quote and menu tasting.</p>
+          <div className="flex items-center justify-center gap-4 flex-wrap">
             <button
               onClick={() => {
                 const el = document.getElementById('contact');
                 if (el) el.scrollIntoView({ behavior: 'smooth' });
                 else window.location.href = '/contact';
               }}
-              className="btn-primary px-6 py-3"
+              className="bg-white text-[#FF6A28] px-8 py-3 rounded-xl font-semibold hover:bg-orange-50 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1"
             >
               Request a Quote
             </button>
@@ -741,7 +753,7 @@ export const Home = () => {
                 const el = document.getElementById('menu');
                 if (el) el.scrollIntoView({ behavior: 'smooth' });
               }}
-              className="btn-secondary px-6 py-3"
+              className="bg-[#FF6A28] text-white border-0 px-8 py-3 rounded-xl font-semibold hover:bg-[#E85A1F] transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1"
             >
               Browse Menu
             </button>

@@ -14,9 +14,10 @@ export const Gallery = () => {
 
   return (
     <div className="container-main py-12">
-      <div className="border-l-4 border-purple-500 pl-4 mb-4">
-        <p className="text-xs uppercase tracking-[0.4em] text-purple-400">Highlights</p>
-        <h2 className="text-2xl font-bold text-gray-900">Gallery & Celebrations</h2>
+      <div className="pl-4 mb-4 relative">
+        <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-r from-purple-600 to-blue-600 rounded-full"></div>
+        <p className="text-xs uppercase tracking-[0.4em] text-[#FC4300]">Highlights</p>
+        <h2 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">Gallery & Celebrations</h2>
       </div>
 
       <p className="text-sm text-gray-600 mb-4">A few moments from our events — plated with love.</p>

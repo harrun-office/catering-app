@@ -63,7 +63,7 @@ export const OrderTracking = () => {
         return (
             <div className="container-main py-12 text-center">
                 <Alert type="info" message={error} />
-                <button onClick={() => navigate('/menu')} className="mt-4 text-purple-600 font-semibold hover:underline">
+                <button onClick={() => navigate('/menu')} className="mt-4 text-[#FC4300] font-semibold hover:underline">
                     Browse Menu
                 </button>
             </div>
@@ -81,7 +81,7 @@ export const OrderTracking = () => {
                 <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
                     {/* Header */}
                     <div className="bg-gradient-to-r from-purple-600 to-blue-600 p-6 text-white text-center">
-                        <h1 className="text-2xl font-bold mb-2">Order Tracking</h1>
+                        <h1 className="text-2xl font-bold mb-2 bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">Order Tracking</h1>
                         <p className="opacity-90">Order #{order.order_number}</p>
                         {isCancelled && <div className="mt-2 bg-red-500/20 inline-block px-3 py-1 rounded-full text-sm font-bold border border-red-500/50">CANCELLED</div>}
                     </div>
@@ -127,26 +127,26 @@ export const OrderTracking = () => {
                         <div className="grid md:grid-cols-2 gap-6">
                             <div>
                                 <h3 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
-                                    <Package size={18} className="text-purple-600" />
+                                    <Package size={18} className="text-[#FC4300]" />
                                     Order Items
                                 </h3>
                                 <ul className="space-y-2">
                                     {order.items?.map((item) => (
                                         <li key={item.id} className="flex justify-between text-sm text-gray-600">
                                             <span>{item.quantity}x {item.name}</span>
-                                            <span className="font-semibold">₹{item.total_price}</span>
+                                            <span className="font-semibold text-[#FC4300]">₹{item.total_price}</span>
                                         </li>
                                     ))}
                                 </ul>
                                 <div className="mt-3 pt-3 border-t flex justify-between font-bold text-gray-800">
                                     <span>Total Amount</span>
-                                    <span>₹{order.total_amount}</span>
+                                    <span className="text-[#FC4300]">₹{order.total_amount}</span>
                                 </div>
                             </div>
 
                             <div>
                                 <h3 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
-                                    <MapPin size={18} className="text-purple-600" />
+                                    <MapPin size={18} className="text-[#FC4300]" />
                                     Delivery Details
                                 </h3>
                                 <p className="text-sm text-gray-600 mb-1">{order.delivery_address}</p>

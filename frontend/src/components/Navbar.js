@@ -8,11 +8,8 @@ import {
   ShoppingCart,
   Home as HomeIcon,
   Menu as MenuIcon,
-  ChevronLeft,
-  ChevronRight,
   Info,
   Image,
-
   Phone,
   Truck,
   Clock
@@ -25,17 +22,51 @@ export const Navbar = () => {
   const { count } = useContext(CartContext);
   const navigate = useNavigate();
   const location = useLocation();
-  const [collapsed, setCollapsed] = useState(false);   // NEW
+  const [collapsed, setCollapsed] = useState(true);   // Start collapsed
   const [sidebarWidth, setSidebarWidth] = useState(288); // 72 * 4 = 288px
   const [mobileOpen, setMobileOpen] = useState(false);
   const [logoError, setLogoError] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+  const [activeItem, setActiveItem] = useState(null);
+  const [clickedItem, setClickedItem] = useState(null);
 
   useEffect(() => {
-    const width = collapsed ? 80 : 288;
+    // Expand on hover or when not collapsed
+    const shouldExpand = isHovered || !collapsed;
+    const width = shouldExpand ? 288 : 80;
     setSidebarWidth(width);
     document.documentElement.style.setProperty("--sidebar-width", `${width}px`);
     setLogoError(false); // Reset logo error when sidebar state changes
-  }, [collapsed]);
+  }, [collapsed, isHovered]);
+
+  useEffect(() => {
+    // Set active item based on current route
+    if (location.pathname === "/tracking") {
+      setClickedItem("tracking");
+      setActiveItem("tracking");
+    } else if (location.pathname === "/orders") {
+      setClickedItem("orders");
+      setActiveItem("orders");
+    } else if (location.pathname === "/about") {
+      setClickedItem("about");
+      setActiveItem("about");
+    } else if (location.pathname === "/gallery") {
+      setClickedItem("gallery");
+      setActiveItem("gallery");
+    } else if (location.pathname === "/contact") {
+      setClickedItem("contact");
+      setActiveItem("contact");
+    } else if (location.pathname === "/") {
+      // Check hash for home page sections
+      if (window.location.hash === "#menu") {
+        setClickedItem("menu");
+        setActiveItem("menu");
+      } else {
+        setClickedItem("hero");
+        setActiveItem("hero");
+      }
+    }
+  }, [location.pathname]);
 
   const handleLogout = () => {
     logout();
@@ -76,102 +107,232 @@ export const Navbar = () => {
     <>
       {/* SIDEBAR (desktop) */}
       <aside
-        className="hidden md:flex fixed inset-y-0 left-0 z-50 flex-col glass-strong text-gray-800 p-4 transition-all duration-300"
+        className="hidden md:flex fixed inset-y-0 left-0 z-50 flex-col p-4 transition-all duration-300 ease-out cursor-pointer"
         style={{
           width: sidebarWidth,
-          background: 'linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%)',
-          boxShadow: 'var(--shadow-xl)'
+          background: '#ffffff',
+          boxShadow: 'var(--shadow-md)',
+          borderRight: '1px solid rgba(0,0,0,0.05)',
+          transition: 'width 260ms ease, box-shadow 260ms ease, background-color 260ms ease'
         }}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => {
+          setIsHovered(false);
+          setCollapsed(true);
+        }}
+        onClick={() => setCollapsed((prev) => !prev)}
       >
-        {/* HEADER: LOGO + TOGGLE */}
-        <div className={`flex-shrink-0 flex items-center ${collapsed ? 'flex-col justify-center gap-4 py-4' : 'justify-between px-2'} h-24 mb-2 transition-all`}>
+        {/* HEADER: LOGO */}
+        <div className={`flex-shrink-0 flex items-center ${!isHovered && collapsed ? 'flex-col justify-center gap-4 py-4' : 'justify-center px-2'} h-24 mb-2 transition-all`}>
           {/* LOGO */}
           <div className="flex items-center justify-center">
             {logoError ? (
               <span className="text-3xl">🧑‍🍳</span>
             ) : (
               <img
-                src={collapsed ? "/images/logo-small.svg" : "/images/logo.svg"}
+                src="/images/logo-caterhub-removebg-preview.png"
                 alt="CaterHub"
-                className="max-h-12 object-contain"
+                className="max-h-48 object-contain"
+                style={{
+                  backgroundColor: 'transparent',
+                  mixBlendMode: 'normal'
+                }}
                 onError={() => setLogoError(true)}
               />
             )}
           </div>
-
-          {/* COLLAPSE BUTTON */}
-          <button
-            onClick={() => setCollapsed(!collapsed)}
-            className={`bg-white/10 hover:bg-white/20 text-white p-2 rounded-lg transition ${collapsed ? '' : ''}`}
-            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-          >
-            {collapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
-          </button>
         </div>
-
-        {!collapsed && (
-          <div className="text-center text-sm font-semibold tracking-wide mb-4">
-            CaterHub
-          </div>
-        )}
 
         {/* NAV LINKS */}
         <nav className="flex-1 overflow-y-auto space-y-1 mt-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
           <button
-            onClick={() => goToSection("hero")}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:glass transition-all duration-300 hover:scale-105 hover:shadow-md text-gray-800"
+            onClick={() => {
+              setClickedItem("hero");
+              setActiveItem("hero");
+              goToSection("hero");
+            }}
+            onMouseEnter={() => setActiveItem("hero")}
+            onMouseLeave={() => {
+              if (clickedItem !== "hero") {
+                setActiveItem(null);
+              } else {
+                setActiveItem("hero");
+              }
+            }}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-300 ease-in-out focus:outline-none focus:ring-0"
+            style={{
+              backgroundColor: 'transparent',
+              color: (activeItem === "hero" || clickedItem === "hero") ? '#FC4300' : 'inherit',
+              border: 'none',
+              outline: 'none',
+              boxShadow: 'none'
+            }}
           >
             <HomeIcon size={18} />
-            {!collapsed && <span>Home</span>}
+            {(isHovered || !collapsed) && <span>Home</span>}
           </button>
 
           <button
-            onClick={() => goToSection("menu")}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:glass transition-all duration-300 hover:scale-105 hover:shadow-md text-gray-800"
+            onClick={() => {
+              setClickedItem("menu");
+              setActiveItem("menu");
+              goToSection("menu");
+            }}
+            onMouseEnter={() => setActiveItem("menu")}
+            onMouseLeave={() => {
+              if (clickedItem !== "menu") {
+                setActiveItem(null);
+              } else {
+                setActiveItem("menu");
+              }
+            }}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-300 ease-in-out focus:outline-none focus:ring-0"
+            style={{
+              backgroundColor: 'transparent',
+              color: (activeItem === "menu" || clickedItem === "menu") ? '#FC4300' : 'inherit',
+              border: 'none',
+              outline: 'none',
+              boxShadow: 'none'
+            }}
           >
             <MenuIcon size={18} />
-            {!collapsed && <span>Menu</span>}
+            {(isHovered || !collapsed) && <span>Menu</span>}
           </button>
 
           <button
-            onClick={() => goToSection("about")}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:glass transition-all duration-300 hover:scale-105 hover:shadow-md text-gray-800"
+            onClick={() => {
+              setClickedItem("about");
+              setActiveItem("about");
+              goToSection("about");
+            }}
+            onMouseEnter={() => setActiveItem("about")}
+            onMouseLeave={() => {
+              if (clickedItem !== "about") {
+                setActiveItem(null);
+              } else {
+                setActiveItem("about");
+              }
+            }}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-300 ease-in-out focus:outline-none focus:ring-0"
+            style={{
+              backgroundColor: 'transparent',
+              color: (activeItem === "about" || clickedItem === "about") ? '#FC4300' : 'inherit',
+              border: 'none',
+              outline: 'none',
+              boxShadow: 'none'
+            }}
           >
             <Info size={18} />
-            {!collapsed && <span>About</span>}
+            {(isHovered || !collapsed) && <span>About</span>}
           </button>
           <button
-            onClick={() => goToSection("gallery")}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:glass transition-all duration-300 hover:scale-105 hover:shadow-md text-gray-800"
+            onClick={() => {
+              setClickedItem("gallery");
+              setActiveItem("gallery");
+              goToSection("gallery");
+            }}
+            onMouseEnter={() => setActiveItem("gallery")}
+            onMouseLeave={() => {
+              if (clickedItem !== "gallery") {
+                setActiveItem(null);
+              } else {
+                setActiveItem("gallery");
+              }
+            }}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-300 ease-in-out focus:outline-none focus:ring-0"
+            style={{
+              backgroundColor: 'transparent',
+              color: (activeItem === "gallery" || clickedItem === "gallery") ? '#FC4300' : 'inherit',
+              border: 'none',
+              outline: 'none',
+              boxShadow: 'none'
+            }}
           >
             <Image size={18} />
-            {!collapsed && <span>Gallery</span>}
+            {(isHovered || !collapsed) && <span>Gallery</span>}
           </button>
 
           <button
-            onClick={() => goToSection("contact")}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:glass transition-all duration-300 hover:scale-105 hover:shadow-md text-gray-800"
+            onClick={() => {
+              setClickedItem("contact");
+              setActiveItem("contact");
+              goToSection("contact");
+            }}
+            onMouseEnter={() => setActiveItem("contact")}
+            onMouseLeave={() => {
+              if (clickedItem !== "contact") {
+                setActiveItem(null);
+              } else {
+                setActiveItem("contact");
+              }
+            }}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-300 ease-in-out focus:outline-none focus:ring-0"
+            style={{
+              backgroundColor: 'transparent',
+              color: (activeItem === "contact" || clickedItem === "contact") ? '#FC4300' : 'inherit',
+              border: 'none',
+              outline: 'none',
+              boxShadow: 'none'
+            }}
           >
             <Phone size={18} />
-            {!collapsed && <span>Contact</span>}
+            {(isHovered || !collapsed) && <span>Contact</span>}
           </button>
 
           {/* TRACKING */}
           <Link
             to="/tracking"
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:glass transition-all duration-300 hover:scale-105 hover:shadow-md text-gray-800"
+            onClick={() => {
+              setClickedItem("tracking");
+              setActiveItem("tracking");
+            }}
+            onMouseEnter={() => setActiveItem("tracking")}
+            onMouseLeave={() => {
+              if (clickedItem !== "tracking" && location.pathname !== "/tracking") {
+                setActiveItem(null);
+              } else {
+                setActiveItem("tracking");
+              }
+            }}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-300 ease-in-out focus:outline-none focus:ring-0"
+            style={{
+              backgroundColor: 'transparent',
+              color: (activeItem === "tracking" || clickedItem === "tracking" || location.pathname === "/tracking") ? '#FC4300' : 'inherit',
+              border: 'none',
+              outline: 'none',
+              boxShadow: 'none'
+            }}
           >
             <Truck size={18} />
-            {!collapsed && <span>Track Order</span>}
+            {(isHovered || !collapsed) && <span>Track Order</span>}
           </Link>
 
           {/* ORDER HISTORY */}
           <Link
             to="/orders"
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:glass transition-all duration-300 hover:scale-105 hover:shadow-md text-gray-800"
+            onClick={() => {
+              setClickedItem("orders");
+              setActiveItem("orders");
+            }}
+            onMouseEnter={() => setActiveItem("orders")}
+            onMouseLeave={() => {
+              if (clickedItem !== "orders" && location.pathname !== "/orders") {
+                setActiveItem(null);
+              } else {
+                setActiveItem("orders");
+              }
+            }}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-300 ease-in-out focus:outline-none focus:ring-0"
+            style={{
+              backgroundColor: 'transparent',
+              color: (activeItem === "orders" || clickedItem === "orders" || location.pathname === "/orders") ? '#FC4300' : 'inherit',
+              border: 'none',
+              outline: 'none',
+              boxShadow: 'none'
+            }}
           >
             <Clock size={18} />
-            {!collapsed && <span>Order History</span>}
+            {(isHovered || !collapsed) && <span>Order History</span>}
           </Link>
 
 
@@ -179,8 +340,8 @@ export const Navbar = () => {
 
         </nav>
 
-        {!collapsed && (
-          <div className="text-xs text-white/60 mt-4 text-center">
+        {(isHovered || !collapsed) && (
+          <div className="text-xs mt-4 text-center">
             © {new Date().getFullYear()} CaterHub
           </div>
         )}
@@ -204,8 +365,8 @@ export const Navbar = () => {
           <Link to="/cart" className="relative z-10">
             <ShoppingCart size={20} />
             {count > 0 && (
-              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                {count}
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-semibold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
+                {count > 99 ? '99+' : count}
               </span>
             )}
           </Link>

@@ -5,20 +5,21 @@ export const Contact = () => {
   return (
     <div className="container-main py-12">
       <div className="bg-white rounded-lg p-8 shadow">
-        <div className="border-l-4 border-purple-500 pl-4 mb-4">
-          <p className="text-xs uppercase tracking-[0.4em] text-purple-400">Connect</p>
-          <h2 className="text-2xl font-bold text-gray-900">Contact & Location</h2>
+        <div className="pl-4 mb-4 relative">
+          <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-r from-purple-600 to-blue-600 rounded-full"></div>
+          <p className="text-xs uppercase tracking-[0.4em] text-[#FC4300]">Connect</p>
+          <h2 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">Contact & Location</h2>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <h3 className="font-semibold text-lg mb-2">Get in touch</h3>
+            <h3 className="font-semibold text-lg mb-2 text-[#FC4300]">Get in touch</h3>
             <p className="text-sm text-gray-700 mb-3">We'd love to help plan your event. Call or email and we'll get back within a few hours.</p>
 
             <ul className="text-sm text-gray-700 space-y-2">
               <li><strong>Address:</strong> 123 Food Street, City</li>
-              <li><strong>Phone:</strong> <a href="tel:+91234567890" className="text-purple-600">+91 234 567 890</a></li>
-              <li><strong>Email:</strong> <a href="mailto:info@caterhub.com" className="text-purple-600">info@caterhub.com</a></li>
+              <li><strong>Phone:</strong> <a href="tel:+91234567890" className="text-[#FC4300] hover:text-orange-600">+91 234 567 890</a></li>
+              <li><strong>Email:</strong> <a href="mailto:info@caterhub.com" className="text-[#FC4300] hover:text-orange-600">info@caterhub.com</a></li>
             </ul>
 
             <div className="mt-6">
