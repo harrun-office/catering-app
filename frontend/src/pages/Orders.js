@@ -152,7 +152,9 @@ export const Orders = () => {
                     </div>
 
                     <div className="flex items-center gap-3 rounded-xl border border-orange-100 bg-orange-50/60 px-3 py-2">
-                      <IndianRupee className="text-[#FF6A28]" />
+                      <div className="h-9 w-9 rounded-full bg-orange-100 text-[#FF6A28] flex items-center justify-center text-sm font-bold">
+                        ₹
+                      </div>
                       <div>
                         <p className="text-xs text-[#7b5a4a]">Total</p>
                         <p className="font-semibold text-[#FF6A28]">{formatAmount.format(order.total_amount || 0)}</p>
