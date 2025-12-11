@@ -169,39 +169,44 @@ export const Cart = () => {
   const reverseGeocode = async (lat, lng) => {
     const key = process.env.REACT_APP_GOOGLE_MAPS_API_KEY || '';
     const tryGoogle = async () => {
-      const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${key}`;
-      const res = await fetch(url);
-      if (!res.ok) throw new Error('Google geocoding request failed');
-      const data = await res.json();
-      if (data.status === 'OK' && data.results && data.results.length > 0) {
-        return data.results[0].formatted_address;
+      if (!key) return null;
+      try {
+        const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${key}`;
+        const res = await fetch(url);
+        if (!res.ok) return null;
+        const data = await res.json();
+        if (data.status === 'OK' && data.results && data.results.length > 0) {
+          return data.results[0].formatted_address;
+        }
+      } catch (e) {
+        return null;
       }
-      throw new Error('Google geocoding returned no results');
+      return null;
     };
 
     const tryNominatim = async () => {
-      const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`;
-      const res = await fetch(url, {
-        headers: {
-          'Accept-Language': 'en',
-        },
-      });
-      if (!res.ok) throw new Error('Nominatim request failed');
-      const data = await res.json();
-      if (data?.display_name) return data.display_name;
-      throw new Error('Nominatim returned no results');
+      try {
+        const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`;
+        const res = await fetch(url, {
+          headers: {
+            'Accept-Language': 'en',
+          },
+        });
+        if (!res.ok) return null;
+        const data = await res.json();
+        if (data?.display_name) return data.display_name;
+      } catch (e) {
+        return null;
+      }
+      return null;
     };
 
-    try {
-      if (key) {
-        return await tryGoogle();
-      }
-      return await tryNominatim();
-    } catch (err) {
-      console.error('reverseGeocode error', err);
-      // If both fail, at least return a lat/lng string so user sees something populated
-      return `Lat ${lat.toFixed(5)}, Lng ${lng.toFixed(5)}`;
-    }
+    const google = await tryGoogle();
+    if (google) return google;
+    const nominatim = await tryNominatim();
+    if (nominatim) return nominatim;
+    // If both fail, at least return a lat/lng string so user sees something populated
+    return `Lat ${lat.toFixed(5)}, Lng ${lng.toFixed(5)}`;
   };
 
   // Use browser geolocation to set delivery_address
@@ -223,7 +228,8 @@ export const Cart = () => {
       setSuccessMessage('Delivery address updated from your current location.');
       setTimeout(() => setSuccessMessage(''), 3000);
     } catch (err) {
-      setError(err.message || 'Failed to get location. Please enter address manually.');
+      console.error('useCurrentLocation error', err);
+      setError('Could not fetch your location. Please enter the address manually.');
     } finally {
       setLoading(false);
     }
