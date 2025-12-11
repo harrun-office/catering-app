@@ -63,7 +63,7 @@ export const MainLayout = ({ children }) => {
     return (
         <>
             <Navbar />
-            <div className="flex flex-col min-h-screen" style={{ marginLeft: "var(--sidebar-width)" }}>
+            <div className="flex flex-col min-h-screen ml-0 md:ml-[var(--sidebar-width)] transition-all duration-300">
                 {/* Desktop Header */}
                 <header
                     className="hidden md:flex items-center justify-between py-4 px-6 lg:px-8 sticky top-0 z-30 bg-white"
@@ -220,7 +220,7 @@ export const MainLayout = ({ children }) => {
                     </div>
                 </header>
 
-                <main className="flex-1 p-4">
+                <main className="flex-1 px-4 pb-4 pt-0 md:pt-3">
                     {children}
                 </main>
                 <Footer />
