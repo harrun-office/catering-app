@@ -478,7 +478,7 @@ export const Cart = () => {
 
                     <div className="flex-1">
                       <h3 className="font-bold text-lg text-gray-800">{item.name}</h3>
-                      <p className="text-[#FC4300] font-bold text-lg">₹{fmt(item.price)}</p>
+                      <p className="text-[#FC4300] font-bold text-lg">{fmt(item.price)}</p>
                     </div>
 
                      <div className="flex items-center gap-3">
