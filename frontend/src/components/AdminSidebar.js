@@ -32,10 +32,15 @@ export const AdminSidebar = ({ children }) => {
       <Link
         key={path}
         to={path}
-        onClick={() => setIsOpen(false)}
-        className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition border border-transparent ${isActive
-            ? 'bg-white/15 text-white shadow-lg shadow-purple-900/20 border-white/20'
-            : 'text-white/80 hover:bg-white/10 hover:text-white'
+        onClick={() => {
+          // Only close sidebar on mobile screens
+          if (window.innerWidth < 1024) {
+            setIsOpen(false);
+          }
+        }}
+        className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition border ${isActive
+            ? 'bg-gradient-to-r from-[#FF6A28] to-[#FF8B4A] text-white shadow-lg shadow-orange-200 border-transparent'
+            : 'text-gray-700 hover:bg-orange-50 hover:text-[#FF6A28] border-transparent'
           }`}
       >
         <Icon size={18} />
@@ -45,31 +50,30 @@ export const AdminSidebar = ({ children }) => {
   };
 
   return (
-    <div className="flex min-h-screen bg-slate-100">
+    <div className="flex min-h-screen bg-[#F7F7F7]">
       {/* Sidebar */}
       <div
-        className={`fixed inset-y-0 left-0 z-50 w-[min(22rem,92vw)] transform bg-gradient-to-b from-purple-900 via-purple-800 to-blue-900 text-white shadow-2xl transition-transform duration-300 ${isOpen ? 'translate-x-0' : '-translate-x-full'
+        className={`fixed inset-y-0 left-0 z-50 w-[min(22rem,92vw)] transform bg-white border-r border-orange-100 shadow-2xl transition-transform duration-300 ${isOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
       >
         <div className="flex h-full flex-col">
-          <div className="flex items-center justify-between border-b border-white/10 px-6 py-6">
-            <div className="flex items-center gap-4">
+          <div className="relative flex items-center justify-center border-b border-orange-100 px-6 py-6 bg-gradient-to-r from-orange-50 to-white">
+            <Link to="/" className="flex items-center justify-center">
               <img
                 src="/images/logo-caterhub-removebg-preview.png"
                 alt="CaterHub"
-                className="h-48 w-auto object-contain"
+                className="h-32 w-auto object-contain cursor-pointer hover:opacity-80 transition-opacity"
                 style={{
                   backgroundColor: 'transparent',
                   mixBlendMode: 'normal'
                 }}
               />
-              <div>
-                <p className="text-xs uppercase tracking-[0.2em] text-white/70">CaterHub Admin</p>
-                <h1 className="text-2xl font-bold">Control Center</h1>
-                <p className="text-sm text-white/70 mt-1">Hello, {user?.first_name || 'Admin'}</p>
-              </div>
-            </div>
-            <button className="rounded-full bg-white/10 p-2" onClick={() => setIsOpen(false)} aria-label="Close sidebar">
+            </Link>
+            <button
+              className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-orange-50 text-gray-600 hover:bg-orange-100 p-2 transition-colors"
+              onClick={() => setIsOpen(false)}
+              aria-label="Close sidebar"
+            >
               <X size={20} />
             </button>
           </div>
@@ -79,13 +83,13 @@ export const AdminSidebar = ({ children }) => {
           <div className="px-4 pb-6 space-y-2 safe-area-bottom sticky bottom-0 z-20 bg-gradient-to-t from-transparent">
             <Link
               to="/admin/settings"
-              className="flex items-center gap-3 rounded-2xl px-4 py-3 text-white/80 transition hover:bg-white/10 hover:text-white"
+              className="flex items-center gap-3 rounded-2xl px-4 py-3 text-gray-700 transition hover:bg-orange-50 hover:text-[#FF6A28]"
             >
             </Link>
 
             <button
               onClick={handleLogout}
-              className="flex w-full items-center gap-3 rounded-2xl bg-white/10 px-4 py-3 text-left font-semibold text-white transition hover:bg-white/20"
+              className="flex w-full items-center gap-3 rounded-2xl bg-orange-50 px-4 py-3 text-left font-semibold text-[#FF6A28] transition hover:bg-orange-100 border border-orange-200"
             >
               <LogOut size={18} />
               <span>Logout</span>
@@ -95,22 +99,27 @@ export const AdminSidebar = ({ children }) => {
       </div>
 
       {/* Main content */}
-      <div className={`flex flex-1 flex-col ${isOpen ? 'lg:pl-[22rem]' : ''}`}>
-        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-200 bg-white/80 px-4 py-4 backdrop-blur lg:justify-between">
+        <div className={`flex flex-1 flex-col transition-all duration-300 ${isOpen ? 'lg:pl-[22rem]' : ''}`}>
+        <div className="sticky top-0 z-10 flex items-center border-b border-orange-200 bg-white/95 backdrop-blur-sm shadow-sm">
           <button
             onClick={() => setIsOpen((prev) => !prev)}
-            className={`rounded-full border border-slate-200 p-2 text-slate-700 hover:bg-slate-100 ${isOpen ? 'lg:hidden' : ''}`}
+            className={`rounded-full border border-orange-200 p-2 text-[#FF6A28] hover:bg-orange-50 transition-all ml-4 ${isOpen ? 'lg:hidden' : ''}`}
             aria-label="Toggle sidebar"
           >
             {isOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
-          <div className="text-left">
-            <p className="text-xs uppercase tracking-widest text-slate-400">Admin Panel</p>
-            <p className="text-base font-semibold text-slate-700">Hi..! {user?.first_name}</p>
+          <div className="text-left px-6 py-5 flex-1" style={{ minWidth: 0 }}>
+            <p className="text-xs uppercase tracking-[0.3em] font-bold bg-gradient-to-r from-[#FF6A28] to-[#FF8B4A] bg-clip-text text-transparent mb-1">
+              Admin Panel
+            </p>
+            <p className="text-lg font-bold text-gray-800 flex items-center gap-2">
+              <span className="text-2xl">👋</span>
+              <span>Hi, <span className="bg-gradient-to-r from-[#FF6A28] to-[#FF8B4A] bg-clip-text text-transparent">{user?.first_name || 'Admin'}</span>!</span>
+            </p>
           </div>
         </div>
 
-        <div className="flex-1 overflow-auto bg-slate-50 p-6 lg:p-10">{children}</div>
+        <div className="flex-1 overflow-auto bg-[#F7F7F7] p-6 lg:p-10">{children}</div>
       </div>
 
       {isOpen && (

@@ -1,5 +1,5 @@
 // src/pages/Cart.jsx
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useContext, useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CartContext as _CartContext } from '../context/CartContext';
 import { AuthContext } from '../context/AuthContext';
@@ -40,6 +40,8 @@ export const Cart = () => {
   // For AM/PM toggle when selecting time
   const [time24, setTime24] = useState('12:00'); // internal 24-hour representation (HH:MM)
   const [ampm, setAmpm] = useState('PM'); // 'AM' or 'PM'
+  const [hour12, setHour12] = useState('12');
+  const [minute, setMinute] = useState('00');
 
   useEffect(() => {
     // set min date to today's date in yyyy-mm-dd
@@ -60,8 +62,18 @@ export const Cart = () => {
     return Number.isFinite(n) ? n : fallback;
   };
 
+  const formatAmount = useMemo(
+    () =>
+      new Intl.NumberFormat('en-IN', {
+        style: 'currency',
+        currency: 'INR',
+        maximumFractionDigits: 0,
+      }),
+    []
+  );
+
   const fmt = (n) => {
-    return toNumber(n, 0).toFixed(2);
+    return formatAmount.format(toNumber(n, 0));
   };
 
   // Convert 24-hour "HH:MM" to "hh:mm AM/PM"
@@ -74,6 +86,19 @@ export const Cart = () => {
     h = h % 12;
     if (h === 0) h = 12;
     return `${String(h).padStart(2, '0')}:${m} ${period}`;
+  };
+
+  const to24Hour = (h12Str, mStr, period) => {
+    let h = parseInt(h12Str || '12', 10);
+    if (Number.isNaN(h) || h < 1 || h > 12) h = 12;
+    let m = parseInt(mStr || '00', 10);
+    if (Number.isNaN(m) || m < 0 || m > 59) m = 0;
+    const isPM = (period || 'AM').toUpperCase() === 'PM';
+    if (h === 12) h = isPM ? 12 : 0;
+    else if (isPM) h += 12;
+    const hh = String(h).padStart(2, '0');
+    const mm = String(m).padStart(2, '0');
+    return `${hh}:${mm}`;
   };
 
 
@@ -140,27 +165,42 @@ export const Cart = () => {
     });
   };
 
-  // Reverse geocode using Google Maps Geocoding API
+  // Reverse geocode using Google Maps if available; fallback to OpenStreetMap Nominatim
   const reverseGeocode = async (lat, lng) => {
-    try {
-      const key = process.env.REACT_APP_GOOGLE_MAPS_API_KEY || '';
-      if (!key) {
-        throw new Error('Google Maps API key not configured. Set REACT_APP_GOOGLE_MAPS_API_KEY.');
-      }
+    const key = process.env.REACT_APP_GOOGLE_MAPS_API_KEY || '';
+    const tryGoogle = async () => {
       const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${key}`;
       const res = await fetch(url);
-      if (!res.ok) {
-        throw new Error('Failed to call geocoding API');
-      }
+      if (!res.ok) throw new Error('Google geocoding request failed');
       const data = await res.json();
       if (data.status === 'OK' && data.results && data.results.length > 0) {
-        // Pick the most relevant formatted_address
         return data.results[0].formatted_address;
       }
-      throw new Error('No address found for this location');
+      throw new Error('Google geocoding returned no results');
+    };
+
+    const tryNominatim = async () => {
+      const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`;
+      const res = await fetch(url, {
+        headers: {
+          'Accept-Language': 'en',
+        },
+      });
+      if (!res.ok) throw new Error('Nominatim request failed');
+      const data = await res.json();
+      if (data?.display_name) return data.display_name;
+      throw new Error('Nominatim returned no results');
+    };
+
+    try {
+      if (key) {
+        return await tryGoogle();
+      }
+      return await tryNominatim();
     } catch (err) {
       console.error('reverseGeocode error', err);
-      throw err;
+      // If both fail, at least return a lat/lng string so user sees something populated
+      return `Lat ${lat.toFixed(5)}, Lng ${lng.toFixed(5)}`;
     }
   };
 
@@ -329,16 +369,17 @@ export const Cart = () => {
         quantity: Number(item.quantity)
       }));
 
-      // Ensure delivery_time is set and in "hh:mm AM/PM" format
-      let finalDeliveryTime = formData.delivery_time;
-      if (!finalDeliveryTime && time24) {
-        finalDeliveryTime = to12Hour(time24);
-      }
-      if (!finalDeliveryTime) {
-        setLoading(false);
-        setError('Please select a delivery time.');
-        return;
-      }
+       // Ensure delivery_time is set and in "hh:mm AM/PM" format
+       let finalDeliveryTime = formData.delivery_time;
+       if (!finalDeliveryTime) {
+         const computed = to12Hour(time24);
+         if (computed) finalDeliveryTime = computed;
+       }
+       if (!finalDeliveryTime) {
+         setLoading(false);
+         setError('Please select a delivery time.');
+         return;
+       }
 
       // 5) Build order payload
       const orderData = {
@@ -364,11 +405,14 @@ export const Cart = () => {
 
   if (!items || items.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50 py-12">
+      <div className="min-h-screen bg-[#F7F7F7] py-12">
         <div className="container-main text-center">
-          <ShoppingBag size={64} className="mx-auto text-gray-300 mb-4" />
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">Your Cart is Empty</h1>
-          <p className="text-gray-600 mb-8">Add some delicious items to get started</p>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-xl bg-gradient-to-r from-[#FF6A28] to-[#FF8B4A] text-white text-sm font-semibold shadow-md mb-4">
+            Cart
+          </div>
+          <ShoppingBag size={64} className="mx-auto text-orange-200 mb-4" />
+          <h1 className="text-3xl font-bold text-[#301b16] mb-2">Your Cart is Empty</h1>
+          <p className="text-[#7b5a4a] mb-8">Add some delicious items to get started</p>
           <button onClick={() => navigate('/')} className="btn-primary">
             Continue Shopping
           </button>
@@ -382,9 +426,20 @@ export const Cart = () => {
   const finalTotal = toNumber(total + tax + deliveryCharge, 0);
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
+    <div className="min-h-screen bg-[#F7F7F7] py-12">
       <div className="container-main">
-        <h1 className="text-3xl font-bold text-gray-800 mb-8">Shopping Cart</h1>
+        <div className="mb-8 flex items-start justify-between gap-4">
+          <div>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-xl bg-gradient-to-r from-[#FF6A28] to-[#FF8B4A] text-white text-sm font-semibold shadow-md">
+              Cart
+            </div>
+            <h1 className="text-3xl font-bold text-[#301b16] mt-3">Shopping Cart</h1>
+            <p className="text-sm text-[#7b5a4a] mt-1">Review items in your bag and set delivery details.</p>
+          </div>
+          <div className="hidden lg:block text-sm text-[#7b5a4a]">
+            Free delivery on orders above ₹500
+          </div>
+        </div>
 
         {error && <Alert type="error" message={error} onClose={() => setError('')} />}
         {successMessage && <Alert type="success" message={successMessage} onClose={() => setSuccessMessage('')} />}
@@ -392,10 +447,10 @@ export const Cart = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Cart Items */}
           <div className="lg:col-span-2">
-            <div className="bg-white rounded-lg shadow-md">
+            <div className="bg-white rounded-2xl shadow-[0_18px_50px_rgba(255,106,40,0.08)] border border-orange-100 overflow-hidden">
               {/* Preview items banner */}
               {items.some((it) => !Number.isFinite(Number(it.id)) || it._isLocalShowcase) && (
-                <div className="p-4 border-b bg-yellow-50 flex items-center justify-between">
+                <div className="p-4 border-b bg-orange-50/70 border-orange-100 flex items-center justify-between">
                   <div className="text-sm text-yellow-800">Some items in your cart are previews and may not be directly orderable.</div>
                   <div className="flex items-center gap-2">
                     <button onClick={linkPreviewItems} className="btn-secondary px-3 py-2">Link preview items</button>
@@ -407,12 +462,12 @@ export const Cart = () => {
                 return (
                   <div
                     key={item.id}
-                    className="flex items-center gap-4 p-6 border-b last:border-b-0 hover:bg-gray-50 transition"
+                    className="flex items-center gap-4 p-6 border-b last:border-b-0 border-orange-50 hover:bg-orange-50/40 transition"
                   >
                     <img
                       src={resolvedImage}
                       alt={item.name}
-                      className="w-24 h-24 object-cover rounded-lg"
+                      className="w-24 h-24 object-cover rounded-lg shadow-sm"
                     />
 
                     <div className="flex-1">
@@ -423,7 +478,7 @@ export const Cart = () => {
                     <div className="flex items-center gap-3">
                       <button
                         onClick={() => updateQuantity(item.id, Math.max(1, item.quantity - 1))}
-                        className="bg-gray-200 p-2 rounded hover:bg-gray-300 transition"
+                        className="bg-orange-50 border border-orange-100 p-2 rounded hover:bg-orange-100 transition text-[#FF6A28]"
                         aria-label={`Decrease quantity of ${item.name}`}
                       >
                         <Minus size={16} />
@@ -440,13 +495,13 @@ export const Cart = () => {
                             updateQuantity(item.id, Math.max(1, parseInt(val, 10)));
                           }
                         }}
-                        className="w-12 text-center border border-gray-300 rounded py-1"
+                        className="w-12 text-center border border-orange-100 rounded py-1"
                         min="1"
                       />
 
                       <button
                         onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                        className="bg-gray-200 p-2 rounded hover:bg-gray-300 transition"
+                        className="bg-orange-50 border border-orange-100 p-2 rounded hover:bg-orange-100 transition text-[#FF6A28]"
                         aria-label={`Increase quantity of ${item.name}`}
                       >
                         <Plus size={16} />
@@ -454,7 +509,7 @@ export const Cart = () => {
                     </div>
 
                     <div className="text-right">
-                      <p className="text-[#FC4300] font-bold text-lg">₹{fmt(item.price * item.quantity)}</p>
+                      <p className="text-[#FF6A28] font-bold text-lg">{fmt(item.price * item.quantity)}</p>
                     </div>
 
                     <button onClick={() => removeItem(item.id)} className="text-red-600 hover:text-red-800 p-2" aria-label={`Remove ${item.name}`}>
@@ -469,49 +524,49 @@ export const Cart = () => {
           {/* Order Summary & Checkout */}
           <div className="lg:col-span-1">
             {/* Order Summary */}
-            <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-              <h2 className="text-2xl font-bold text-gray-800 mb-4">Order Summary</h2>
+            <div className="bg-white rounded-2xl shadow-[0_18px_50px_rgba(255,106,40,0.08)] border border-orange-100 p-6 mb-6">
+              <h2 className="text-2xl font-bold text-[#301b16] mb-4">Order Summary</h2>
 
               <div className="space-y-3 mb-4 pb-4 border-b">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Subtotal:</span>
-                  <span className="font-semibold text-[#FC4300]">₹{fmt(total)}</span>
+                  <span className="text-[#7b5a4a]">Subtotal:</span>
+                  <span className="font-semibold text-[#FF6A28]">{fmt(total)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Tax (5%):</span>
-                  <span className="font-semibold text-[#FC4300]">₹{fmt(tax)}</span>
+                  <span className="text-[#7b5a4a]">Tax (5%):</span>
+                  <span className="font-semibold text-[#FF6A28]">{fmt(tax)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Delivery Charge:</span>
-                  <span className="font-semibold text-[#FC4300]">{deliveryCharge === 0 ? 'FREE' : `₹${fmt(deliveryCharge)}`}</span>
+                  <span className="text-[#7b5a4a]">Delivery Charge:</span>
+                  <span className="font-semibold text-[#FF6A28]">{deliveryCharge === 0 ? 'FREE' : fmt(deliveryCharge)}</span>
                 </div>
               </div>
 
-              <div className="flex justify-between text-lg font-bold text-gray-800 mb-6">
+              <div className="flex justify-between text-lg font-bold text-[#301b16] mb-6">
                 <span>Total:</span>
-                <span className="text-[#FC4300]">₹{fmt(finalTotal)}</span>
+                <span className="text-[#FF6A28]">{fmt(finalTotal)}</span>
               </div>
 
               {total <= 500 && (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-6 text-sm text-blue-800">
+                <div className="bg-orange-50 border border-orange-100 rounded-lg p-3 mb-6 text-sm text-[#7b5a4a]">
                   Free delivery on orders above ₹500
                 </div>
               )}
             </div>
 
             {/* Checkout Form */}
-            <form onSubmit={handleCheckout} className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-bold text-gray-800 mb-4">Delivery Details</h2>
+            <form onSubmit={handleCheckout} className="bg-white rounded-2xl shadow-[0_18px_50px_rgba(255,106,40,0.08)] border border-orange-100 p-6">
+              <h2 className="text-xl font-bold text-[#301b16] mb-4">Delivery Details</h2>
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Delivery Address</label>
+                  <label className="block text-sm font-semibold text-[#7b5a4a] mb-2">Delivery Address</label>
                   <textarea
                     name="delivery_address"
                     value={formData.delivery_address}
                     onChange={handleChange}
                     placeholder="Enter your delivery address"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#FC4300] focus:ring-2 focus:ring-[#FC4300]/20 resize-none"
+                    className="w-full px-4 py-2 border border-orange-100 rounded-lg focus:outline-none focus:border-[#FF6A28] focus:ring-2 focus:ring-[#FF6A28]/20 resize-none"
                     rows="3"
                     required
                   />
@@ -537,77 +592,82 @@ export const Cart = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Delivery Date</label>
+                  <label className="block text-sm font-semibold text-[#7b5a4a] mb-2">Delivery Date</label>
                   <input
                     type="date"
                     name="delivery_date"
                     value={formData.delivery_date}
                     onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#FC4300] focus:ring-2 focus:ring-[#FC4300]/20"
+                    className="w-full px-4 py-2 border border-orange-100 rounded-lg focus:outline-none focus:border-[#FF6A28] focus:ring-2 focus:ring-[#FF6A28]/20"
                     required
                     min={minDate}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Delivery Time (AM/PM)</label>
+                  <label className="block text-sm font-semibold text-[#7b5a4a] mb-2">Delivery Time</label>
                   <div className="flex gap-2">
-                    {/* time input for convenience (24h) but we convert to AM/PM and store that format */}
-                    <input
-                      type="time"
-                      name="time24"
-                      value={time24}
+                    <select
+                      name="hour12"
+                      value={hour12}
                       onChange={(e) => {
-                        const val = e.target.value;
-                        setTime24(val);
-                        // update formData.delivery_time to be "hh:mm AM/PM"
-                        const formatted = to12Hour(val);
-                        setFormData(prev => ({ ...prev, delivery_time: formatted }));
+                        const h12 = e.target.value;
+                        setHour12(h12);
+                        const new24 = to24Hour(h12, minute, ampm);
+                        setTime24(new24);
+                        setFormData((prev) => ({ ...prev, delivery_time: to12Hour(new24) }));
                       }}
-                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#FC4300] focus:ring-2 focus:ring-[#FC4300]/20"
+                      className="w-24 px-4 py-2 border border-orange-100 rounded-lg focus:outline-none focus:border-[#FF6A28] focus:ring-2 focus:ring-[#FF6A28]/20"
                       required
-                    />
-                    {/* Provide explicit AM/PM toggle in case user wants to override */}
+                    >
+                      {['01','02','03','04','05','06','07','08','09','10','11','12'].map((h) => (
+                        <option key={h} value={h}>{h}</option>
+                      ))}
+                    </select>
+                    <select
+                      name="minute"
+                      value={minute}
+                      onChange={(e) => {
+                        const m = e.target.value;
+                        setMinute(m);
+                        const new24 = to24Hour(hour12, m, ampm);
+                        setTime24(new24);
+                        setFormData((prev) => ({ ...prev, delivery_time: to12Hour(new24) }));
+                      }}
+                      className="w-24 px-4 py-2 border border-orange-100 rounded-lg focus:outline-none focus:border-[#FF6A28] focus:ring-2 focus:ring-[#FF6A28]/20"
+                      required
+                    >
+                      {['00', '15', '30', '45'].map((m) => (
+                        <option key={m} value={m}>{m}</option>
+                      ))}
+                    </select>
                     <select
                       name="ampm"
-                      value={formData.delivery_time ? formData.delivery_time.split(' ')[1] || ampm : ampm}
+                      value={ampm}
                       onChange={(e) => {
                         const chosen = e.target.value;
                         setAmpm(chosen);
-                        // adjust time24 accordingly:
-                        // take current time24, convert to 12-hour pieces, set period accordingly
-                        if (time24) {
-                          // current 24h to hh:mm AM/PM
-                          let [hStr, mStr] = time24.split(':');
-                          let h = parseInt(hStr, 10);
-                          // convert to 12h then replace period
-                          let hh12 = h % 12;
-                          if (hh12 === 0) hh12 = 12;
-                          const new12 = `${String(hh12).padStart(2, '0')}:${mStr} ${chosen}`;
-                          setFormData(prev => ({ ...prev, delivery_time: new12 }));
-                        } else {
-                          // no time24 set yet, set a default
-                          setFormData(prev => ({ ...prev, delivery_time: `12:00 ${chosen}` }));
-                          setTime24('12:00');
-                        }
+                        const new24 = to24Hour(hour12, minute, chosen);
+                        setTime24(new24);
+                        setFormData((prev) => ({ ...prev, delivery_time: to12Hour(new24) }));
                       }}
-                      className="w-24 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#FC4300] focus:ring-2 focus:ring-[#FC4300]/20"
+                      className="w-24 px-4 py-2 border border-orange-100 rounded-lg focus:outline-none focus:border-[#FF6A28] focus:ring-2 focus:ring-[#FF6A28]/20"
                     >
                       <option>AM</option>
                       <option>PM</option>
                     </select>
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">Time will be submitted as hh:mm AM/PM (e.g. 02:30 PM)</p>
+                  <p className="text-xs text-[#a07c6c] mt-1">Time will be submitted as hh:mm AM/PM (e.g. 02:30 PM)</p>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Special Instructions</label>
+                  <label className="block text-sm font-semibold text-[#7b5a4a] mb-2">Special Instructions</label>
                   <textarea
                     name="notes"
                     value={formData.notes}
                     onChange={handleChange}
                     placeholder="Any special requests?"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#FC4300] focus:ring-2 focus:ring-[#FC4300]/20 resize-none"
+                    className="w-full px-4 py-2 border border-orange-100 rounded-lg focus:outline-none focus:border-[#FF6A28] focus:ring-2 focus:ring-[#FF6A28]/20 resize-none"
                     rows="2"
                   />
                 </div>

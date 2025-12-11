@@ -1,27 +1,106 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { Alert } from '../components/Alert';
 import { User, Mail, Lock, Phone, Eye, EyeOff } from 'lucide-react';
 
-export const Register = () => {
-  const navigate = useNavigate();
-  const { register, loading } = useContext(AuthContext);
-  const [showPassword, setShowPassword] = useState(false);
-  const [formData, setFormData] = useState({
+const REGISTER_FORM_STORAGE_KEY = 'register_form_data';
+
+// Initialize form data from localStorage or default
+const getInitialFormData = () => {
+  try {
+    const stored = localStorage.getItem(REGISTER_FORM_STORAGE_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      return {
+        first_name: parsed.first_name || '',
+        last_name: parsed.last_name || '',
+        email: parsed.email || '',
+        password: parsed.password || '',
+        phone: parsed.phone || '',
+      };
+    }
+  } catch (e) {
+    // Ignore errors
+  }
+  return {
     first_name: '',
     last_name: '',
     email: '',
     password: '',
     phone: '',
-  });
+  };
+};
+
+export const Register = () => {
+  const navigate = useNavigate();
+  const { register, loading } = useContext(AuthContext);
+  const [showPassword, setShowPassword] = useState(false);
+  const initialFormData = {
+    first_name: '',
+    last_name: '',
+    email: '',
+    password: '',
+    phone: '',
+  };
+  const [formData, setFormData] = useState(getInitialFormData);
   const [errors, setErrors] = useState({});
+  // Use ref to persist form data across re-renders
+  const formDataRef = useRef(formData);
+  const isMountedRef = useRef(true);
+
+  // Keep ref in sync with state and persist to localStorage
+  useEffect(() => {
+    formDataRef.current = formData;
+    // Persist to localStorage whenever formData changes
+    try {
+      localStorage.setItem(REGISTER_FORM_STORAGE_KEY, JSON.stringify(formData));
+    } catch (e) {
+      // Ignore localStorage errors
+    }
+  }, [formData]);
+
+  // Restore form data on mount if component was remounted
+  useEffect(() => {
+    if (isMountedRef.current) {
+      const stored = getInitialFormData();
+      const hasStoredData = Object.values(stored).some(val => val);
+      if (hasStoredData) {
+        setFormData(stored);
+        formDataRef.current = stored;
+      }
+    }
+    return () => {
+      // Don't clear on unmount - keep data for next mount
+    };
+  }, []);
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
+    const fieldName = e.target.name;
+    const fieldValue = e.target.value;
+    
+    // Clear errors when user starts typing in that field (good UX feedback)
+    setErrors((prevErrors) => {
+      const newErrors = { ...prevErrors };
+      if (newErrors[fieldName]) {
+        delete newErrors[fieldName];
+      }
+      // Clear general error when user starts typing in any field
+      if (newErrors.general) {
+        delete newErrors.general;
+      }
+      return newErrors;
+    });
+    
+    // Use functional update to avoid stale closure issues
+    setFormData((prevData) => {
+      const newData = {
+        ...prevData,
+        [fieldName]: fieldValue,
+      };
+      formDataRef.current = newData;
+      return newData;
     });
   };
 
@@ -106,36 +185,82 @@ export const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setErrors({});
+    // Don't clear all errors here - only clear on success or when user types
 
+    // Use ref to get the latest form data to avoid stale closures
+    const currentFormData = formDataRef.current;
+    
     // client-side validation
-    const validationErrors = validateAll(formData);
+    const validationErrors = validateAll(currentFormData);
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       return;
     }
 
-    const result = await register(formData);
+    const result = await register(currentFormData);
     if (result.success) {
+      // Only clear form and errors on successful registration (navigation will unmount component anyway)
+      setErrors({});
+      setFormData(initialFormData);
+      formDataRef.current = initialFormData;
+      // Clear from localStorage on success
+      try {
+        localStorage.removeItem(REGISTER_FORM_STORAGE_KEY);
+      } catch (e) {
+        // Ignore
+      }
       navigate('/');
     } else {
+      // Preserve form values on error - do NOT clear them
+      // Force restore from ref if state was lost
+      setFormData((prevData) => {
+        // If state was lost (empty), restore from ref
+        const hasPrevData = Object.values(prevData).some(val => val);
+        const hasRefData = Object.values(currentFormData).some(val => val);
+        
+        if (!hasPrevData && hasRefData) {
+          // State was lost, restore from ref
+          return currentFormData;
+        }
+        // State is intact, keep it
+        return prevData;
+      });
+      // Ensure ref is updated
+      formDataRef.current = currentFormData;
       if (typeof result.error === 'object') {
         setErrors(result.error);
       } else {
         setErrors({ general: result.error });
       }
+      // formData remains unchanged, so user can correct and resubmit
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center py-12 px-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 animate-slide-in">
-        <h1 className="text-3xl font-bold text-center mb-2 text-[#FC4300]">Join CaterHub</h1>
-        <p className="text-center text-gray-600 mb-8">Create your account to get started</p>
+    <div className="min-h-screen bg-[#F7F7F7] flex items-center justify-center py-12 px-4">
+      <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+        {/* Left Side - Logo */}
+        <div className="flex items-center justify-center lg:justify-start order-2 lg:order-1">
+          <Link to="/" className="relative w-full max-w-sm lg:max-w-md cursor-pointer hover:opacity-90 transition-opacity">
+            <img
+              src="/images/logo-caterhub-removebg-preview.png"
+              alt="CaterHub Logo"
+              className="w-full h-auto"
+              style={{
+                filter: 'drop-shadow(0 25px 50px rgba(255, 106, 40, 0.4)) drop-shadow(0 15px 30px rgba(0, 0, 0, 0.25)) drop-shadow(0 5px 15px rgba(255, 106, 40, 0.2))',
+              }}
+            />
+          </Link>
+        </div>
+
+        {/* Right Side - Form */}
+        <div className="bg-white rounded-2xl shadow-2xl w-full p-8 animate-slide-in order-1 lg:order-2">
+          <h1 className="text-3xl font-bold text-center mb-2 text-[#FF6A28]">Join CaterHub</h1>
+          <p className="text-center text-gray-600 mb-8">Create your account to get started</p>
 
         {errors.general && <Alert type="error" message={errors.general} />}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4" autoComplete="on">
           {/* Name Fields */}
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -148,7 +273,7 @@ export const Register = () => {
                   value={formData.first_name}
                   onChange={handleChange}
                   placeholder="John"
-                  className="w-full pl-10 pr-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-[#FC4300] focus:ring-2 focus:ring-[#FC4300]/20 transition"
+                  className="w-full pl-10 pr-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-[#FF6A28] focus:ring-2 focus:ring-[#FF6A28]/20 transition"
                   required
                 />
               </div>
@@ -165,7 +290,7 @@ export const Register = () => {
                   value={formData.last_name}
                   onChange={handleChange}
                   placeholder="Doe"
-                  className="w-full pl-10 pr-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-[#FC4300] focus:ring-2 focus:ring-[#FC4300]/20 transition"
+                  className="w-full pl-10 pr-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-[#FF6A28] focus:ring-2 focus:ring-[#FF6A28]/20 transition"
                   required
                 />
               </div>
@@ -184,7 +309,7 @@ export const Register = () => {
                 value={formData.email}
                 onChange={handleChange}
                 placeholder="you@example.com"
-                className="w-full pl-10 pr-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-purple-600 transition"
+                className="w-full pl-10 pr-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-[#FF6A28] focus:ring-2 focus:ring-[#FF6A28]/20 transition"
                 required
               />
             </div>
@@ -202,7 +327,7 @@ export const Register = () => {
                 value={formData.phone}
                 onChange={handleChange}
                 placeholder="+91 9876543210"
-                className="w-full pl-10 pr-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-purple-600 transition"
+                className="w-full pl-10 pr-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-[#FF6A28] focus:ring-2 focus:ring-[#FF6A28]/20 transition"
               />
             </div>
             {errors.phone && <p className="text-red-600 text-xs mt-1">{errors.phone}</p>}
@@ -219,7 +344,7 @@ export const Register = () => {
                 value={formData.password}
                 onChange={handleChange}
                 placeholder="••••••••"
-                className="w-full pl-10 pr-10 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-[#FC4300] focus:ring-2 focus:ring-[#FC4300]/20 transition"
+                className="w-full pl-10 pr-10 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-[#FF6A28] focus:ring-2 focus:ring-[#FF6A28]/20 transition"
                 required
               />
               <button
@@ -246,10 +371,11 @@ export const Register = () => {
         {/* Login Link */}
         <p className="text-center text-gray-600 mt-6">
           Already have an account?{' '}
-          <Link to="/login" className="text-[#FC4300] font-semibold hover:underline">
+          <Link to="/login" className="text-[#FF6A28] font-semibold hover:underline">
             Sign in here
           </Link>
         </p>
+        </div>
       </div>
     </div>
   );

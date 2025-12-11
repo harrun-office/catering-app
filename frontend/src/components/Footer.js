@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Heart, MapPin, Clock, DollarSign, Mail, Phone, Instagram, Twitter, Facebook } from 'lucide-react';
+import { Heart, MapPin, Clock, IndianRupee, Mail, Phone, Instagram, Twitter, Facebook } from 'lucide-react';
 
 export const Footer = () => {
   return (
@@ -32,7 +32,9 @@ export const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Company Info */}
           <div>
-            <h3 className="text-2xl font-bold mb-4 bg-gradient-to-r from-[#FF6A28] to-[#ff8a4c] bg-clip-text text-transparent">CaterHub</h3>
+            <Link to="/" className="text-2xl font-bold mb-4 bg-gradient-to-r from-[#FF6A28] to-[#ff8a4c] bg-clip-text text-transparent hover:opacity-80 transition-opacity cursor-pointer block">
+              CaterHub
+            </Link>
             <p className="text-gray-300 text-sm mb-4">
               Premium catering services at your doorstep. Delicious food, real-time delivery tracking, and exceptional service.
             </p>
@@ -137,7 +139,7 @@ export const Footer = () => {
           </div>
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center text-[#FC4300]">
-              <DollarSign size={18} />
+              <IndianRupee size={18} />
             </div>
             <div>
               <p className="font-semibold">Best Price</p>

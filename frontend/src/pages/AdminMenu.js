@@ -274,12 +274,12 @@ export default function AdminMenu() {
         <div className="inline-flex items-center gap-2">
           <button
             onClick={() => setMode('edit')}
-            className={`rounded-2xl px-4 py-2 text-sm font-semibold ${mode === 'edit' ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-700'}`}>
+            className={`rounded-2xl px-4 py-2 text-sm font-semibold ${mode === 'edit' ? 'bg-[#FF6A28] text-white' : 'bg-orange-50 text-gray-700 border border-orange-200'}`}>
             Edit Menu
           </button>
           <button
             onClick={switchToAdd}
-            className={`rounded-2xl px-4 py-2 text-sm font-semibold ${mode === 'add' ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-700'}`}>
+            className={`rounded-2xl px-4 py-2 text-sm font-semibold ${mode === 'add' ? 'bg-[#FF6A28] text-white' : 'bg-orange-50 text-gray-700 border border-orange-200'}`}>
             <Plus size={14} /> Add New
           </button>
         </div>
@@ -291,7 +291,7 @@ export default function AdminMenu() {
           <select
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
-            className="rounded-2xl border border-slate-200 px-3 py-2 text-sm"
+            className="rounded-2xl border border-orange-200 px-3 py-2 text-sm focus:border-[#FF6A28] focus:outline-none focus:ring-2 focus:ring-[#FF6A28]/20"
           >
             <option value="">All categories</option>
             {categories.map((c) => (
@@ -309,7 +309,7 @@ export default function AdminMenu() {
               <select
                 value={addForm.category_id}
                 onChange={(e) => setAddForm((f) => ({ ...f, category_id: e.target.value }))}
-                className="w-full rounded-2xl border border-slate-200 px-4 py-2 text-sm focus:border-purple-500 focus:outline-none"
+                className="w-full rounded-2xl border border-orange-200 px-4 py-2 text-sm focus:border-[#FF6A28] focus:outline-none focus:ring-2 focus:ring-[#FF6A28]/20"
               >
                 <option value="">Select category</option>
                 {categories.map((c) => (
@@ -324,7 +324,7 @@ export default function AdminMenu() {
               <input
                 value={addForm.name}
                 onChange={(e) => setAddForm((f) => ({ ...f, name: e.target.value }))}
-                className="w-full rounded-2xl border border-slate-200 px-4 py-2 text-sm focus:border-purple-500 focus:outline-none"
+                className="w-full rounded-2xl border border-orange-200 px-4 py-2 text-sm focus:border-[#FF6A28] focus:outline-none focus:ring-2 focus:ring-[#FF6A28]/20"
               />
               {addErrors.name && <div className="text-xs text-red-600">{addErrors.name}</div>}
             </label>
@@ -347,7 +347,7 @@ export default function AdminMenu() {
                 type="number"
                 value={addForm.price}
                 onChange={(e) => setAddForm((f) => ({ ...f, price: e.target.value }))}
-                className="w-full rounded-2xl border border-slate-200 px-4 py-2 text-sm focus:border-purple-500 focus:outline-none"
+                className="w-full rounded-2xl border border-orange-200 px-4 py-2 text-sm focus:border-[#FF6A28] focus:outline-none focus:ring-2 focus:ring-[#FF6A28]/20"
               />
               {addErrors.price && <div className="text-xs text-red-600">{addErrors.price}</div>}
             </label>
@@ -374,7 +374,7 @@ export default function AdminMenu() {
             <button
               onClick={handleAddSubmit}
               disabled={loadingIds.includes('add')}
-              className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-purple-600 to-blue-600 px-4 py-2 text-sm font-semibold text-white shadow hover:shadow-lg"
+              className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-[#FF6A28] to-[#FF8B4A] px-4 py-2 text-sm font-semibold text-white shadow hover:shadow-lg hover:from-[#E85A1F] hover:to-[#FF6A28]"
             >
               <Save size={16} />
               {loadingIds.includes('add') ? 'Adding...' : 'Add menu item'}
@@ -382,7 +382,7 @@ export default function AdminMenu() {
 
             <button
               onClick={() => setMode('edit')}
-              className="rounded-2xl px-4 py-2 text-sm font-semibold bg-slate-100 text-slate-700"
+              className="rounded-2xl px-4 py-2 text-sm font-semibold bg-orange-50 text-gray-700 border border-orange-200 hover:bg-orange-100"
             >
               Cancel
             </button>
@@ -402,7 +402,7 @@ export default function AdminMenu() {
                   <input
                     value={item.name}
                     onChange={(e) => handleFieldChange(item.id, 'name', e.target.value)}
-                    className="w-full rounded-2xl border border-slate-200 px-4 py-2 text-sm focus:border-purple-500 focus:outline-none"
+                    className="w-full rounded-2xl border border-orange-200 px-4 py-2 text-sm focus:border-[#FF6A28] focus:outline-none focus:ring-2 focus:ring-[#FF6A28]/20"
                   />
                   {editErrors[item.id]?.name && <div className="text-xs text-red-600">{editErrors[item.id].name}</div>}
                 </label>
@@ -417,7 +417,7 @@ export default function AdminMenu() {
                         handleFieldChange(item.id, 'category', selectedCat.name);
                       }
                     }}
-                    className="w-full rounded-2xl border border-slate-200 px-4 py-2 text-sm focus:border-purple-500 focus:outline-none"
+                    className="w-full rounded-2xl border border-orange-200 px-4 py-2 text-sm focus:border-[#FF6A28] focus:outline-none focus:ring-2 focus:ring-[#FF6A28]/20"
                   >
                     {categories.map((c) => (
                       <option key={c.id} value={c.id}>{c.name}</option>
@@ -432,7 +432,7 @@ export default function AdminMenu() {
                   value={item.description}
                   onChange={(e) => handleFieldChange(item.id, 'description', e.target.value)}
                   rows="2"
-                  className="w-full rounded-2xl border border-slate-200 px-4 py-2 text-sm focus:border-purple-500 focus:outline-none"
+                  className="w-full rounded-2xl border border-orange-200 px-4 py-2 text-sm focus:border-[#FF6A28] focus:outline-none focus:ring-2 focus:ring-[#FF6A28]/20"
                 />
               </label>
 
@@ -443,7 +443,7 @@ export default function AdminMenu() {
                     type="number"
                     value={item.price}
                     onChange={(e) => handleFieldChange(item.id, 'price', Number(e.target.value))}
-                    className="w-full rounded-2xl border border-slate-200 px-4 py-2 text-sm focus:border-purple-500 focus:outline-none"
+                    className="w-full rounded-2xl border border-orange-200 px-4 py-2 text-sm focus:border-[#FF6A28] focus:outline-none focus:ring-2 focus:ring-[#FF6A28]/20"
                   />
                   {editErrors[item.id]?.price && <div className="text-xs text-red-600">{editErrors[item.id].price}</div>}
                 </label>
@@ -480,7 +480,7 @@ export default function AdminMenu() {
 
                 <button
                   onClick={() => handleEditSave(item)}
-                  className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-purple-600 to-blue-600 px-4 py-2 text-sm font-semibold text-white shadow hover:shadow-lg"
+                  className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-[#FF6A28] to-[#FF8B4A] px-4 py-2 text-sm font-semibold text-white shadow hover:shadow-lg hover:from-[#E85A1F] hover:to-[#FF6A28]"
                   disabled={loadingIds.includes(item.id)}
                 >
                   <Save size={16} />

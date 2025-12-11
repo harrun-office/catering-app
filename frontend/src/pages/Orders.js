@@ -1,14 +1,24 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { orderAPI } from '../utils/api';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { Alert } from '../components/Alert';
-import { Clock, MapPin, Package, DollarSign, XCircle } from 'lucide-react';
+import { Clock, MapPin, Package, IndianRupee, XCircle } from 'lucide-react';
 
 export const Orders = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('all');
+
+  const formatAmount = useMemo(
+    () =>
+      new Intl.NumberFormat('en-IN', {
+        style: 'currency',
+        currency: 'INR',
+        maximumFractionDigits: 0,
+      }),
+    []
+  );
 
   const fetchOrders = useCallback(async () => {
     try {
@@ -40,13 +50,13 @@ export const Orders = () => {
 
   const getStatusColor = (status) => {
     const colors = {
-      pending: 'bg-yellow-100 text-yellow-800',
-      confirmed: 'bg-blue-100 text-blue-800',
-      preparing: 'bg-purple-100 text-purple-800',
-      ready: 'bg-green-100 text-green-800',
-      out_for_delivery: 'bg-indigo-100 text-indigo-800',
-      delivered: 'bg-teal-100 text-teal-800',
-      cancelled: 'bg-red-100 text-red-800',
+      pending: 'bg-orange-50 text-[#FF6A28] border border-orange-100',
+      confirmed: 'bg-orange-50 text-[#E85A1F] border border-orange-100',
+      preparing: 'bg-orange-50 text-[#CF4F15] border border-orange-100',
+      ready: 'bg-emerald-50 text-emerald-700 border border-emerald-100',
+      out_for_delivery: 'bg-orange-50 text-[#FF6A28] border border-orange-100',
+      delivered: 'bg-emerald-50 text-emerald-700 border border-emerald-100',
+      cancelled: 'bg-red-50 text-red-700 border border-red-100',
     };
     return colors[status] || 'bg-gray-100 text-gray-800';
   };
@@ -62,9 +72,15 @@ export const Orders = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
+    <div className="min-h-screen bg-[#F7F7F7] py-12">
       <div className="container-main">
-        <h1 className="text-3xl font-bold text-[#FC4300] mb-8">My Orders</h1>
+        <div className="mb-8">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-xl bg-gradient-to-r from-[#FF6A28] to-[#FF8B4A] text-white text-sm font-semibold shadow-md">
+            Orders
+          </div>
+          <h1 className="text-3xl font-bold text-[#301b16] mt-3">My Order History</h1>
+          <p className="text-sm text-[#7b5a4a] mt-1">Review your recent orders and their delivery status.</p>
+        </div>
 
         {error && <Alert type="error" message={error} onClose={() => setError('')} />}
 
@@ -74,10 +90,11 @@ export const Orders = () => {
             <button
               key={option.value}
               onClick={() => setSelectedStatus(option.value)}
-              className={`px-4 py-2 rounded-lg font-semibold transition ${selectedStatus === option.value
-                ? 'bg-[#FC4300] text-white'
-                : 'bg-white border-2 border-gray-200 text-gray-700 hover:border-[#FC4300]'
-                }`}
+              className={`px-4 py-2 rounded-lg font-semibold transition ${
+                selectedStatus === option.value
+                  ? 'bg-[#FF6A28] text-white shadow'
+                  : 'bg-white border border-orange-100 text-gray-700 hover:border-[#FF6A28] hover:bg-orange-50'
+              }`}
             >
               {option.label}
             </button>
@@ -89,20 +106,20 @@ export const Orders = () => {
             <LoadingSpinner size="lg" text="Loading your orders..." />
           </div>
         ) : orders.length === 0 ? (
-          <div className="text-center py-12 bg-white rounded-lg">
-            <Package size={64} className="mx-auto text-gray-300 mb-4" />
-            <h2 className="text-2xl font-bold text-[#FC4300] mb-2">No Orders Yet</h2>
-            <p className="text-gray-600">Start ordering delicious food from our menu!</p>
+          <div className="text-center py-12 bg-white rounded-2xl border border-orange-100 shadow">
+            <Package size={64} className="mx-auto text-orange-200 mb-4" />
+            <h2 className="text-2xl font-bold text-[#301b16] mb-2">No Orders Yet</h2>
+            <p className="text-[#7b5a4a]">Start ordering delicious food from our menu!</p>
           </div>
         ) : (
           <div className="space-y-6">
             {orders.map((order) => (
-              <div key={order.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition">
+              <div key={order.id} className="bg-white rounded-2xl border border-orange-100 shadow-sm overflow-hidden hover:shadow-lg transition">
                 {/* Header */}
-                <div className="bg-gradient-to-r from-purple-50 to-blue-50 p-6 border-b flex justify-between items-start">
+                <div className="bg-gradient-to-r from-orange-50/80 to-white p-6 border-b border-orange-100 flex justify-between items-start">
                   <div>
-                    <p className="text-sm text-gray-600">Order Number</p>
-                    <h3 className="text-2xl font-bold text-[#FC4300]">{order.order_number}</h3>
+                    <p className="text-xs uppercase tracking-[0.3em] text-[#FF6A28] font-semibold">Order Number</p>
+                    <h3 className="text-2xl font-bold text-[#301b16] mt-1">{order.order_number}</h3>
                   </div>
                   <div className="text-right">
                     <span className={`inline-block px-4 py-2 rounded-full font-semibold text-sm ${getStatusColor(order.status)}`}>
@@ -112,68 +129,72 @@ export const Orders = () => {
                 </div>
 
                 {/* Details */}
-                <div className="p-6">
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                    <div className="flex items-center gap-3">
-                      <Clock className="text-[#FC4300]" />
+                <div className="p-6 space-y-5">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div className="flex items-center gap-3 rounded-xl border border-orange-100 bg-orange-50/60 px-3 py-2">
+                      <Clock className="text-[#FF6A28]" />
                       <div>
-                        <p className="text-xs text-gray-600">Ordered</p>
-                        <p className="font-semibold text-gray-800">
+                        <p className="text-xs text-[#7b5a4a]">Ordered</p>
+                        <p className="font-semibold text-[#301b16]">
                           {new Date(order.created_at).toLocaleDateString()}
                         </p>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-3">
-                      <MapPin className="text-[#FC4300]" />
+                    <div className="flex items-center gap-3 rounded-xl border border-orange-100 bg-orange-50/60 px-3 py-2">
+                      <MapPin className="text-[#FF6A28]" />
                       <div>
-                        <p className="text-xs text-gray-600">Delivery</p>
-                        <p className="font-semibold text-gray-800">{order.delivery_date}</p>
+                        <p className="text-xs text-[#7b5a4a]">Delivery</p>
+                        <p className="font-semibold text-[#301b16]">
+                          {order.delivery_date ? new Date(order.delivery_date).toLocaleDateString() : '—'}
+                        </p>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-3">
-                      <DollarSign className="text-[#FC4300]" />
+                    <div className="flex items-center gap-3 rounded-xl border border-orange-100 bg-orange-50/60 px-3 py-2">
+                      <IndianRupee className="text-[#FF6A28]" />
                       <div>
-                        <p className="text-xs text-gray-600">Total</p>
-                        <p className="font-semibold text-[#FC4300]">₹{order.total_amount}</p>
+                        <p className="text-xs text-[#7b5a4a]">Total</p>
+                        <p className="font-semibold text-[#FF6A28]">{formatAmount.format(order.total_amount || 0)}</p>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-3">
-                      <Package className="text-[#FC4300]" />
+                    <div className="flex items-center gap-3 rounded-xl border border-orange-100 bg-orange-50/60 px-3 py-2">
+                      <Package className="text-[#FF6A28]" />
                       <div>
-                        <p className="text-xs text-gray-600">Items</p>
-                        <p className="font-semibold text-gray-800">{order.items?.length || 0} items</p>
+                        <p className="text-xs text-[#7b5a4a]">Items</p>
+                        <p className="font-semibold text-[#301b16]">{order.items?.length || 0} items</p>
                       </div>
                     </div>
                   </div>
 
                   {/* Order Items */}
-                  <div className="bg-gray-50 rounded-lg p-4 mb-4">
-                    <p className="font-semibold text-gray-800 mb-3">Items:</p>
+                  <div className="bg-orange-50/60 rounded-xl border border-orange-100 p-4">
+                    <p className="font-semibold text-[#301b16] mb-3">Items</p>
                     <ul className="space-y-2">
                       {order.items?.map((item) => (
-                        <li key={item.id} className="flex justify-between text-sm text-gray-700">
+                        <li key={item.id} className="flex justify-between text-sm text-[#7b5a4a]">
                           <span>
-                            {item.name} x {item.quantity}
+                            {item.name} × {item.quantity}
                           </span>
-                          <span className="font-semibold text-[#FC4300]">₹{Number(item.total_price || item.unit_price * item.quantity).toFixed(2)}</span>
+                          <span className="font-semibold text-[#FF6A28]">
+                            {formatAmount.format(Number(item.total_price || item.unit_price * item.quantity || 0))}
+                          </span>
                         </li>
                       ))}
                     </ul>
                   </div>
 
                   {/* Delivery Address */}
-                  <p className="text-sm text-gray-600 mb-4">
-                    <strong>Delivery To:</strong> {order.delivery_address}
-                  </p>
+                  <div className="text-sm text-[#7b5a4a]">
+                    <strong className="text-[#301b16]">Delivery To:</strong> {order.delivery_address}
+                  </div>
 
                   {/* Action Button */}
                   {(order.status === 'pending' || order.status === 'confirmed') && (
                     <button
                       onClick={() => handleCancelOrder(order.id)}
-                      className="flex items-center gap-2 text-red-600 hover:text-red-800 font-semibold"
+                      className="inline-flex items-center gap-2 text-red-600 hover:text-red-800 font-semibold"
                     >
                       <XCircle size={20} />
                       Cancel Order

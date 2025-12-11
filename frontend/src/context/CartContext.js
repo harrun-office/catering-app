@@ -66,15 +66,53 @@ export function CartProvider({ children }) {
     }
   });
 
+  // Merge helper: combine arrays summing quantities by id
+  const mergeItems = (listA = [], listB = []) => {
+    const map = new Map();
+    const normalizeId = (it) => String(it?.id ?? it?._id ?? it?.menu_item_id ?? it?.productId ?? '');
+    const addToMap = (arr) => {
+      arr.forEach((it) => {
+        const id = normalizeId(it);
+        if (!id) return;
+        const existing = map.get(id) || { ...it, qty: 0, quantity: 0 };
+        const inc = Number(it.qty ?? it.quantity ?? 0);
+        const newQty = Number(existing.qty ?? existing.quantity ?? 0) + inc;
+        map.set(id, { ...existing, qty: newQty, quantity: newQty });
+      });
+    };
+    addToMap(listA);
+    addToMap(listB);
+    return Array.from(map.values());
+  };
+
   // When derivedUserId changes (login/logout), load the cart for that user (or guest).
+  // On login, merge guest cart into the user cart once, then clear the guest cart key.
   useEffect(() => {
-    const newKey = storageKeyForUserId(derivedUserId);
+    const userKey = storageKeyForUserId(derivedUserId);
+    const guestKey = storageKeyForUserId(null);
     try {
-      const raw = localStorage.getItem(newKey);
-      const parsed = raw ? JSON.parse(raw) : [];
-      setItems(Array.isArray(parsed) ? parsed.map((it) => ({ ...it, qty: Number(it.qty ?? it.quantity ?? 0), quantity: Number(it.quantity ?? it.qty ?? 0) })) : []);
+      const load = (key) => {
+        const raw = localStorage.getItem(key);
+        const parsed = raw ? JSON.parse(raw) : [];
+        return Array.isArray(parsed)
+          ? parsed.map((it) => ({ ...it, qty: Number(it.qty ?? it.quantity ?? 0), quantity: Number(it.quantity ?? it.qty ?? 0) }))
+          : [];
+      };
+
+      const userCart = load(userKey);
+      const guestCart = load(guestKey);
+
+      // If user is logged in and there is a guest cart, merge and clear guest cart
+      if (derivedUserId && guestCart.length > 0) {
+        const merged = mergeItems(userCart, guestCart);
+        localStorage.setItem(userKey, JSON.stringify(merged));
+        localStorage.removeItem(guestKey);
+        setItems(merged);
+      } else {
+        setItems(userCart);
+      }
     } catch (e) {
-      console.warn("CartProvider: failed to load cart for new user, resetting to empty", e);
+      console.warn("CartProvider: failed to load/merge cart, resetting to empty", e);
       setItems([]);
     }
   }, [derivedUserId]);

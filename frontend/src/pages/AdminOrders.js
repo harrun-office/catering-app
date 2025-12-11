@@ -8,11 +8,11 @@ const statusOptions = ['pending', 'confirmed', 'preparing', 'ready', 'out_for_de
 
 const statusStyles = {
   pending: 'bg-amber-50 text-amber-700',
-  confirmed: 'bg-blue-50 text-blue-700',
-  preparing: 'bg-purple-50 text-purple-700',
-  ready: 'bg-emerald-50 text-emerald-700',
-  out_for_delivery: 'bg-indigo-50 text-indigo-700',
-  delivered: 'bg-teal-50 text-teal-700',
+  confirmed: 'bg-orange-50 text-[#FF6A28]',
+  preparing: 'bg-orange-100 text-[#E85A1F]',
+  ready: 'bg-orange-50 text-[#FF6A28]',
+  out_for_delivery: 'bg-orange-100 text-[#E85A1F]',
+  delivered: 'bg-emerald-50 text-emerald-700',
   cancelled: 'bg-rose-50 text-rose-700',
 };
 
@@ -93,7 +93,7 @@ export const AdminOrders = () => {
         </div>
         <button
           onClick={fetchOrders}
-          className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100"
+          className="inline-flex items-center gap-2 rounded-2xl border border-orange-200 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-orange-50"
         >
           <RefreshCw size={16} /> Refresh
         </button>
@@ -119,7 +119,7 @@ export const AdminOrders = () => {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search order #, customer, address"
-              className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-2 pl-10 pr-4 text-sm text-slate-700 focus:border-purple-500 focus:bg-white focus:outline-none"
+              className="w-full rounded-2xl border border-orange-200 bg-orange-50 py-2 pl-10 pr-4 text-sm text-gray-700 focus:border-[#FF6A28] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#FF6A28]/20"
             />
           </div>
           <div className="flex flex-wrap gap-2">
@@ -131,8 +131,8 @@ export const AdminOrders = () => {
                   onClick={() => setSelectedStatus(status)}
                   className={`rounded-2xl px-3 py-2 text-xs font-semibold transition ${
                     isActive
-                      ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow'
-                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                      ? 'bg-gradient-to-r from-[#FF6A28] to-[#FF8B4A] text-white shadow'
+                      : 'bg-orange-50 text-gray-600 hover:bg-orange-100 border border-orange-200'
                   }`}
                 >
                   {status.replace(/_/g, ' ')}
@@ -167,7 +167,7 @@ export const AdminOrders = () => {
                   </div>
                   <div className="text-right">
                     <p className="text-xs uppercase tracking-widest text-slate-400">Total</p>
-                    <p className="text-2xl font-semibold text-purple-600">{formatAmount(order.total_amount)}</p>
+                    <p className="text-2xl font-semibold text-[#FF6A28]">{formatAmount(order.total_amount)}</p>
                     <div className="mt-2">{renderStatusChip(order.status)}</div>
                   </div>
                 </div>
@@ -176,7 +176,7 @@ export const AdminOrders = () => {
                   <p className="text-sm text-slate-500 line-clamp-2">{order.delivery_address}</p>
                   <button
                     onClick={() => setExpandedOrder(isExpanded ? null : order.id)}
-                    className="inline-flex items-center gap-2 text-sm font-semibold text-purple-600 hover:text-purple-700"
+                    className="inline-flex items-center gap-2 text-sm font-semibold text-[#FF6A28] hover:text-[#E85A1F]"
                   >
                     {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
                     {isExpanded ? 'Hide details' : 'View details'}
@@ -195,7 +195,7 @@ export const AdminOrders = () => {
                               key={status}
                               onClick={() => handleStatusChange(order.id, status)}
                               className={`rounded-full px-4 py-2 text-xs font-semibold transition ${
-                                active ? 'bg-purple-600 text-white shadow' : 'bg-white text-slate-600 hover:bg-slate-100'
+                                active ? 'bg-[#FF6A28] text-white shadow' : 'bg-white text-gray-600 hover:bg-orange-50 border border-orange-200'
                               }`}
                             >
                               {status.replace(/_/g, ' ')}

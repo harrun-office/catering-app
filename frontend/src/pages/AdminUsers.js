@@ -74,10 +74,10 @@ export const AdminUsers = () => {
           <p className="mt-2 text-3xl font-semibold text-slate-900">{users.length}</p>
           <p className="text-xs text-slate-500">All registered customers</p>
         </div>
-        <div className="rounded-3xl bg-gradient-to-br from-emerald-500 to-teal-500 p-5 text-white shadow-lg">
-          <p className="text-xs uppercase tracking-widest text-white/70">Active</p>
-          <p className="mt-2 text-3xl font-semibold">{stats.active}</p>
-          <p className="text-xs text-white/80">Currently allowed to place orders</p>
+        <div className="rounded-3xl bg-gradient-to-br from-orange-50 to-orange-100 border-2 border-[#FF6A28] p-5 shadow-lg">
+          <p className="text-xs uppercase tracking-widest text-[#FF6A28] font-semibold">Active</p>
+          <p className="mt-2 text-3xl font-semibold text-gray-800">{stats.active}</p>
+          <p className="text-xs text-gray-600">Currently allowed to place orders</p>
         </div>
         <div className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-100">
           <p className="text-xs uppercase tracking-widest text-slate-400">Blocked</p>
@@ -99,7 +99,7 @@ export const AdminUsers = () => {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search by name, email, phone"
-              className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-2 pl-10 pr-4 text-sm text-slate-700 focus:border-purple-500 focus:bg-white focus:outline-none"
+              className="w-full rounded-2xl border border-orange-200 bg-orange-50 py-2 pl-10 pr-4 text-sm text-gray-700 focus:border-[#FF6A28] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#FF6A28]/20"
             />
           </div>
           <div className="flex items-center gap-2">
@@ -132,7 +132,7 @@ export const AdminUsers = () => {
           {filteredUsers.map((user) => (
             <div key={user.id} className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-100">
               <div className="flex items-center gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-600 to-blue-600 text-white">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[#FF6A28] to-[#FF8B4A] text-white">
                   <UserCircle size={20} />
                 </div>
                 <div>

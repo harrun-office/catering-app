@@ -125,7 +125,7 @@ export const Navbar = () => {
         {/* HEADER: LOGO */}
         <div className={`flex-shrink-0 flex items-center ${!isHovered && collapsed ? 'flex-col justify-center gap-4 py-4' : 'justify-center px-2'} h-24 mb-2 transition-all`}>
           {/* LOGO */}
-          <div className="flex items-center justify-center">
+          <Link to="/" className="flex items-center justify-center cursor-pointer hover:opacity-80 transition-opacity">
             {logoError ? (
               <span className="text-3xl">🧑‍🍳</span>
             ) : (
@@ -140,7 +140,7 @@ export const Navbar = () => {
                 onError={() => setLogoError(true)}
               />
             )}
-          </div>
+          </Link>
         </div>
 
         {/* NAV LINKS */}

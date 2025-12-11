@@ -11,7 +11,7 @@ const formatCurrency = (value = 0) =>
     maximumFractionDigits: 0,
   }).format(value || 0);
 
-const StatCard = ({ title, value, trend = '', icon: Icon, accent = 'bg-purple-100 text-purple-700', pill }) => (
+const StatCard = ({ title, value, trend = '', icon: Icon, accent = 'bg-orange-100 text-[#FF6A28]', pill }) => (
   <div className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-100 transition hover:-translate-y-1 hover:shadow-md">
     <div className="flex items-center justify-between">
       <div>
@@ -33,7 +33,7 @@ const StatCard = ({ title, value, trend = '', icon: Icon, accent = 'bg-purple-10
 
 const ActivityItem = ({ label, sublabel, time }) => (
   <div className="flex items-start gap-3">
-    <span className="mt-1 h-2 w-2 rounded-full bg-gradient-to-r from-purple-500 to-blue-500" />
+    <span className="mt-1 h-2 w-2 rounded-full bg-gradient-to-r from-[#FF6A28] to-[#FF8B4A]" />
     <div className="flex-1">
       <p className="text-sm font-semibold text-slate-800">{label}</p>
       <p className="text-xs text-slate-500">{sublabel}</p>
@@ -68,7 +68,7 @@ export const AdminDashboard = () => {
         value: stats?.total_orders ?? 0,
         trend: stats?.orders_trend ?? '↑ steady growth',
         icon: ShoppingBag,
-        accent: 'bg-purple-100 text-purple-700',
+        accent: 'bg-orange-100 text-[#FF6A28]',
         pill: `${stats?.pending_orders ?? 0} pending`,
       },
       {
@@ -76,14 +76,14 @@ export const AdminDashboard = () => {
         value: formatCurrency(stats?.revenue ?? 0),
         trend: stats?.revenue_trend ?? '+12% vs last week',
         icon: TrendingUp,
-        accent: 'bg-emerald-100 text-emerald-700',
+        accent: 'bg-orange-100 text-[#FF6A28]',
       },
       {
         title: 'Active Users',
         value: stats?.total_users ?? 0,
         trend: stats?.users_trend ?? '+18 new this week',
         icon: Users,
-        accent: 'bg-blue-100 text-blue-700',
+        accent: 'bg-orange-100 text-[#FF6A28]',
       },
       {
         title: 'Avg. Prep Time',
@@ -120,14 +120,14 @@ export const AdminDashboard = () => {
 
   return (
     <div className="space-y-8">
-      <div className="rounded-3xl bg-gradient-to-r from-purple-700 via-indigo-600 to-blue-600 p-6 text-white shadow-xl">
+      <div className="rounded-3xl bg-white border-l-4 border-[#FF6A28] p-6 shadow-lg">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <p className="text-sm uppercase tracking-[0.3em] text-white/60">Dashboard</p>
-            <h1 className="text-3xl font-semibold">Daily Ops Snapshot</h1>
-            <p className="mt-1 text-white/80">Keep a pulse on orders, customers, and revenue at a glance.</p>
+            <p className="text-sm uppercase tracking-[0.3em] text-[#FF6A28] font-semibold">Dashboard</p>
+            <h1 className="text-3xl font-semibold text-gray-800">Daily Ops Snapshot</h1>
+            <p className="mt-1 text-gray-600">Keep a pulse on orders, customers, and revenue at a glance.</p>
           </div>
-          <div className="rounded-2xl bg-white/10 px-4 py-3 text-sm font-semibold backdrop-blur">
+          <div className="rounded-2xl bg-gradient-to-r from-orange-50 to-orange-100 border border-orange-200 px-4 py-3 text-sm font-semibold text-[#FF6A28]">
             <ShieldCheck size={18} className="inline mr-2" /> Service uptime 99.9%
           </div>
         </div>
@@ -159,7 +159,7 @@ export const AdminDashboard = () => {
                   </div>
                   <div className="mt-2 h-2 rounded-full bg-slate-100">
                     <div
-                      className="h-2 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 transition-all"
+                      className="h-2 rounded-full bg-gradient-to-r from-[#FF6A28] to-[#FF8B4A] transition-all"
                       style={{ width: `${progress}%` }}
                     />
                   </div>
@@ -175,7 +175,7 @@ export const AdminDashboard = () => {
               <p className="text-xs uppercase tracking-widest text-slate-400">Recent activity</p>
               <h2 className="text-xl font-semibold text-slate-800">Team timeline</h2>
             </div>
-            <Link to="/admin/orders" className="text-sm font-semibold text-purple-600 hover:text-purple-700">
+            <Link to="/admin/orders" className="text-sm font-semibold text-[#FF6A28] hover:text-[#E85A1F]">
               View all
             </Link>
           </div>
@@ -199,14 +199,14 @@ export const AdminDashboard = () => {
             </span>
           </div>
           <div className="mt-6 grid gap-4 sm:grid-cols-2">
-            <div className="rounded-2xl bg-gradient-to-br from-purple-600 to-purple-800 p-4 text-white shadow-lg">
-              <p className="text-xs uppercase tracking-widest text-white/70">This week</p>
-              <p className="mt-2 text-3xl font-semibold">{formatCurrency(stats?.revenue_week ?? stats?.revenue ?? 0)}</p>
-              <p className="mt-1 text-sm text-white/70">vs last week {stats?.revenue_week_trend ?? '+9%'}</p>
+            <div className="rounded-2xl bg-gradient-to-br from-orange-50 to-orange-100 border-2 border-[#FF6A28] p-4 shadow-lg">
+              <p className="text-xs uppercase tracking-widest text-[#FF6A28] font-semibold">This week</p>
+              <p className="mt-2 text-3xl font-semibold text-gray-800">{formatCurrency(stats?.revenue_week ?? stats?.revenue ?? 0)}</p>
+              <p className="mt-1 text-sm text-gray-600">vs last week {stats?.revenue_week_trend ?? '+9%'}</p>
             </div>
             <div className="rounded-2xl border border-dashed border-slate-200 p-4">
               <p className="text-sm font-semibold text-slate-700">Top performer</p>
-              <p className="mt-1 text-2xl text-purple-600">{stats?.top_dish ?? 'Hyderabadi Biryani'}</p>
+              <p className="mt-1 text-2xl text-[#FF6A28]">{stats?.top_dish ?? 'Hyderabadi Biryani'}</p>
               <p className="mt-2 text-xs text-slate-500">Top customer: {stats?.top_customer ?? 'N/A'}</p>
             </div>
           </div>
@@ -254,13 +254,13 @@ export const AdminDashboard = () => {
             <h2 className="text-xl font-semibold text-slate-800">Stay ahead of tasks</h2>
           </div>
           <div className="flex flex-wrap gap-3">
-            <Link to="/admin/orders" className="rounded-2xl bg-purple-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-purple-700">
+            <Link to="/admin/orders" className="rounded-2xl bg-[#FF6A28] px-4 py-2 text-sm font-semibold text-white shadow hover:bg-[#E85A1F]">
               Manage orders
             </Link>
-            <Link to="/admin/menu" className="rounded-2xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+            <Link to="/admin/menu" className="rounded-2xl border border-orange-200 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-orange-50">
               Update menu
             </Link>
-            <Link to="/admin/users" className="rounded-2xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+            <Link to="/admin/users" className="rounded-2xl border border-orange-200 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-orange-50">
               Review users
             </Link>
           </div>

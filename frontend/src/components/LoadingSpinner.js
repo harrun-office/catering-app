@@ -10,7 +10,7 @@ export const LoadingSpinner = ({ size = 'md', text = 'Loading...' }) => {
 
   return (
     <div className="flex flex-col items-center justify-center gap-4">
-      <Loader className={`${sizeClasses[size]} animate-spin text-purple-600`} />
+      <Loader className={`${sizeClasses[size]} animate-spin text-[#FF6A28]`} />
       <p className="text-gray-600 font-semibold">{text}</p>
     </div>
   );
