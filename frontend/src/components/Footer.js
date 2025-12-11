@@ -7,13 +7,13 @@ export const Footer = () => {
     <footer className="bg-gradient-to-r from-gray-900 via-gray-950 to-black text-white mt-12">
       <div className="container-main py-12 space-y-8">
         {/* CTA strip */}
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 bg-white/5 border border-white/10 rounded-2xl p-6 shadow-lg shadow-black/20">
-          <div>
+        <div className="flex flex-col md:flex-row md:flex-nowrap flex-wrap items-start md:items-center justify-between gap-4 bg-white/5 border border-white/10 rounded-2xl p-6 shadow-lg shadow-black/20">
+          <div className="min-w-[220px]">
             <p className="text-sm uppercase tracking-[0.3em] text-white/80">Plan an event</p>
             <h3 className="text-xl md:text-2xl font-bold">Need catering for your next gathering?</h3>
             <p className="text-white/80 text-sm mt-1">We’ll help you with menus, quantities, and timelines.</p>
           </div>
-          <div className="flex gap-3">
+          <div className="flex flex-wrap gap-3">
             <Link
               to="/contact"
               className="bg-[#FF6A28] text-white px-5 py-3 rounded-xl font-semibold hover:bg-[#E85A1F] transition-all shadow-md hover:shadow-lg"
@@ -127,7 +127,7 @@ export const Footer = () => {
         </div>
 
         {/* Features */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 py-8 border-t border-white/10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 py-8 border-t border-white/10">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center text-[#FC4300]">
               <Clock size={18} />

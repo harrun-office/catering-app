@@ -112,9 +112,8 @@ export const AdminSidebar = ({ children }) => {
             <p className="text-xs uppercase tracking-[0.3em] font-bold bg-gradient-to-r from-[#FF6A28] to-[#FF8B4A] bg-clip-text text-transparent mb-1">
               Admin Panel
             </p>
-            <p className="text-lg font-bold text-gray-800 flex items-center gap-2">
-              <span className="text-2xl">👋</span>
-              <span>Hi, <span className="bg-gradient-to-r from-[#FF6A28] to-[#FF8B4A] bg-clip-text text-transparent">{user?.first_name || 'Admin'}</span>!</span>
+            <p className="text-lg font-bold text-gray-800">
+              Hi, <span className="bg-gradient-to-r from-[#FF6A28] to-[#FF8B4A] bg-clip-text text-transparent">{user?.first_name || 'Admin'}</span>!
             </p>
           </div>
         </div>

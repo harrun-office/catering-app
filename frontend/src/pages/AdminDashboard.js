@@ -133,9 +133,11 @@ export const AdminDashboard = () => {
         </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">{quickStats.map((stat) => <StatCard key={stat.title} {...stat} />)}</div>
+      <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
+        {quickStats.map((stat) => <StatCard key={stat.title} {...stat} />)}
+      </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
         <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-100">
           <div className="flex items-center justify-between">
             <div>
@@ -187,7 +189,7 @@ export const AdminDashboard = () => {
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
         <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-100">
           <div className="flex items-center justify-between">
             <div>

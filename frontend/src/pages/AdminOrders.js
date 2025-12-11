@@ -101,7 +101,7 @@ export const AdminOrders = () => {
 
       {error && <Alert type="error" message={error} onClose={() => setError('')} />}
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {['pending', 'preparing', 'out_for_delivery', 'delivered'].map((status) => (
           <div key={status} className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-100">
             <p className="text-xs uppercase tracking-widest text-slate-400">{status.replace(/_/g, ' ')}</p>
@@ -157,7 +157,7 @@ export const AdminOrders = () => {
             const isExpanded = expandedOrder === order.id;
             return (
               <div key={order.id} className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-100">
-                <div className="flex flex-wrap items-start justify-between gap-4">
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                   <div>
                     <p className="text-xs uppercase tracking-widest text-slate-400">Order</p>
                     <h3 className="text-xl font-semibold text-slate-900">{order.order_number}</h3>
@@ -165,15 +165,15 @@ export const AdminOrders = () => {
                       {order.first_name} {order.last_name} • {new Date(order.created_at).toLocaleDateString()}
                     </p>
                   </div>
-                  <div className="text-right">
+                  <div className="text-left sm:text-right">
                     <p className="text-xs uppercase tracking-widest text-slate-400">Total</p>
                     <p className="text-2xl font-semibold text-[#FF6A28]">{formatAmount(order.total_amount)}</p>
                     <div className="mt-2">{renderStatusChip(order.status)}</div>
                   </div>
                 </div>
 
-                <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-dashed border-slate-200 pt-4">
-                  <p className="text-sm text-slate-500 line-clamp-2">{order.delivery_address}</p>
+                <div className="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-t border-dashed border-slate-200 pt-4">
+                  <p className="text-sm text-slate-500 sm:line-clamp-2">{order.delivery_address}</p>
                   <button
                     onClick={() => setExpandedOrder(isExpanded ? null : order.id)}
                     className="inline-flex items-center gap-2 text-sm font-semibold text-[#FF6A28] hover:text-[#E85A1F]"

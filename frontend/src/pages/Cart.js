@@ -462,7 +462,7 @@ export const Cart = () => {
                 return (
                   <div
                     key={item.id}
-                    className="flex items-center gap-4 p-6 border-b last:border-b-0 border-orange-50 hover:bg-orange-50/40 transition"
+                   className="flex flex-col sm:flex-row sm:items-center gap-4 p-6 border-b last:border-b-0 border-orange-50 hover:bg-orange-50/40 transition"
                   >
                     <img
                       src={resolvedImage}
@@ -475,7 +475,7 @@ export const Cart = () => {
                       <p className="text-[#FC4300] font-bold text-lg">₹{fmt(item.price)}</p>
                     </div>
 
-                    <div className="flex items-center gap-3">
+                     <div className="flex items-center gap-3">
                       <button
                         onClick={() => updateQuantity(item.id, Math.max(1, item.quantity - 1))}
                         className="bg-orange-50 border border-orange-100 p-2 rounded hover:bg-orange-100 transition text-[#FF6A28]"
@@ -508,7 +508,7 @@ export const Cart = () => {
                       </button>
                     </div>
 
-                    <div className="text-right">
+                     <div className="text-right sm:text-right w-full sm:w-auto">
                       <p className="text-[#FF6A28] font-bold text-lg">{fmt(item.price * item.quantity)}</p>
                     </div>
 
@@ -570,7 +570,7 @@ export const Cart = () => {
                     rows="3"
                     required
                   />
-                  <div className="flex gap-2 mt-2">
+                     <div className="flex flex-col sm:flex-row gap-2 mt-2">
                     <button
                       type="button"
                       onClick={useCurrentLocation}
@@ -604,9 +604,9 @@ export const Cart = () => {
                   />
                 </div>
 
-                <div>
-                  <label className="block text-sm font-semibold text-[#7b5a4a] mb-2">Delivery Time</label>
-                  <div className="flex gap-2">
+                 <div>
+                   <label className="block text-sm font-semibold text-[#7b5a4a] mb-2">Delivery Time</label>
+                   <div className="flex flex-col sm:flex-row gap-2">
                     <select
                       name="hour12"
                       value={hour12}

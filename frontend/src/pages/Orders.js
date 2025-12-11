@@ -94,7 +94,7 @@ export const Orders = () => {
                 selectedStatus === option.value
                   ? 'bg-[#FF6A28] text-white shadow'
                   : 'bg-white border border-orange-100 text-gray-700 hover:border-[#FF6A28] hover:bg-orange-50'
-              }`}
+                }`}
             >
               {option.label}
             </button>
@@ -130,7 +130,7 @@ export const Orders = () => {
 
                 {/* Details */}
                 <div className="p-6 space-y-5">
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                     <div className="flex items-center gap-3 rounded-xl border border-orange-100 bg-orange-50/60 px-3 py-2">
                       <Clock className="text-[#FF6A28]" />
                       <div>
@@ -173,10 +173,8 @@ export const Orders = () => {
                     <p className="font-semibold text-[#301b16] mb-3">Items</p>
                     <ul className="space-y-2">
                       {order.items?.map((item) => (
-                        <li key={item.id} className="flex justify-between text-sm text-[#7b5a4a]">
-                          <span>
-                            {item.name} × {item.quantity}
-                          </span>
+                        <li key={item.id} className="flex flex-col sm:flex-row sm:justify-between text-sm text-[#7b5a4a] gap-1">
+                          <span>{item.name} × {item.quantity}</span>
                           <span className="font-semibold text-[#FF6A28]">
                             {formatAmount.format(Number(item.total_price || item.unit_price * item.quantity || 0))}
                           </span>

@@ -126,20 +126,16 @@ export const Navbar = () => {
         <div className={`flex-shrink-0 flex items-center ${!isHovered && collapsed ? 'flex-col justify-center gap-4 py-4' : 'justify-center px-2'} h-24 mb-2 transition-all`}>
           {/* LOGO */}
           <Link to="/" className="flex items-center justify-center cursor-pointer hover:opacity-80 transition-opacity">
-            {logoError ? (
-              <span className="text-3xl">🧑‍🍳</span>
-            ) : (
-              <img
-                src="/images/logo-caterhub-removebg-preview.png"
-                alt="CaterHub"
-                className="max-h-48 object-contain"
-                style={{
-                  backgroundColor: 'transparent',
-                  mixBlendMode: 'normal'
-                }}
-                onError={() => setLogoError(true)}
-              />
-            )}
+            <img
+              src={logoError ? '/images/logo-caterhub.png' : '/images/logo-caterhub-removebg-preview.png'}
+              alt="CaterHub"
+              className="max-h-48 object-contain"
+              style={{
+                backgroundColor: 'transparent',
+                mixBlendMode: 'normal'
+              }}
+              onError={() => setLogoError(true)}
+            />
           </Link>
         </div>
 
@@ -348,7 +344,7 @@ export const Navbar = () => {
       </aside>
 
       {/* MOBILE NAV (unchanged) */}
-      <nav className="md:hidden fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-md">
+      <nav className="md:hidden fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-[#FF6A28] to-[#FF8B4A] text-white shadow-md">
         <div className="container-main flex items-center justify-between py-3 relative">
           <button
             onClick={() => setMobileOpen((s) => !s)}
@@ -358,7 +354,11 @@ export const Navbar = () => {
           </button>
 
           <Link to="/" className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 flex items-center gap-2 text-lg font-bold">
-            <span>🧑‍�</span>
+            <img
+              src="/images/logo-caterhub-removebg-preview.png"
+              alt="CaterHub"
+              className="h-7 w-auto object-contain"
+            />
             <span>Cater Hub</span>
           </Link>
 

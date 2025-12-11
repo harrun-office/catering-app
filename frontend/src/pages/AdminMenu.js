@@ -303,7 +303,7 @@ export default function AdminMenu() {
 
       {mode === 'add' ? (
         <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-100 max-w-3xl">
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-4 sm:grid-cols-2">
             <label className="space-y-2 text-sm font-semibold text-slate-600">
               Category
               <select
@@ -340,7 +340,7 @@ export default function AdminMenu() {
             />
           </label>
 
-          <div className="mt-4 grid gap-4 md:grid-cols-2">
+          <div className="mt-4 grid gap-4 sm:grid-cols-2">
             <label className="space-y-2 text-sm font-semibold text-slate-600">
               Price (₹)
               <input
@@ -396,7 +396,7 @@ export default function AdminMenu() {
                 <MenuItem item={item} onAddToCart={() => {}} />
               </div>
 
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid gap-4 sm:grid-cols-2">
                 <label className="space-y-2 text-sm font-semibold text-slate-600">
                   Dish name
                   <input
@@ -436,7 +436,7 @@ export default function AdminMenu() {
                 />
               </label>
 
-              <div className="mt-4 grid gap-4 md:grid-cols-2">
+              <div className="mt-4 grid gap-4 sm:grid-cols-2">
                 <label className="space-y-2 text-sm font-semibold text-slate-600">
                   Price (₹)
                   <input

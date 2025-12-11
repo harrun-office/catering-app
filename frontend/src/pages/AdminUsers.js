@@ -68,7 +68,7 @@ export const AdminUsers = () => {
 
       {error && <Alert type="error" message={error} onClose={() => setError('')} />}
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-100">
           <p className="text-xs uppercase tracking-widest text-slate-400">Total users</p>
           <p className="mt-2 text-3xl font-semibold text-slate-900">{users.length}</p>
@@ -128,7 +128,7 @@ export const AdminUsers = () => {
           <p className="text-sm text-slate-500">Try a different search or refresh.</p>
         </div>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {filteredUsers.map((user) => (
             <div key={user.id} className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-100">
               <div className="flex items-center gap-4">

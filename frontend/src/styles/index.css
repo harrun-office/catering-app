@@ -6,15 +6,15 @@
    OKLCH Color System & Design Tokens
    ============================================ */
 :root {
-  /* OKLCH Primary Colors - Modern Purple */
-  --color-primary: oklch(0.60 0.20 300);
-  --color-primary-light: oklch(0.70 0.18 300);
-  --color-primary-dark: oklch(0.50 0.22 300);
+  /* Primary Colors - CaterHub Orange */
+  --color-primary: #FF6A28;
+  --color-primary-light: #FF8B4A;
+  --color-primary-dark: #E85A1F;
 
-  /* OKLCH Accent Colors - Vibrant Pink */
-  --color-accent: oklch(0.70 0.20 340);
-  --color-accent-light: oklch(0.80 0.18 340);
-  --color-accent-dark: oklch(0.60 0.22 340);
+  /* Accent Colors - Warm Coral */
+  --color-accent: #FF6A28;
+  --color-accent-light: #FF8B4A;
+  --color-accent-dark: #CF4F15;
 
   /* Neutral Colors */
   --color-bg: oklch(0.98 0.005 260);

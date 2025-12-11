@@ -66,14 +66,14 @@ export const MainLayout = ({ children }) => {
             <div className="flex flex-col min-h-screen" style={{ marginLeft: "var(--sidebar-width)" }}>
                 {/* Desktop Header */}
                 <header
-                    className="hidden md:flex items-center justify-between py-4 px-8 sticky top-0 z-30 bg-white"
+                    className="hidden md:flex items-center justify-between py-4 px-6 lg:px-8 sticky top-0 z-30 bg-white"
                     style={{ boxShadow: 'var(--shadow-md)', borderBottom: '1px solid rgba(0,0,0,0.05)' }}
                 >
                     <Link to="/" className="text-2xl font-bold bg-gradient-to-r from-[#FF6A28] to-[#ff8a4c] bg-clip-text text-transparent tracking-wide hover:opacity-80 transition-opacity cursor-pointer">
                         Cater Hub
                     </Link>
 
-                    <div className="flex items-center gap-6 relative">
+                    <div className="flex items-center gap-4 lg:gap-6 relative">
                         {/* CART */}
                         <Link
                             to="/cart"
@@ -108,11 +108,11 @@ export const MainLayout = ({ children }) => {
                                         <div className="h-10 w-10 rounded-full bg-gradient-to-r from-[#FF6A28] to-[#FF8B4A] text-white flex items-center justify-center font-bold shadow-md">
                                             {initials}
                                         </div>
-                                        <span className="hidden sm:inline">{user?.first_name}</span>
+                                        <span className="hidden lg:inline">{user?.first_name}</span>
                                     </button>
 
                                     {profileOpen && (
-                                        <div className="absolute right-0 mt-3 w-72 bg-white rounded-2xl border border-orange-100 shadow-xl p-4 z-40">
+                                        <div className="absolute right-0 mt-3 w-[280px] max-w-[80vw] bg-white rounded-2xl border border-orange-100 shadow-xl p-4 z-40">
                                             <div className="flex items-center gap-3 mb-3">
                                                 <div className="h-12 w-12 rounded-full bg-gradient-to-r from-[#FF6A28] to-[#FF8B4A] text-white flex items-center justify-center font-bold shadow">
                                                     {initials}

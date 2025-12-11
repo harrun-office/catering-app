@@ -76,9 +76,9 @@ export const OrderTracking = () => {
     const isCancelled = order.status === 'cancelled';
 
     return (
-        <div className="min-h-screen bg-gray-50 py-12">
+        <div className="min-h-screen bg-[#F7F7F7] py-10 md:py-12">
             <div className="container-main max-w-4xl px-0 md:px-0">
-                <div className="bg-white/90 backdrop-blur rounded-3xl shadow-[0_24px_70px_rgba(255,106,40,0.08)] overflow-hidden border border-orange-100">
+                <div className="bg-white/95 backdrop-blur rounded-3xl shadow-[0_24px_70px_rgba(255,106,40,0.08)] overflow-hidden border border-orange-100">
                     {/* Header */}
                     <div className="bg-gradient-to-r from-[#FF6A28] via-[#FF8B4A] to-[#FF6A28] p-6 text-white text-center">
                         <h1 className="text-2xl md:text-3xl font-bold mb-1">Order Tracking</h1>
@@ -89,11 +89,11 @@ export const OrderTracking = () => {
                     {/* Stepper */}
                     {!isCancelled && (
                         <div className="p-6 md:p-8 bg-orange-50/50 border-b border-orange-100">
-                            <div className="relative flex justify-between items-center gap-2">
+                            <div className="relative flex flex-col md:flex-row md:justify-between md:items-center gap-4">
                                 {/* Connecting Line */}
-                                <div className="absolute top-1/2 left-0 w-full h-1 bg-orange-100 -z-10 transform -translate-y-1/2"></div>
+                                <div className="hidden md:block absolute top-1/2 left-0 w-full h-1 bg-orange-100 -z-10 transform -translate-y-1/2"></div>
                                 <div
-                                    className="absolute top-1/2 left-0 h-1 bg-gradient-to-r from-[#FF6A28] to-[#FF8B4A] -z-10 transform -translate-y-1/2 transition-all duration-500"
+                                    className="hidden md:block absolute top-1/2 left-0 h-1 bg-gradient-to-r from-[#FF6A28] to-[#FF8B4A] -z-10 transform -translate-y-1/2 transition-all duration-500"
                                     style={{ width: `${(currentStepIndex / (steps.length - 1)) * 100}%` }}
                                 ></div>
 
@@ -103,7 +103,7 @@ export const OrderTracking = () => {
                                     const isCurrent = index === currentStepIndex;
 
                                     return (
-                                        <div key={step.status} className="flex flex-col items-center gap-2 px-2 text-center">
+                                        <div key={step.status} className="flex flex-col items-center gap-2 px-2 text-center w-full md:w-auto">
                                             <div
                                                 className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all duration-300 ${
                                                     isCompleted
@@ -125,7 +125,7 @@ export const OrderTracking = () => {
 
                     {/* Order Details */}
                     <div className="p-6 md:p-8 bg-white">
-                        <div className="grid md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="rounded-2xl border border-orange-100 bg-orange-50/60 p-4">
                                 <h3 className="font-bold text-[#301b16] mb-3 flex items-center gap-2">
                                     <Package size={18} className="text-[#FF6A28]" />

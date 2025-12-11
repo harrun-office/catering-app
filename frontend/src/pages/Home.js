@@ -495,7 +495,7 @@ export const Home = () => {
         className="relative container-main px-0 mt-0 max-w-6xl mx-auto"
       >
         <div
-        className="relative h-[360px] md:h-[460px] overflow-hidden rounded-3xl shadow-[0_12px_32px_rgba(0,0,0,0.16)] bg-white/30 backdrop-blur-[6px] group"
+        className="relative h-[320px] sm:h-[380px] md:h-[460px] overflow-hidden rounded-3xl shadow-[0_12px_32px_rgba(0,0,0,0.16)] bg-white/30 backdrop-blur-[6px] group"
           onTouchStart={onTouchStart}
           onTouchMove={onTouchMove}
           onTouchEnd={onTouchEnd}
@@ -511,15 +511,15 @@ export const Home = () => {
             >
               <img src={h.src} alt={h.alt} onError={handleImgError} className="w-full h-full object-cover" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex items-center">
-                <div className="container-main text-white pl-8 md:pl-16">
-                  <h1 className={`text-4xl md:text-6xl font-bold drop-shadow-lg transform transition-all duration-500 delay-75 ${i === heroIndex ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
+                <div className="container-main text-white px-6 sm:px-8 md:px-16">
+                  <h1 className={`text-3xl sm:text-4xl md:text-6xl font-bold drop-shadow-lg transform transition-all duration-500 delay-75 ${i === heroIndex ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
                     {h.caption}
                   </h1>
-                  <p className={`mt-4 max-w-2xl text-lg md:text-xl text-white/90 transform transition-all duration-500 delay-150 ${i === heroIndex ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
+                  <p className={`mt-4 max-w-2xl text-base sm:text-lg md:text-xl text-white/90 transform transition-all duration-500 delay-150 ${i === heroIndex ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
                     Fresh, flavour-first meals, customizable menus, and a friendly team that cares about every detail.
                   </p>
 
-                  <div className={`mt-8 flex gap-4 transform transition-all duration-500 delay-200 ${i === heroIndex ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
+                  <div className={`mt-8 flex flex-wrap gap-3 sm:gap-4 transform transition-all duration-500 delay-200 ${i === heroIndex ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
                     <a
                       href="#menu"
                       onClick={(e) => {
@@ -527,11 +527,11 @@ export const Home = () => {
                         const el = document.getElementById('menu');
                         if (el) el.scrollIntoView({ behavior: 'smooth' });
                       }}
-                      className="btn-primary text-lg px-8 py-3 hover:-translate-y-0.5"
+                      className="btn-primary text-base sm:text-lg px-6 sm:px-8 py-3 hover:-translate-y-0.5"
                     >
                       Browse Menu
                     </a>
-                    <Link to="/contact" className="btn-secondary text-lg px-8 py-3 hover:-translate-y-0.5">
+                    <Link to="/contact" className="btn-secondary text-base sm:text-lg px-6 sm:px-8 py-3 hover:-translate-y-0.5">
                       Contact Us
                     </Link>
                   </div>
@@ -589,7 +589,7 @@ export const Home = () => {
         {error && <Alert type="error" message={error} onClose={() => setError('')} />}
 
         {/* Quick features */}
-        <section className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
           <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg p-6 text-center border border-orange-200 shadow-md hover:shadow-lg transition-all">
             <h3 className="font-bold text-lg mb-2 bg-gradient-to-r from-[#FF6A28] to-[#FF8B4A] bg-clip-text text-transparent">Fresh Ingredients</h3>
             <p className="text-sm text-gray-600">Sourcing local produce and preparing dishes to order.</p>
