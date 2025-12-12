@@ -18,7 +18,7 @@ import {
 
 const About = () => {
   return (
-    <div className="min-h-screen bg-[#fff4e8]">
+    <div className="min-h-screen bg-bg-cream">
       <div className="container-main py-12 space-y-12">
         {/* Hero / Intro */}
         <section className="bg-white/80 border border-[#f1dac4] rounded-3xl p-8 shadow-[0_16px_40px_rgba(0,0,0,0.08)]">

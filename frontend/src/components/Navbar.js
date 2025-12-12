@@ -125,9 +125,18 @@ export const Navbar = () => {
         {/* HEADER: LOGO */}
         <div className={`flex-shrink-0 flex items-center ${!isHovered && collapsed ? 'flex-col justify-center gap-4 py-4' : 'justify-center px-2'} h-24 mb-2 transition-all`}>
           {/* LOGO */}
-          <Link to="/" className="flex items-center justify-center cursor-pointer hover:opacity-80 transition-opacity">
+          <Link 
+            to="/" 
+            onClick={(e) => {
+              if (location.pathname === '/') {
+                e.preventDefault();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }
+            }}
+            className="flex items-center justify-center cursor-pointer hover:opacity-80 transition-opacity"
+          >
             <img
-              src={logoError ? '/images/logo-caterhub.png' : '/images/logo-caterhub-removebg-preview.png'}
+              src={logoError ? '/images/logo-caterhub-removebg-preview.png' : '/images/cater-chef-logo.png'}
               alt="CaterHub"
               className="max-h-48 object-contain"
               style={{
@@ -353,9 +362,18 @@ export const Navbar = () => {
             <MenuIcon size={18} />
           </button>
 
-          <Link to="/" className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 flex items-center gap-2 text-lg font-bold">
+          <Link 
+            to="/" 
+            onClick={(e) => {
+              if (location.pathname === '/') {
+                e.preventDefault();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }
+            }}
+            className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 flex items-center gap-2 text-lg font-bold"
+          >
             <img
-              src="/images/logo-caterhub-removebg-preview.png"
+              src="/images/cater-chef-logo.png"
               alt="CaterHub"
               className="h-7 w-auto object-contain"
             />

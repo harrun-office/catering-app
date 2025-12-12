@@ -241,9 +241,15 @@ export const Register = () => {
       <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
         {/* Left Side - Logo */}
         <div className="flex items-center justify-center lg:justify-start order-2 lg:order-1">
-          <Link to="/" className="relative w-full max-w-sm lg:max-w-md cursor-pointer hover:opacity-90 transition-opacity">
+          <Link 
+            to="/" 
+            onClick={(e) => {
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            className="relative w-full max-w-sm lg:max-w-md cursor-pointer hover:opacity-90 transition-opacity"
+          >
             <img
-              src="/images/logo-caterhub-removebg-preview.png"
+              src="/images/cater-chef-logo.png"
               alt="CaterHub Logo"
               className="w-full h-auto"
               style={{

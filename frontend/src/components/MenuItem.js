@@ -1,5 +1,5 @@
 // src/components/MenuItem.jsx
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 
 
 /* SVG fallback */
@@ -12,7 +12,10 @@ const SVG_PLACEHOLDER =
              font-size='28' fill='#9ca3af'>Image unavailable</text>
      </svg>`
   );
-
+// 12160
+// 8.160
+// 5.5+3
+// 11535
 /* Local image mapping */
 const LOCAL_IMAGE_MAP = {
   "spring-rolls": "/images/spring-rolls.jpg",
@@ -113,6 +116,7 @@ export const resolveImageSrc = (img, itemName) => {
 
 /* Component */
 export const MenuItem = ({ item = {}, onAddToCart = () => { }, onImgError }) => {
+  const [isAnimating, setIsAnimating] = useState(false);
 
   /* image safe resolver */
   const resolved = useMemo(() => {
@@ -135,10 +139,15 @@ export const MenuItem = ({ item = {}, onAddToCart = () => { }, onImgError }) => 
   const handleAddClick = () => {
     // Allow adding to cart for guests as well — checkout will enforce authentication.
     try {
+      // Trigger animation
+      setIsAnimating(true);
+      setTimeout(() => setIsAnimating(false), 600);
+      
       console.debug && console.debug('MenuItem handleAddClick', { item });
       onAddToCart(item);
     } catch (err) {
       console.error('onAddToCart handler failed', err);
+      setIsAnimating(false);
     }
   };
 
@@ -146,12 +155,12 @@ export const MenuItem = ({ item = {}, onAddToCart = () => { }, onImgError }) => 
   return (
     <div className="card overflow-hidden hover:shadow-xl transition transform hover:-translate-y-2 duration-300 p-4 sm:p-6 flex flex-col h-full">
       {/* IMAGE */}
-      <div className="relative overflow-hidden bg-gray-200 aspect-[4/3] sm:aspect-[3/2]">
+      <div className="relative overflow-hidden bg-gray-200 aspect-[4/3] sm:aspect-[3/2] rounded-xl">
         <img
           src={resolved}
           alt={item?.name || "menu item"}
           onError={handleImgError}
-          className="w-full h-full object-cover hover:scale-110 transition duration-300 menu-item-img"
+          className="w-full h-full object-cover hover:scale-110 transition duration-300 menu-item-img rounded-xl"
         />
 
         {/* FAVORITE */}
@@ -198,11 +207,11 @@ export const MenuItem = ({ item = {}, onAddToCart = () => { }, onImgError }) => 
 
       {/* CONTENT */}
       <div className="p-2 sm:p-4 flex flex-col flex-1">
-        <h3 className="font-bold text-lg sm:text-xl text-gray-800 mb-2 line-clamp-2">
+        <h3 className="font-bold text-lg sm:text-xl text-gray-900 mb-2 line-clamp-2" style={{ color: 'oklch(0.20 0.012 260)' }}>
           {item?.name}
         </h3>
 
-        <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+        <p className="text-body text-sm mb-3 line-clamp-2" style={{ color: 'oklch(0.42 0.010 260)' }}>
           {item?.description}
         </p>
 
@@ -210,15 +219,33 @@ export const MenuItem = ({ item = {}, onAddToCart = () => { }, onImgError }) => 
           <div>
             <p className="text-2xl font-bold text-[#FC4300]">₹{item?.price}</p>
             {item?.servings && (
-              <p className="text-xs text-gray-500">Serves {item.servings}</p>
+              <p className="text-xs text-muted" style={{ color: 'oklch(0.50 0.008 260)' }}>Serves {item.servings}</p>
             )}
           </div>
         </div>
 
         {/* ADD TO CART */}
         {item?.is_available ? (
-          <button className="btn-primary w-full mt-auto" onClick={handleAddClick}>
-            Add to Cart
+          <button 
+            className={`btn-primary w-full mt-auto transition-all duration-300 ${
+              isAnimating 
+                ? 'scale-95 bg-green-500 hover:bg-green-600 animate-pulse' 
+                : 'hover:scale-105 active:scale-95'
+            }`} 
+            onClick={handleAddClick}
+          >
+            <span className="flex items-center justify-center gap-2">
+              {isAnimating ? (
+                <>
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span>Added!</span>
+                </>
+              ) : (
+                'Add to Cart'
+              )}
+            </span>
           </button>
         ) : (
           <button

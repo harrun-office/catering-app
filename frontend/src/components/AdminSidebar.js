@@ -58,9 +58,15 @@ export const AdminSidebar = ({ children }) => {
       >
         <div className="flex h-full flex-col">
           <div className="relative flex items-center justify-center border-b border-orange-100 px-6 py-6 bg-gradient-to-r from-orange-50 to-white">
-            <Link to="/" className="flex items-center justify-center">
+            <Link 
+              to="/" 
+              onClick={(e) => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              className="flex items-center justify-center"
+            >
               <img
-                src="/images/logo-caterhub-removebg-preview.png"
+                src="/images/cater-chef-logo.png"
                 alt="CaterHub"
                 className="h-32 w-auto object-contain cursor-pointer hover:opacity-80 transition-opacity"
                 style={{

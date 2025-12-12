@@ -22,13 +22,13 @@ export const Gallery = () => {
   const closeLightbox = () => setLightbox({ open: false, item: null });
 
   return (
-    <div className="min-h-screen bg-[#F7F7F7] py-12 px-4 md:px-0">
+    <div className="min-h-screen bg-bg-warm py-12 px-4 md:px-0">
       <div className="container-main">
-        <div className="bg-gradient-to-b from-orange-50/70 to-white/80 border border-orange-100 rounded-[26px] p-6 md:p-8 shadow-[0_24px_80px_rgba(255,106,40,0.08)]">
+        <div className="bg-gradient-to-b from-primary-50/70 to-white/80 border border-primary-200/60 rounded-[26px] p-6 md:p-8 shadow-[0_24px_80px_rgba(255,106,40,0.08)]">
           {/* Header */}
           <header className="flex flex-col md:flex-row md:items-center gap-4 mb-6">
             <div className="flex items-start gap-3 flex-1">
-              <div className="px-3 py-1 bg-gradient-to-r from-[#FF6A28] to-[#FF8B4A] text-white text-sm font-bold rounded-xl shadow-md">
+              <div className="px-3 py-1 bg-gradient-to-r from-primary to-primary-light text-white text-sm font-bold rounded-xl shadow-md">
                 Gallery
               </div>
               <div>

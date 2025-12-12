@@ -209,6 +209,44 @@ const updateOrderStatus = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Order not found' });
     }
 
+    const currentStatus = orderBefore.status;
+    const newStatus = status;
+
+    // Define status progression (forward only)
+    const STATUS_PROGRESSION = ['pending', 'confirmed', 'preparing', 'ready', 'out_for_delivery', 'delivered'];
+    
+    // Validate status progression - prevent moving backward
+    // If cancelled or delivered, no further changes allowed
+    if (currentStatus === 'cancelled' && newStatus !== 'cancelled') {
+      connection.release();
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Cannot update status from cancelled. Order is already cancelled.' 
+      });
+    }
+
+    if (currentStatus === 'delivered' && newStatus !== 'delivered') {
+      connection.release();
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Cannot update status from delivered. Order is already completed.' 
+      });
+    }
+
+    // Check if trying to move backward in progression
+    if (currentStatus !== 'cancelled' && currentStatus !== 'delivered' && newStatus !== 'cancelled') {
+      const currentIndex = STATUS_PROGRESSION.indexOf(currentStatus);
+      const newIndex = STATUS_PROGRESSION.indexOf(newStatus);
+      
+      if (currentIndex !== -1 && newIndex !== -1 && newIndex < currentIndex) {
+        connection.release();
+        return res.status(400).json({ 
+          success: false, 
+          message: `Cannot change status from "${currentStatus}" to "${newStatus}". Status can only progress forward.` 
+        });
+      }
+    }
+
     await connection.query('UPDATE orders SET status = ? WHERE id = ?', [status, id]);
 
     // Log admin action with old and new value

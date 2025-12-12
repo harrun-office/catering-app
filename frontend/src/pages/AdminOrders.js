@@ -4,6 +4,8 @@ import { LoadingSpinner } from '../components/LoadingSpinner';
 import { Alert } from '../components/Alert';
 import { ChevronDown, ChevronUp, Search, RefreshCw } from 'lucide-react';
 
+// Status progression order - can only move forward, not backward
+const STATUS_PROGRESSION = ['pending', 'confirmed', 'preparing', 'ready', 'out_for_delivery', 'delivered'];
 const statusOptions = ['pending', 'confirmed', 'preparing', 'ready', 'out_for_delivery', 'delivered', 'cancelled'];
 
 const statusStyles = {
@@ -14,6 +16,31 @@ const statusStyles = {
   out_for_delivery: 'bg-orange-100 text-[#E85A1F]',
   delivered: 'bg-emerald-50 text-emerald-700',
   cancelled: 'bg-rose-50 text-rose-700',
+};
+
+// Get allowed next statuses based on current status (forward progression only)
+const getAllowedStatuses = (currentStatus) => {
+  // If cancelled, no further status changes allowed
+  if (currentStatus === 'cancelled') {
+    return ['cancelled'];
+  }
+
+  // If delivered, no further status changes allowed
+  if (currentStatus === 'delivered') {
+    return ['delivered'];
+  }
+
+  const currentIndex = STATUS_PROGRESSION.indexOf(currentStatus);
+  if (currentIndex === -1) {
+    // If status not in progression (shouldn't happen), allow all
+    return statusOptions;
+  }
+
+  // Get all statuses from current position forward in the progression
+  const forwardStatuses = STATUS_PROGRESSION.slice(currentIndex);
+  
+  // Always allow 'cancelled' unless already delivered
+  return [...forwardStatuses, 'cancelled'];
 };
 
 const formatAmount = (value) => `₹${Number(value || 0).toFixed(0)}`;
@@ -45,12 +72,21 @@ export const AdminOrders = () => {
     }
   };
 
-  const handleStatusChange = async (orderId, newStatus) => {
+  const handleStatusChange = async (orderId, newStatus, currentStatus) => {
+    // Validate that we're not moving backward
+    const allowedStatuses = getAllowedStatuses(currentStatus);
+    if (!allowedStatuses.includes(newStatus)) {
+      setError(`Cannot change status from "${currentStatus}" to "${newStatus}". Status can only progress forward.`);
+      return;
+    }
+
     try {
       await adminAPI.updateOrderStatus(orderId, newStatus);
       setOrders((prev) => prev.map((order) => (order.id === orderId ? { ...order, status: newStatus } : order)));
+      setError(''); // Clear any previous errors
     } catch (err) {
-      setError('Failed to update order status');
+      const errorMessage = err.response?.data?.message || 'Failed to update order status';
+      setError(errorMessage);
     }
   };
 
@@ -187,16 +223,27 @@ export const AdminOrders = () => {
                   <div className="mt-4 space-y-4 rounded-2xl bg-slate-50 p-4">
                     <div>
                       <p className="text-xs uppercase tracking-widest text-slate-400">Update status</p>
+                      <p className="text-xs text-slate-500 mt-1 mb-3">Status can only progress forward. Previous statuses cannot be selected.</p>
                       <div className="mt-3 flex flex-wrap gap-2">
                         {statusOptions.map((status) => {
                           const active = order.status === status;
+                          const allowedStatuses = getAllowedStatuses(order.status);
+                          const isAllowed = allowedStatuses.includes(status);
+                          const isDisabled = !isAllowed && !active;
+                          
                           return (
                             <button
                               key={status}
-                              onClick={() => handleStatusChange(order.id, status)}
+                              onClick={() => isAllowed && handleStatusChange(order.id, status, order.status)}
+                              disabled={isDisabled}
                               className={`rounded-full px-4 py-2 text-xs font-semibold transition ${
-                                active ? 'bg-[#FF6A28] text-white shadow' : 'bg-white text-gray-600 hover:bg-orange-50 border border-orange-200'
+                                active 
+                                  ? 'bg-[#FF6A28] text-white shadow cursor-default' 
+                                  : isAllowed
+                                    ? 'bg-white text-gray-600 hover:bg-orange-50 border border-orange-200 cursor-pointer'
+                                    : 'bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed opacity-50'
                               }`}
+                              title={isDisabled ? `Cannot change to this status. Current status: ${order.status}` : ''}
                             >
                               {status.replace(/_/g, ' ')}
                             </button>

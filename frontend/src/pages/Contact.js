@@ -1,5 +1,5 @@
 // src/pages/Contact.jsx
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { MapPin, Phone, Mail, Clock, MessageCircle, Calendar, User, Send } from 'lucide-react';
 
 const infoItems = [
@@ -23,6 +23,39 @@ export const Contact = () => {
     eventType: '',
     message: '',
   });
+
+  const [visibleSections, setVisibleSections] = useState(new Set());
+  const sectionRefs = useRef([]);
+
+  useEffect(() => {
+    const observers = [];
+    const observerOptions = {
+      root: null,
+      rootMargin: '0px 0px -100px 0px',
+      threshold: 0.1,
+    };
+
+    const observerCallback = (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          setVisibleSections((prev) => new Set([...prev, entry.target.dataset.section]));
+        }
+      });
+    };
+
+    const observer = new IntersectionObserver(observerCallback, observerOptions);
+
+    sectionRefs.current.forEach((ref) => {
+      if (ref) {
+        observer.observe(ref);
+        observers.push(observer);
+      }
+    });
+
+    return () => {
+      observers.forEach((obs) => obs.disconnect());
+    };
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -64,17 +97,40 @@ export const Contact = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_420px] gap-6 items-start">
           {/* Left column */}
-          <section className="rounded-[22px] border border-orange-100 bg-white shadow-[0_24px_70px_rgba(255,106,40,0.08)] p-6 md:p-7">
+          <section
+            ref={(el) => {
+              if (el) {
+                sectionRefs.current.push(el);
+                el.dataset.section = 'contact-form';
+              }
+            }}
+            className={`rounded-[22px] border border-orange-100 bg-white shadow-[0_24px_70px_rgba(255,106,40,0.08)] p-6 md:p-7 transition-all duration-700 ${
+              visibleSections.has('contact-form')
+                ? 'opacity-100 translate-y-0'
+                : 'opacity-0 translate-y-8'
+            }`}
+          >
             <h2 className="text-2xl font-semibold text-[#301b16] mb-2">Get in touch</h2>
             <p className="text-sm text-[#7b5a4a] mb-4">
               Share a few details about your event and our event specialists will reach out with a customised plan.
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
-              {infoItems.map((item) => (
+              {infoItems.map((item, index) => (
                 <div
                   key={item.label}
-                  className="flex items-center gap-3 rounded-xl border border-orange-100 bg-gradient-to-b from-orange-50/70 to-white/60 p-3 shadow-sm"
+                  ref={(el) => {
+                    if (el) {
+                      sectionRefs.current.push(el);
+                      el.dataset.section = `info-${index}`;
+                    }
+                  }}
+                  className={`flex items-center gap-3 rounded-xl border border-orange-100 bg-gradient-to-b from-orange-50/70 to-white/60 p-3 shadow-sm transition-all duration-700 ${
+                    visibleSections.has(`info-${index}`)
+                      ? 'opacity-100 translate-y-0'
+                      : 'opacity-0 translate-y-8'
+                  }`}
+                  style={{ transitionDelay: `${index * 100}ms` }}
                 >
                   <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-gradient-to-b from-[#FF6A28] to-[#FF8B4A] text-white font-semibold shadow">
                     <item.icon size={18} />
@@ -100,14 +156,14 @@ export const Contact = () => {
               </div>
               <div className="ml-auto flex gap-2">
                 <a
-                  className="btn-secondary bg-white text-[#FF6A28] border border-orange-200 hover:bg-orange-50"
+                  className="px-4 py-2 rounded-lg bg-white text-[#FF6A28] border border-orange-200 hover:bg-orange-50 font-semibold transition-all"
                   href="https://wa.me/91234567890"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
                   WhatsApp
                 </a>
-                <a className="btn-secondary bg-white text-[#FF6A28] border border-orange-200 hover:bg-orange-50" href="#book">
+                <a className="px-4 py-2 rounded-lg bg-white text-[#FF6A28] border border-orange-200 hover:bg-orange-50 font-semibold transition-all" href="#book">
                   Book
                 </a>
               </div>
@@ -185,7 +241,7 @@ export const Contact = () => {
                 </button>
                 <button
                   type="button"
-                  className="btn-secondary bg-white text-[#FF6A28] border border-orange-200 hover:bg-orange-50"
+                  className="px-4 py-2 rounded-lg bg-white text-[#FF6A28] border border-orange-200 hover:bg-orange-50 font-semibold transition-all"
                   onClick={() => setForm({ name: '', phone: '', email: '', date: '', eventType: '', message: '' })}
                 >
                   Clear
@@ -201,7 +257,18 @@ export const Contact = () => {
               ].map((t, i) => (
                 <div
                   key={i}
-                  className="min-w-[240px] rounded-xl border border-orange-100 bg-gradient-to-b from-orange-50/60 to-white/70 p-3 text-sm text-[#7b5a4a] shadow-sm"
+                  ref={(el) => {
+                    if (el) {
+                      sectionRefs.current.push(el);
+                      el.dataset.section = `testimonial-${i}`;
+                    }
+                  }}
+                  className={`min-w-[240px] rounded-xl border border-orange-100 bg-gradient-to-b from-orange-50/60 to-white/70 p-3 text-sm text-[#7b5a4a] shadow-sm transition-all duration-700 ${
+                    visibleSections.has(`testimonial-${i}`)
+                      ? 'opacity-100 translate-y-0'
+                      : 'opacity-0 translate-y-8'
+                  }`}
+                  style={{ transitionDelay: `${i * 150}ms` }}
                 >
                   <p className="font-semibold text-[#FF6A28] mb-1">★★★★★</p>
                   <p>{t}</p>
@@ -217,7 +284,19 @@ export const Contact = () => {
 
           {/* Right column */}
           <aside className="space-y-3 lg:sticky lg:top-24">
-            <div className="rounded-xl border border-orange-100 bg-white shadow-md overflow-hidden min-h-[260px]">
+            <div
+              ref={(el) => {
+                if (el) {
+                  sectionRefs.current.push(el);
+                  el.dataset.section = 'map';
+                }
+              }}
+              className={`rounded-xl border border-orange-100 bg-white shadow-md overflow-hidden min-h-[260px] transition-all duration-700 ${
+                visibleSections.has('map')
+                  ? 'opacity-100 translate-x-0'
+                  : 'opacity-0 translate-x-8'
+              }`}
+            >
               <iframe
                 title="CaterHub location"
                 src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3153.019094415669!2d-122.41941548468197!3d37.77492977975916!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8085818d2b3d8f5b%3A0x6b42d3b2f1f4d6b9!2sSan%20Francisco!5e0!3m2!1sen!2sin!4v1610000000000!5m2!1sen!2sin"
@@ -230,12 +309,30 @@ export const Contact = () => {
               ></iframe>
             </div>
 
-            <div className="rounded-xl border border-orange-100 bg-white shadow-sm p-4 space-y-3">
-              {quickActions.map((item) => (
+            <div
+              ref={(el) => {
+                if (el) {
+                  sectionRefs.current.push(el);
+                  el.dataset.section = 'quick-actions';
+                }
+              }}
+              className={`rounded-xl border border-orange-100 bg-white shadow-sm p-4 space-y-3 transition-all duration-700 ${
+                visibleSections.has('quick-actions')
+                  ? 'opacity-100 translate-x-0'
+                  : 'opacity-0 translate-x-8'
+              }`}
+              style={{ transitionDelay: '200ms' }}
+            >
+              {quickActions.map((item, index) => (
                 <a
                   key={item.label}
                   href={item.href}
-                  className="flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-orange-50 transition"
+                  className={`flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-orange-50 transition-all duration-500 ${
+                    visibleSections.has('quick-actions')
+                      ? 'opacity-100 translate-x-0'
+                      : 'opacity-0 translate-x-4'
+                  }`}
+                  style={{ transitionDelay: `${300 + index * 100}ms` }}
                   target={item.label === 'WhatsApp' ? '_blank' : undefined}
                   rel={item.label === 'WhatsApp' ? 'noopener noreferrer' : undefined}
                 >
@@ -250,7 +347,20 @@ export const Contact = () => {
               ))}
             </div>
 
-            <div className="rounded-xl border border-orange-100 bg-gradient-to-b from-orange-50/70 to-white/80 p-4 shadow-sm">
+            <div
+              ref={(el) => {
+                if (el) {
+                  sectionRefs.current.push(el);
+                  el.dataset.section = 'why-contact';
+                }
+              }}
+              className={`rounded-xl border border-orange-100 bg-gradient-to-b from-orange-50/70 to-white/80 p-4 shadow-sm transition-all duration-700 ${
+                visibleSections.has('why-contact')
+                  ? 'opacity-100 translate-x-0'
+                  : 'opacity-0 translate-x-8'
+              }`}
+              style={{ transitionDelay: '400ms' }}
+            >
               <p className="font-semibold text-[#301b16] mb-2">Why contact us?</p>
               <ul className="list-disc pl-5 text-sm text-[#7b5a4a] space-y-1">
                 <li>Free consultation & sample menus</li>

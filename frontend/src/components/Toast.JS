@@ -24,31 +24,33 @@ export const Toasts = ({ toasts = [], removeToast = () => {} }) => {
       };
     }
     return {
-      container: 'bg-white border-orange-100 text-[#301b16]',
-      iconBg: 'bg-orange-50 text-[#FF6A28]',
+      container: 'bg-white border-orange-200 text-[#301b16]',
+      iconBg: 'bg-orange-100 text-[#FF6A28]',
     };
   };
 
   return (
-    <div aria-live="polite" className="fixed right-4 left-4 sm:left-auto bottom-6 z-50 flex flex-col gap-3 pointer-events-none">
-      {toasts.map((t) => {
+    <div aria-live="polite" className="fixed right-4 left-4 sm:left-auto bottom-24 z-50 flex flex-col gap-3 pointer-events-none">
+      {toasts.slice(0, 1).map((t) => {
         const styles = getStyles(t.type);
         return (
           <div
             key={t.id}
-            className={`pointer-events-auto min-w-[240px] max-w-sm rounded-2xl shadow-[0_14px_40px_rgba(0,0,0,0.12)] overflow-hidden border animate-slide-in`}
+            className={`pointer-events-auto min-w-[280px] max-w-sm rounded-2xl shadow-[0_14px_40px_rgba(0,0,0,0.15)] overflow-hidden border-2 animate-slide-in ${styles.container}`}
           >
-            <div className={`flex items-start gap-3 p-4 ${styles.container}`}>
-              <div className={`h-9 w-9 rounded-full flex items-center justify-center ${styles.iconBg} font-bold text-sm shrink-0`}>
+            <div className="flex items-start gap-3 p-4">
+              <div className={`h-10 w-10 rounded-full flex items-center justify-center ${styles.iconBg} font-bold text-base shrink-0`}>
                 {t.type === 'error' ? '!' : t.type === 'success' ? '✓' : 'ℹ'}
               </div>
-              <div className="flex-1">
-                <p className="text-sm font-semibold">{t.title || (t.type === 'error' ? 'Error' : t.type === 'success' ? 'Success' : 'Info')}</p>
-                <p className="text-sm mt-0.5">{t.message}</p>
+              <div className="flex-1 min-w-0">
+                {t.title && (
+                  <p className="text-sm font-semibold mb-0.5">{t.title}</p>
+                )}
+                <p className={`text-sm ${t.title ? '' : 'font-semibold'}`}>{t.message}</p>
               </div>
               <button
                 onClick={() => removeToast(t.id)}
-                className="p-1 rounded hover:bg-black/5 transition"
+                className="p-1 rounded-lg hover:bg-black/5 transition-colors shrink-0"
                 aria-label="dismiss toast"
               >
                 <X size={16} className="text-gray-500" />
