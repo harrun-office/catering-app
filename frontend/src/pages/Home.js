@@ -42,13 +42,13 @@ const Toasts = ({ toasts = [], removeToast = () => { } }) => {
   };
 
   return (
-    <div aria-live="polite" className="fixed right-4 bottom-24 z-50 flex flex-col gap-3 pointer-events-none">
+    <div aria-live="polite" className="fixed right-2 sm:right-4 bottom-20 sm:bottom-24 z-50 flex flex-col gap-3 pointer-events-none max-w-[calc(100vw-1rem)]">
       {toasts.slice(0, 1).map((t) => {
         const styles = getToastStyles(t.type);
         return (
           <div
             key={t.id}
-            className={`pointer-events-auto min-w-[280px] max-w-sm rounded-2xl shadow-[0_14px_40px_rgba(0,0,0,0.15)] overflow-hidden border-2 animate-slide-in ${styles.container}`}
+            className={`pointer-events-auto w-full max-w-[calc(100vw-2rem)] sm:min-w-[280px] sm:max-w-sm rounded-2xl shadow-[0_14px_40px_rgba(0,0,0,0.15)] overflow-hidden border-2 animate-slide-in ${styles.container}`}
           >
             <div className="flex items-start gap-3 p-4">
               <div className={`h-10 w-10 rounded-full flex items-center justify-center ${styles.iconBg} font-bold text-base shrink-0`}>
@@ -490,11 +490,11 @@ export const Home = () => {
         </div>
 
 
-        <div className="relative z-20 flex items-center justify-center text-center min-h-[70vh] px-6">
-          <div className="space-y-4 max-w-3xl text-white">
-            <p className="text-sm sm:text-base uppercase tracking-[0.35em] text-white/80">Fine food... with a passion!</p>
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-semibold tracking-tight text-white">Serving delicious</h1>
-            <p className="text-lg sm:text-xl text-white/90">
+        <div className="relative z-20 flex items-center justify-center text-center min-h-[60vh] sm:min-h-[70vh] px-4 sm:px-6 py-12 sm:py-0">
+          <div className="space-y-3 sm:space-y-4 max-w-3xl text-white">
+            <p className="text-xs sm:text-sm md:text-base uppercase tracking-[0.25em] sm:tracking-[0.35em] text-white/80 px-2">Fine food... with a passion!</p>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-semibold tracking-tight text-white leading-tight px-2">Serving delicious</h1>
+            <p className="text-base sm:text-lg md:text-xl text-white/90 px-4 sm:px-0 max-w-2xl mx-auto leading-relaxed">
               Crafted menus and warm service for gatherings, celebrations, and every meal in between.
             </p>
           </div>
@@ -503,37 +503,37 @@ export const Home = () => {
       </section>
 
       {/* page content */}
-      <div className="container-main py-12 text-gray-900">
+      <div className="container-main py-6 sm:py-8 md:py-12 text-gray-900 px-4 sm:px-6 lg:px-8">
         {successMessage && <Alert type="success" message={successMessage} onClose={() => setSuccessMessage('')} />}
         {error && <Alert type="error" message={error} onClose={() => setError('')} />}
 
         {/* Quick features */}
-        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-12">
-          <div className="bg-gradient-to-br from-primary-50 to-primary-100 rounded-xl p-6 text-center border border-primary-200 shadow-md hover:shadow-lg transition-all hover:scale-[1.02]">
-            <h3 className="font-bold text-lg mb-2 gradient-text">Fresh Ingredients</h3>
-            <p className="text-sm text-body" style={{ color: 'oklch(0.42 0.010 260)' }}>Sourcing local produce and preparing dishes to order.</p>
+        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6 mb-8 sm:mb-10 md:mb-12">
+          <div className="bg-gradient-to-br from-primary-50 to-primary-100 rounded-xl p-5 sm:p-6 text-center border border-primary-200 shadow-md hover:shadow-lg transition-all hover:scale-[1.02]">
+            <h3 className="font-bold text-base sm:text-lg mb-2 gradient-text">Fresh Ingredients</h3>
+            <p className="text-xs sm:text-sm text-body leading-relaxed" style={{ color: 'oklch(0.42 0.010 260)' }}>Sourcing local produce and preparing dishes to order.</p>
           </div>
-          <div className="bg-gradient-to-br from-primary-50 to-primary-100 rounded-xl p-6 text-center border border-primary-200 shadow-md hover:shadow-lg transition-all hover:scale-[1.02]">
-            <h3 className="font-bold text-lg mb-2 gradient-text">Custom Menus</h3>
-            <p className="text-sm text-body" style={{ color: 'oklch(0.42 0.010 260)' }}>Vegan, gluten-free, or party platters — we create a menu that fits you.</p>
+          <div className="bg-gradient-to-br from-primary-50 to-primary-100 rounded-xl p-5 sm:p-6 text-center border border-primary-200 shadow-md hover:shadow-lg transition-all hover:scale-[1.02]">
+            <h3 className="font-bold text-base sm:text-lg mb-2 gradient-text">Custom Menus</h3>
+            <p className="text-xs sm:text-sm text-body leading-relaxed" style={{ color: 'oklch(0.42 0.010 260)' }}>Vegan, gluten-free, or party platters — we create a menu that fits you.</p>
           </div>
-          <div className="bg-gradient-to-br from-primary-50 to-primary-100 rounded-xl p-6 text-center border border-primary-200 shadow-md hover:shadow-lg transition-all hover:scale-[1.02]">
-            <h3 className="font-bold text-lg mb-2 gradient-text">Trusted Service</h3>
-            <p className="text-sm text-body" style={{ color: 'oklch(0.42 0.010 260)' }}>On-time delivery, professional presentation, and friendly staff.</p>
+          <div className="bg-gradient-to-br from-primary-50 to-primary-100 rounded-xl p-5 sm:p-6 text-center border border-primary-200 shadow-md hover:shadow-lg transition-all hover:scale-[1.02] sm:col-span-2 lg:col-span-1">
+            <h3 className="font-bold text-base sm:text-lg mb-2 gradient-text">Trusted Service</h3>
+            <p className="text-xs sm:text-sm text-body leading-relaxed" style={{ color: 'oklch(0.42 0.010 260)' }}>On-time delivery, professional presentation, and friendly staff.</p>
           </div>
         </section>
 
         {/* Biryani section */}
-        <section className="mb-12">
-          <div className="flex flex-wrap items-center justify-between gap-4 mb-4 pl-4 relative">
-            <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary rounded-full"></div>
-            <div>
-              <p className="text-sm uppercase tracking-wide text-primary font-semibold">Signature Feast</p>
-              <h2 className="text-2xl font-bold gradient-text">Biryani & Dum Delights</h2>
-              <p className="text-sm text-body mt-1" style={{ color: 'oklch(0.42 0.010 260)' }}>Hand-layered rice, saffron aromas, and slow-cooked proteins ready for gatherings.</p>
+        <section className="mb-8 sm:mb-10 md:mb-12">
+          <div className="flex flex-wrap items-start sm:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-5 md:mb-6 pl-3 sm:pl-4 relative">
+            <div className="absolute left-0 top-0 bottom-0 w-0.5 sm:w-1 bg-primary rounded-full"></div>
+            <div className="flex-1 min-w-0 pr-2">
+              <p className="text-xs sm:text-sm uppercase tracking-wide text-primary font-semibold mb-1">Signature Feast</p>
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold gradient-text leading-tight">Biryani & Dum Delights</h2>
+              <p className="text-xs sm:text-sm text-body mt-1.5 sm:mt-2 leading-relaxed" style={{ color: 'oklch(0.42 0.010 260)' }}>Hand-layered rice, saffron aromas, and slow-cooked proteins ready for gatherings.</p>
             </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 md:gap-6">
             {biryaniShowcase.map((item) => (
               <MenuItem key={`biryani-${item.id}`} item={item} onAddToCart={handleAddToCart} onImgError={handleImgError} />
             ))}
@@ -541,16 +541,16 @@ export const Home = () => {
         </section>
 
         {/* Mandhi section */}
-        <section className="mb-12">
-          <div className="flex flex-wrap items-center justify-between gap-4 mb-4 pl-4 relative">
-            <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#FF6A28] rounded-full"></div>
-            <div>
-              <p className="text-sm uppercase tracking-wide text-primary font-semibold">Arabic Table</p>
-              <h2 className="text-2xl font-bold gradient-text">Mandhi & Smoky Platters</h2>
-              <p className="text-sm text-gray-600 mt-1">Pit-roasted meats over spiced rice, topped with roasted nuts and caramelized onions.</p>
+        <section className="mb-8 sm:mb-10 md:mb-12">
+          <div className="flex flex-wrap items-start sm:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-5 md:mb-6 pl-3 sm:pl-4 relative">
+            <div className="absolute left-0 top-0 bottom-0 w-0.5 sm:w-1 bg-[#FF6A28] rounded-full"></div>
+            <div className="flex-1 min-w-0 pr-2">
+              <p className="text-xs sm:text-sm uppercase tracking-wide text-primary font-semibold mb-1">Arabic Table</p>
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold gradient-text leading-tight">Mandhi & Smoky Platters</h2>
+              <p className="text-xs sm:text-sm text-gray-600 mt-1.5 sm:mt-2 leading-relaxed">Pit-roasted meats over spiced rice, topped with roasted nuts and caramelized onions.</p>
             </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 md:gap-6">
             {mandhiShowcase.map((item) => (
               <MenuItem key={`mandhi-${item.id}`} item={item} onAddToCart={handleAddToCart} onImgError={handleImgError} />
             ))}
@@ -558,20 +558,20 @@ export const Home = () => {
         </section>
 
         {/* Menu */}
-        <section id="menu" className="mb-12">
-          <div className="flex items-center gap-4 mb-6 pl-4 relative">
-            <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary rounded-full"></div>
-            <Filter size={20} className="text-primary" />
-            <div>
-              <p className="text-xs uppercase tracking-[0.4em] text-primary">Signature List</p>
-              <h2 className="text-2xl font-bold gradient-text">Our Menu</h2>
+        <section id="menu" className="mb-8 sm:mb-10 md:mb-12">
+          <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-5 md:mb-6 pl-3 sm:pl-4 relative">
+            <div className="absolute left-0 top-0 bottom-0 w-0.5 sm:w-1 bg-primary rounded-full"></div>
+            <Filter size={18} className="text-primary shrink-0 hidden sm:block" />
+            <div className="flex-1 min-w-0">
+              <p className="text-xs uppercase tracking-[0.3em] sm:tracking-[0.4em] text-primary">Signature List</p>
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold gradient-text leading-tight">Our Menu</h2>
             </div>
           </div>
 
-          <div className="flex gap-3 flex-wrap mb-6">
+          <div className="flex gap-2 sm:gap-3 flex-wrap mb-4 sm:mb-5 md:mb-6">
             <button
               onClick={() => setSelectedCategory(null)}
-                className={`px-4 py-2 rounded-lg font-semibold transition-all ${selectedCategory === null ? 'bg-gradient-to-r from-primary to-primary-light text-white shadow-lg' : 'bg-white border border-primary-200 text-gray-700 hover:border-primary hover:bg-primary-50'}`}
+                className={`px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm rounded-lg font-semibold transition-all whitespace-nowrap ${selectedCategory === null ? 'bg-gradient-to-r from-primary to-primary-light text-white shadow-lg' : 'bg-white border border-primary-200 text-gray-700 hover:border-primary hover:bg-primary-50'}`}
             >
               All Items
             </button>
@@ -579,16 +579,21 @@ export const Home = () => {
               <button
                 key={c.id}
                 onClick={() => setSelectedCategory(c.id)}
-                className={`px-4 py-2 rounded-lg font-semibold transition-all ${selectedCategory === c.id ? 'bg-gradient-to-r from-primary to-primary-light text-white shadow-lg' : 'bg-white border border-primary-200 text-gray-700 hover:border-primary hover:bg-primary-50'}`}
+                className={`px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm rounded-lg font-semibold transition-all whitespace-nowrap ${selectedCategory === c.id ? 'bg-gradient-to-r from-primary to-primary-light text-white shadow-lg' : 'bg-white border border-primary-200 text-gray-700 hover:border-primary hover:bg-primary-50'}`}
               >
                 {c.name}
               </button>
             ))}
           </div>
 
-          <div className="relative max-w-2xl mb-6">
-            <Search className="absolute left-4 top-3 text-[#FF6A28]" size={20} />
-            <input value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="Search for dishes..." className="w-full pl-12 pr-4 py-3 rounded-lg text-gray-800 border border-primary-200/60 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all bg-white/80" />
+          <div className="relative max-w-2xl mb-4 sm:mb-5 md:mb-6">
+            <Search className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-[#FF6A28]" size={18} />
+            <input 
+              value={searchTerm} 
+              onChange={(e) => setSearchTerm(e.target.value)} 
+              placeholder="Search for dishes..." 
+              className="w-full pl-10 sm:pl-12 pr-4 py-2.5 sm:py-3 text-sm sm:text-base rounded-lg text-gray-800 border border-primary-200/60 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all bg-white/80" 
+            />
           </div>
 
           {loading ? (
@@ -601,7 +606,7 @@ export const Home = () => {
               <p className="text-gray-600 mt-2">Try adjusting your search or filters</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 md:gap-6">
               {items.map((item) => (
                 <div key={item.id}>
                   <MenuItem item={item} onAddToCart={handleAddToCart} onImgError={handleImgError} />
@@ -612,32 +617,32 @@ export const Home = () => {
         </section>
 
         {/* Testimonials slider */}
-        <section className="mb-12">
-          <div className="pl-4 mb-4 relative">
-            <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary rounded-full"></div>
-            <p className="text-xs uppercase tracking-[0.4em] text-primary">Voices</p>
-            <h2 className="text-2xl font-bold gradient-text">Testimonials</h2>
+        <section className="mb-8 sm:mb-10 md:mb-12">
+          <div className="pl-3 sm:pl-4 mb-4 sm:mb-5 relative">
+            <div className="absolute left-0 top-0 bottom-0 w-0.5 sm:w-1 bg-primary rounded-full"></div>
+            <p className="text-xs uppercase tracking-[0.3em] sm:tracking-[0.4em] text-primary">Voices</p>
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold gradient-text leading-tight">Testimonials</h2>
           </div>
           <div
-            className="relative bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg p-6 shadow-lg border border-orange-200 flex items-center gap-6 overflow-hidden"
+            className="relative bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg p-4 sm:p-6 shadow-lg border border-orange-200 flex flex-col sm:flex-row items-center gap-4 sm:gap-6 overflow-hidden"
             onMouseEnter={stopTestimonialTimer}
             onMouseLeave={startTestimonialTimer}
           >
             <button
               aria-label="previous testimonial"
               onClick={() => setTestIndex((i) => (i - 1 + TESTIMONIALS.length) % TESTIMONIALS.length)}
-              className="hidden md:block px-3 py-2 text-primary hover:text-primary-dark"
+              className="absolute left-2 sm:relative sm:left-0 px-3 py-2 text-primary hover:text-primary-dark text-2xl sm:text-3xl z-10 sm:z-auto"
             >
               ‹
             </button>
 
-            <div className="flex-1">
-              <p className="text-lg italic">“{TESTIMONIALS[testIndex].quote}”</p>
-              <div className="flex items-center gap-3 mt-4">
-                <img src={TESTIMONIALS[testIndex].image} alt={TESTIMONIALS[testIndex].name} onError={handleImgError} className="w-12 h-12 rounded-full object-cover" />
+            <div className="flex-1 text-center sm:text-left w-full sm:w-auto px-2 sm:px-0">
+              <p className="text-base sm:text-lg md:text-xl italic leading-relaxed">"{TESTIMONIALS[testIndex].quote}"</p>
+              <div className="flex items-center justify-center sm:justify-start gap-3 mt-4">
+                <img src={TESTIMONIALS[testIndex].image} alt={TESTIMONIALS[testIndex].name} onError={handleImgError} className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover shrink-0" />
                 <div>
-                  <p className="font-semibold">{TESTIMONIALS[testIndex].name}</p>
-                  <p className="text-sm text-gray-600">Satisfied Customer</p>
+                  <p className="font-semibold text-sm sm:text-base">{TESTIMONIALS[testIndex].name}</p>
+                  <p className="text-xs sm:text-sm text-gray-600">Satisfied Customer</p>
                 </div>
               </div>
             </div>
@@ -645,25 +650,39 @@ export const Home = () => {
             <button
               aria-label="next testimonial"
               onClick={() => setTestIndex((i) => (i + 1) % TESTIMONIALS.length)}
-              className="hidden md:block px-3 py-2 text-primary hover:text-primary-dark"
+              className="absolute right-2 sm:relative sm:right-0 px-3 py-2 text-primary hover:text-primary-dark text-2xl sm:text-3xl z-10 sm:z-auto"
             >
               ›
             </button>
+            
+            {/* Mobile indicator dots */}
+            <div className="flex gap-2 sm:hidden mt-2">
+              {TESTIMONIALS.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setTestIndex(idx)}
+                  className={`w-2 h-2 rounded-full transition-all ${
+                    idx === testIndex ? 'bg-primary w-6' : 'bg-primary/30'
+                  }`}
+                  aria-label={`Go to testimonial ${idx + 1}`}
+                />
+              ))}
+            </div>
           </div>
         </section>
 
         {/* CTA */}
-        <section className="mb-24 text-center bg-gradient-to-r from-primary to-primary-light rounded-2xl p-8 md:p-12 shadow-xl">
-          <h3 className="text-2xl md:text-3xl font-bold mb-3 text-white">Ready to delight your guests?</h3>
-          <p className="text-white/90 mb-6 text-lg">Contact us for a custom quote and menu tasting.</p>
-          <div className="flex items-center justify-center gap-4 flex-wrap">
+        <section className="mb-12 sm:mb-16 md:mb-24 text-center bg-gradient-to-r from-primary to-primary-light rounded-xl sm:rounded-2xl p-6 sm:p-8 md:p-12 shadow-xl mx-2 sm:mx-0">
+          <h3 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2 sm:mb-3 text-white leading-tight px-2">Ready to delight your guests?</h3>
+          <p className="text-white/90 mb-5 sm:mb-6 text-sm sm:text-base md:text-lg px-2">Contact us for a custom quote and menu tasting.</p>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 sm:gap-4 max-w-md sm:max-w-none mx-auto">
             <button
               onClick={() => {
                 const el = document.getElementById('contact');
                 if (el) el.scrollIntoView({ behavior: 'smooth' });
                 else window.location.href = '/contact';
               }}
-              className="bg-white text-[#FF6A28] px-8 py-3 rounded-xl font-semibold hover:bg-orange-50 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+              className="bg-white text-[#FF6A28] px-6 sm:px-8 py-2.5 sm:py-3 rounded-xl font-semibold hover:bg-orange-50 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 text-sm sm:text-base w-full sm:w-auto"
             >
               Request a Quote
             </button>
@@ -672,7 +691,7 @@ export const Home = () => {
                 const el = document.getElementById('menu');
                 if (el) el.scrollIntoView({ behavior: 'smooth' });
               }}
-              className="bg-primary text-white border-0 px-8 py-3 rounded-xl font-semibold hover:bg-primary-dark transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+              className="bg-white/10 backdrop-blur-sm text-white border-2 border-white/30 px-6 sm:px-8 py-2.5 sm:py-3 rounded-xl font-semibold hover:bg-white/20 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 text-sm sm:text-base w-full sm:w-auto"
             >
               Browse Menu
             </button>
