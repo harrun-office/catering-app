@@ -504,6 +504,15 @@ export const Home = () => {
 
       {/* page content */}
       <div className="container-main py-6 sm:py-8 md:py-12 text-gray-900 px-4 sm:px-6 lg:px-8">
+        <div className="relative max-w-2xl mx-auto mb-8">
+          <Search className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-[#FF6A28]" size={18} />
+          <input
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search for dishes..."
+            className="w-full pl-10 sm:pl-12 pr-4 py-2.5 sm:py-3 text-sm sm:text-base rounded-lg text-gray-800 border border-primary-200/60 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all bg-white/80"
+          />
+        </div>
         {successMessage && <Alert type="success" message={successMessage} onClose={() => setSuccessMessage('')} />}
         {error && <Alert type="error" message={error} onClose={() => setError('')} />}
 
@@ -568,33 +577,58 @@ export const Home = () => {
             </div>
           </div>
 
-          <div className="flex gap-2 sm:gap-3 flex-wrap mb-4 sm:mb-5 md:mb-6">
+          <div className="flex flex-wrap justify-center gap-4 sm:gap-6 mb-8 sm:mb-10 min-h-[80px] items-center">
             <button
               onClick={() => setSelectedCategory(null)}
-                className={`px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm rounded-lg font-semibold transition-all whitespace-nowrap ${selectedCategory === null ? 'bg-gradient-to-r from-primary to-primary-light text-white shadow-lg' : 'bg-white border border-primary-200 text-gray-700 hover:border-primary hover:bg-primary-50'}`}
+              className={`relative group px-6 py-2.5 rounded-full font-bold text-sm sm:text-base transition-all duration-300 flex items-center focus:outline-none focus:ring-0 ${selectedCategory === null
+                ? 'text-[#FF6A28]'
+                : 'text-gray-500 hover:text-primary'
+                }`}
             >
               All Items
+              {/* Hand Logo Animation */}
+              <div
+                className={`absolute left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 z-10 pointer-events-none transition-all duration-500 cubic-bezier(0.34, 1.56, 0.64, 1) ${selectedCategory === null
+                  ? '-top-6 opacity-100 scale-100'
+                  : 'top-1/2 opacity-0 scale-0 group-hover:-top-6 group-hover:opacity-100 group-hover:scale-100'
+                  }`}
+              >
+                <img
+                  src="/images/hand-logo.png"
+                  alt=""
+                  className="w-full h-full object-contain drop-shadow-md transform scale-110"
+                  style={{ filter: 'brightness(0) saturate(100%) invert(56%) sepia(34%) saturate(3014%) hue-rotate(336deg) brightness(100%) contrast(101%)' }}
+                />
+              </div>
             </button>
             {categories.map((c) => (
               <button
                 key={c.id}
                 onClick={() => setSelectedCategory(c.id)}
-                className={`px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm rounded-lg font-semibold transition-all whitespace-nowrap ${selectedCategory === c.id ? 'bg-gradient-to-r from-primary to-primary-light text-white shadow-lg' : 'bg-white border border-primary-200 text-gray-700 hover:border-primary hover:bg-primary-50'}`}
+                className={`relative group px-6 py-2.5 rounded-full font-bold text-sm sm:text-base transition-all duration-300 flex items-center focus:outline-none focus:ring-0 ${selectedCategory === c.id
+                  ? 'text-[#FF6A28]'
+                  : 'text-gray-500 hover:text-primary'
+                  }`}
               >
                 {c.name}
+                <div
+                  className={`absolute left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 z-10 pointer-events-none transition-all duration-500 cubic-bezier(0.34, 1.56, 0.64, 1) ${selectedCategory === c.id
+                    ? '-top-6 opacity-100 scale-100'
+                    : 'top-1/2 opacity-0 scale-0 group-hover:-top-6 group-hover:opacity-100 group-hover:scale-100'
+                    }`}
+                >
+                  <img
+                    src="/images/hand-logo.png"
+                    alt=""
+                    className="w-full h-full object-contain drop-shadow-md transform scale-110"
+                    style={{ filter: 'brightness(0) saturate(100%) invert(56%) sepia(34%) saturate(3014%) hue-rotate(336deg) brightness(100%) contrast(101%)' }}
+                  />
+                </div>
               </button>
             ))}
           </div>
 
-          <div className="relative max-w-2xl mb-4 sm:mb-5 md:mb-6">
-            <Search className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-[#FF6A28]" size={18} />
-            <input 
-              value={searchTerm} 
-              onChange={(e) => setSearchTerm(e.target.value)} 
-              placeholder="Search for dishes..." 
-              className="w-full pl-10 sm:pl-12 pr-4 py-2.5 sm:py-3 text-sm sm:text-base rounded-lg text-gray-800 border border-primary-200/60 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all bg-white/80" 
-            />
-          </div>
+
 
           {loading ? (
             <div className="py-12">
@@ -654,16 +688,15 @@ export const Home = () => {
             >
               ›
             </button>
-            
+
             {/* Mobile indicator dots */}
             <div className="flex gap-2 sm:hidden mt-2">
               {TESTIMONIALS.map((_, idx) => (
                 <button
                   key={idx}
                   onClick={() => setTestIndex(idx)}
-                  className={`w-2 h-2 rounded-full transition-all ${
-                    idx === testIndex ? 'bg-primary w-6' : 'bg-primary/30'
-                  }`}
+                  className={`w-2 h-2 rounded-full transition-all ${idx === testIndex ? 'bg-primary w-6' : 'bg-primary/30'
+                    }`}
                   aria-label={`Go to testimonial ${idx + 1}`}
                 />
               ))}
@@ -697,10 +730,10 @@ export const Home = () => {
             </button>
           </div>
         </section>
-      </div>
+      </div >
 
 
-    </div>
+    </div >
   );
 };
 

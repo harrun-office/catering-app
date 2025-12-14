@@ -19,18 +19,15 @@ export const SharedHeader = ({ isAuthenticated, user, onLogout }) => {
   const [iconAnimating, setIconAnimating] = useState(false);
 
   useEffect(() => {
-    const isHome = location.pathname === '/';
-    if (!isHome) {
-      // Show header immediately on non-home pages
-      setShowHeader(true);
-      return;
-    }
-    // On home page, show header on scroll
+    // Show header on based on scroll position for ALL pages
     const handleScroll = () => {
       setShowHeader(window.scrollY > 10);
     };
-    window.addEventListener('scroll', handleScroll, { passive: true });
+
+    // Check initial scroll position
     handleScroll();
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, [location.pathname]);
 
@@ -46,27 +43,24 @@ export const SharedHeader = ({ isAuthenticated, user, onLogout }) => {
           }, 300);
         }}
         aria-label="Open menu"
-        className={`fixed top-4 right-4 z-40 h-11 w-11 rounded-full bg-white shadow-md border border-primary-200/60 flex items-center justify-center ring-2 ring-primary-100/50 hover:ring-primary/60 transition-all duration-300 hover:shadow-lg ${
-          iconAnimating ? 'scale-90 rotate-90' : 'hover:-translate-y-0.5'
-        }`}
+        className={`fixed top-4 right-4 z-40 h-11 w-11 rounded-full bg-white shadow-md border border-[#FF6A28] flex items-center justify-center hover:shadow-lg focus:outline-none focus:ring-0 transition-all duration-300 ${iconAnimating ? 'scale-90 rotate-90' : 'hover:-translate-y-0.5'
+          }`}
       >
-        <MenuIcon 
-          size={22} 
-          className={`text-primary transition-transform duration-300 ${
-            iconAnimating ? 'rotate-180 scale-110' : ''
-          }`} 
+        <MenuIcon
+          size={22}
+          className={`text-[#FF6A28] transition-transform duration-300 ${iconAnimating ? 'rotate-180 scale-110' : ''
+            }`}
         />
       </button>
 
       {/* Header that appears on scroll */}
       <header
-        className={`fixed top-0 left-0 right-0 z-30 transition-all duration-300 ${
-          showHeader
-            ? 'bg-white/95 text-gray-900 backdrop-blur border-b border-primary-200/40 shadow-sm translate-y-0 opacity-100 pointer-events-auto'
-            : '-translate-y-full opacity-0 pointer-events-none'
-        }`}
+        className={`fixed top-0 left-0 right-0 z-30 transition-all duration-300 ${showHeader
+          ? 'bg-white/95 text-gray-900 backdrop-blur border-b border-primary-200/40 shadow-sm translate-y-0 opacity-100 pointer-events-auto'
+          : '-translate-y-full opacity-0 pointer-events-none'
+          }`}
       >
-        <div className="max-w-7xl mx-auto flex items-center justify-between px-4 pr-16 py-4">
+        <div className="max-w-7xl mx-auto flex items-center justify-center md:justify-between px-4 py-4">
           <Link
             to="/"
             onClick={(e) => {
@@ -75,21 +69,21 @@ export const SharedHeader = ({ isAuthenticated, user, onLogout }) => {
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }
             }}
-            className="flex items-center gap-3 px-2 py-1 rounded-xl bg-white/80 backdrop-blur hover:bg-white shadow-md ring-1 ring-primary-200/60 hover:ring-primary/60 transition cursor-pointer"
+            className="flex items-center gap-3 px-2 py-1 rounded-xl bg-white/80 backdrop-blur hover:bg-white shadow-md border border-[#FF6A28] transition cursor-pointer"
           >
             <img
               src="/images/cater-chef-logo.png"
               alt="Cater Hub"
               className="h-10 w-auto sm:h-11 object-contain drop-shadow-[0_8px_18px_rgba(0,0,0,0.25)]"
             />
-            <span className="text-lg font-semibold tracking-[0.18em] uppercase text-primary hidden sm:inline">
+            <span className="text-lg font-semibold tracking-[0.18em] uppercase text-[#FF6A28]">
               Cater Hub
             </span>
           </Link>
-          <div className="flex items-center gap-3">
+          <div className="hidden md:flex items-center gap-3">
             {isAuthenticated ? (
               <>
-                <span className="text-sm font-semibold text-gray-800 hidden md:inline" style={{ color: 'oklch(0.25 0.012 260)' }}>
+                <span className="text-sm font-semibold text-gray-800" style={{ color: 'oklch(0.25 0.012 260)' }}>
                   {user?.first_name || 'User'}
                 </span>
                 <button
@@ -121,109 +115,138 @@ export const SharedHeader = ({ isAuthenticated, user, onLogout }) => {
 
       {/* Menu overlay */}
       {menuOpen && (
-        <div 
-          className="fixed inset-0 z-40 bg-black/90 backdrop-blur flex flex-col animate-menuFadeIn"
+        <div
+          className="fixed inset-0 z-50 bg-black flex flex-col items-center justify-center animate-menuFadeIn"
           style={{
             animation: 'menuFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1)'
           }}
         >
           <style>{`
             @keyframes menuFadeIn {
-              from {
-                opacity: 0;
-                backdrop-filter: blur(0px);
-              }
-              to {
-                opacity: 1;
-                backdrop-filter: blur(8px);
-              }
+              from { opacity: 0; }
+              to { opacity: 1; }
             }
             @keyframes menuItemSlideIn {
-              from {
-                opacity: 0;
-                transform: translateY(20px) scale(0.9);
-              }
-              to {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-              }
+              from { opacity: 0; transform: translateY(20px); }
+              to { opacity: 1; transform: translateY(0); }
             }
             .menu-item {
               animation: menuItemSlideIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
               opacity: 0;
             }
-            .menu-item:hover {
-              transform: translateX(8px) scale(1.05);
-            }
           `}</style>
+
           <button
             onClick={() => setMenuOpen(false)}
-            className="absolute right-6 top-6 text-white hover:text-orange-200 transition-all duration-300 hover:rotate-90 hover:scale-110 z-50"
+            className="absolute right-8 top-8 text-white/80 hover:text-white transition-colors p-2"
             aria-label="Close menu"
           >
-            <CloseIcon size={26} />
+            <CloseIcon size={32} strokeWidth={1} />
           </button>
-          <nav className="flex-1 flex flex-col items-center justify-center gap-6 text-lg sm:text-xl uppercase tracking-[0.15em]">
-            {NAV_LINKS.map((link, index) => {
-              const delay = index * 0.1;
-              const baseClasses = "menu-item text-white hover:text-[#FF6A28] transition-all duration-300 relative group px-6 py-3 rounded-lg hover:bg-white/10 backdrop-blur-sm";
-              
-              if (link.to.startsWith('#')) {
-                return (
+
+          <nav className="flex flex-col items-center w-full max-w-2xl px-4">
+            <div className="grid grid-cols-3 gap-3 sm:gap-4 w-full mb-8">
+              {NAV_LINKS.map((link, index) => {
+                const delay = index * 0.05;
+                const baseClasses = "menu-item text-white hover:text-[#FF6A28] transition-all duration-300 text-xs sm:text-sm uppercase tracking-wider font-medium bg-white/5 hover:bg-white/10 backdrop-blur rounded-xl p-3 sm:p-4 border border-white/10 hover:border-[#FF6A28]/30 flex items-center justify-center text-center min-h-[60px] sm:min-h-[70px]";
+
+                if (link.to.startsWith('#')) {
+                  return (
+                    <button
+                      key={link.label}
+                      className={baseClasses}
+                      style={{ animationDelay: `${delay}s` }}
+                      onClick={() => {
+                        setMenuOpen(false);
+                        if (location.pathname !== '/') {
+                          window.location.href = `/${link.to}`;
+                        } else {
+                          setTimeout(() => {
+                            const target = document.querySelector(link.to);
+                            if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                          }, 100);
+                        }
+                      }}
+                    >
+                      {link.label}
+                    </button>
+                  );
+                } else if (link.to === '/') {
+                  return (
+                    <button
+                      key={link.label}
+                      className={baseClasses}
+                      style={{ animationDelay: `${delay}s` }}
+                      onClick={() => {
+                        setMenuOpen(false);
+                        if (location.pathname === '/') {
+                          window.scrollTo({ top: 0, behavior: 'smooth' });
+                        } else {
+                          window.location.href = '/';
+                        }
+                      }}
+                    >
+                      {link.label}
+                    </button>
+                  );
+                } else {
+                  return (
+                    <Link
+                      key={link.label}
+                      to={link.to}
+                      onClick={() => setMenuOpen(false)}
+                      className={baseClasses}
+                      style={{ animationDelay: `${delay}s` }}
+                    >
+                      {link.label}
+                      {link.label === 'About' && <span className="ml-1 text-[#FF6A28]/70">›</span>}
+                    </Link>
+                  );
+                }
+              })}
+            </div>
+
+            {/* Profile and Auth Controls in Menu */}
+            <div className="flex flex-col items-center gap-4 w-full">
+              {isAuthenticated ? (
+                <>
+                  <div className="menu-item pt-4 border-t border-white/20 w-full text-center" style={{ animationDelay: `${NAV_LINKS.length * 0.05}s` }}>
+                    <span className="text-white/80 text-sm uppercase tracking-wider">
+                      {user?.first_name || 'User'}
+                    </span>
+                  </div>
                   <button
-                    key={link.label}
-                    className={baseClasses}
-                    style={{ animationDelay: `${delay}s` }}
                     onClick={() => {
                       setMenuOpen(false);
-                      if (location.pathname !== '/') {
-                        window.location.href = `/${link.to}`;
-                      } else {
-                        setTimeout(() => {
-                          const target = document.querySelector(link.to);
-                          if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                        }, 100);
-                      }
+                      onLogout();
                     }}
+                    className="menu-item text-red-400 hover:text-red-300 transition-colors duration-300 text-sm sm:text-base uppercase tracking-[0.2em] font-medium"
+                    style={{ animationDelay: `${(NAV_LINKS.length + 1) * 0.05}s` }}
                   >
-                    <span className="relative z-10">{link.label}</span>
-                    <span className="absolute inset-0 bg-gradient-to-r from-[#FF6A28]/20 to-[#FF8B4A]/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-sm"></span>
+                    Logout
                   </button>
-                );
-              } else if (link.to === '/') {
-                return (
-                  <button
-                    key={link.label}
-                    className={baseClasses}
-                    style={{ animationDelay: `${delay}s` }}
-                    onClick={() => {
-                      setMenuOpen(false);
-                      if (location.pathname === '/') {
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                      } else {
-                        window.location.href = '/';
-                      }
-                    }}
-                  >
-                    <span className="relative z-10">{link.label}</span>
-                    <span className="absolute inset-0 bg-gradient-to-r from-[#FF6A28]/20 to-[#FF8B4A]/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-sm"></span>
-                  </button>
-                );
-              } else {
-                return (
+                </>
+              ) : (
+                <>
                   <Link
-                    key={link.label}
-                    to={link.to}
+                    to="/login"
                     onClick={() => setMenuOpen(false)}
-                    className={baseClasses}
-                    style={{ animationDelay: `${delay}s` }}
+                    className="menu-item text-white hover:text-[#FF6A28] transition-colors duration-300 text-sm sm:text-base uppercase tracking-[0.2em] font-medium mt-4 pt-4 border-t border-white/20"
+                    style={{ animationDelay: `${NAV_LINKS.length * 0.05}s` }}
                   >
-                    <span className="relative z-10">{link.label}</span>
-                    <span className="absolute inset-0 bg-gradient-to-r from-[#FF6A28]/20 to-[#FF8B4A]/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-sm"></span>
+                    Login
                   </Link>
-                );
-              }
-            })}
+                  <Link
+                    to="/register"
+                    onClick={() => setMenuOpen(false)}
+                    className="menu-item text-white hover:text-[#FF6A28] transition-colors duration-300 text-sm sm:text-base uppercase tracking-[0.2em] font-medium"
+                    style={{ animationDelay: `${(NAV_LINKS.length + 1) * 0.05}s` }}
+                  >
+                    Register
+                  </Link>
+                </>
+              )}
+            </div>
           </nav>
         </div>
       )}

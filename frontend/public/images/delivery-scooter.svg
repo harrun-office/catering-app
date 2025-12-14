@@ -1,0 +1,25 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Body -->
+  <path d="M12 40H20L24 28H36L44 48H12V40Z" fill="#FF6A28"/>
+  <path d="M44 48L52 52L56 44L44 48Z" fill="#FF6A28"/>
+  <rect x="16" y="24" width="16" height="12" rx="2" fill="#FF8B4A"/>
+  
+  <!-- Wheels -->
+  <circle cx="16" cy="52" r="6" fill="#301b16"/>
+  <circle cx="16" cy="52" r="2" fill="#FFFFFF"/>
+  <circle cx="48" cy="52" r="6" fill="#301b16"/>
+  <circle cx="48" cy="52" r="2" fill="#FFFFFF"/>
+  
+  <!-- Handlebars -->
+  <path d="M36 28L40 20H44" stroke="#301b16" stroke-width="3" stroke-linecap="round"/>
+  
+  <!-- Delivery Box -->
+  <rect x="8" y="22" width="14" height="14" rx="2" fill="#FF6A28" stroke="#301b16" stroke-width="2"/>
+  <path d="M13 27V31M17 27V31" stroke="#301b16" stroke-width="2" stroke-linecap="round"/>
+  
+  <!-- Seat -->
+  <path d="M22 28H30" stroke="#301b16" stroke-width="4" stroke-linecap="round"/>
+  
+  <!-- Windshield/Front -->
+  <path d="M44 32H50L52 40H44V32Z" fill="#FF6A28"/>
+</svg>
