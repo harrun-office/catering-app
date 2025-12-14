@@ -116,7 +116,7 @@ export const SharedHeader = ({ isAuthenticated, user, onLogout }) => {
       {/* Menu overlay */}
       {menuOpen && (
         <div
-          className="fixed inset-0 z-50 bg-black flex flex-col items-center justify-center animate-menuFadeIn"
+          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex flex-col items-center justify-center animate-menuFadeIn"
           style={{
             animation: 'menuFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1)'
           }}
@@ -145,10 +145,10 @@ export const SharedHeader = ({ isAuthenticated, user, onLogout }) => {
           </button>
 
           <nav className="flex flex-col items-center w-full max-w-2xl px-4">
-            <div className="grid grid-cols-3 gap-3 sm:gap-4 w-full mb-8">
+            <div className="flex flex-col items-center gap-6 sm:gap-8 w-full mb-8">
               {NAV_LINKS.map((link, index) => {
                 const delay = index * 0.05;
-                const baseClasses = "menu-item text-white hover:text-[#FF6A28] transition-all duration-300 text-xs sm:text-sm uppercase tracking-wider font-medium bg-white/5 hover:bg-white/10 backdrop-blur rounded-xl p-3 sm:p-4 border border-white/10 hover:border-[#FF6A28]/30 flex items-center justify-center text-center min-h-[60px] sm:min-h-[70px]";
+                const baseClasses = "menu-item text-white hover:text-[#FF6A28] transition-colors duration-300 text-lg sm:text-xl uppercase tracking-[0.15em] font-medium";
 
                 if (link.to.startsWith('#')) {
                   return (
