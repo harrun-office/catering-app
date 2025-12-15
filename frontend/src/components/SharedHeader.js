@@ -17,6 +17,15 @@ export const SharedHeader = ({ isAuthenticated, user, onLogout }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [showHeader, setShowHeader] = useState(false);
   const [iconAnimating, setIconAnimating] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Track viewport to adjust layout (future use)
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   useEffect(() => {
     // Show header on based on scroll position for ALL pages
@@ -43,7 +52,7 @@ export const SharedHeader = ({ isAuthenticated, user, onLogout }) => {
           }, 300);
         }}
         aria-label="Open menu"
-        className={`fixed top-4 right-4 z-40 h-11 w-11 rounded-full bg-white shadow-md border border-[#FF6A28] flex items-center justify-center hover:shadow-lg focus:outline-none focus:ring-0 transition-all duration-300 ${iconAnimating ? 'scale-90 rotate-90' : 'hover:-translate-y-0.5'
+        className={`fixed top-4 right-4 z-40 h-11 w-11 rounded-full bg-white shadow-md border border-[#FF6A28] flex items-center justify-center hover:shadow-lg focus:outline-none focus:ring-0 transition-all duration-300 md:hidden ${iconAnimating ? 'scale-90 rotate-90' : 'hover:-translate-y-0.5'
           }`}
       >
         <MenuIcon
@@ -59,8 +68,11 @@ export const SharedHeader = ({ isAuthenticated, user, onLogout }) => {
           ? 'bg-white/95 text-gray-900 backdrop-blur border-b border-primary-200/40 shadow-sm translate-y-0 opacity-100 pointer-events-auto'
           : '-translate-y-full opacity-0 pointer-events-none'
           }`}
+        style={{
+          paddingTop: 'env(safe-area-inset-top, 0px)'
+        }}
       >
-        <div className="max-w-7xl mx-auto flex items-center justify-center md:justify-between px-4 py-4">
+        <div className="max-w-7xl mx-auto flex items-center justify-between px-4 sm:px-6 py-3.5">
           <Link
             to="/"
             onClick={(e) => {
@@ -80,7 +92,7 @@ export const SharedHeader = ({ isAuthenticated, user, onLogout }) => {
               Cater Hub
             </span>
           </Link>
-          <div className="hidden md:flex items-center gap-3">
+          <div className="hidden md:flex items-center gap-4">
             {isAuthenticated ? (
               <>
                 <span className="text-sm font-semibold text-gray-800" style={{ color: 'oklch(0.25 0.012 260)' }}>
@@ -88,7 +100,7 @@ export const SharedHeader = ({ isAuthenticated, user, onLogout }) => {
                 </span>
                 <button
                   onClick={onLogout}
-                  className="px-4 py-2 text-sm font-semibold text-red-600 hover:text-red-700 transition-colors"
+                  className="px-5 py-2.5 text-sm font-semibold text-red-600 hover:text-red-700 transition-colors"
                 >
                   Logout
                 </button>
@@ -97,13 +109,14 @@ export const SharedHeader = ({ isAuthenticated, user, onLogout }) => {
               <>
                 <Link
                   to="/login"
-                  className="px-4 py-2 text-sm font-semibold text-primary hover:text-primary-dark transition-colors"
+                  className="inline-flex h-11 items-center justify-center px-5 text-sm font-semibold leading-none text-primary hover:text-primary-dark transition-colors rounded-lg"
+                  style={{ color: '#FF6A28' }}
                 >
                   Login
                 </Link>
                 <Link
                   to="/register"
-                  className="px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-primary to-primary-light rounded-lg shadow-md hover:shadow-lg hover:from-primary-light hover:to-primary transition-all"
+                  className="inline-flex h-11 items-center justify-center px-5 text-sm font-semibold leading-none text-white bg-gradient-to-r from-primary to-primary-light rounded-lg shadow-md hover:shadow-lg hover:from-primary-light hover:to-primary transition-all"
                 >
                   Register
                 </Link>

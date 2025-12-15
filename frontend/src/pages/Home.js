@@ -216,21 +216,40 @@ export const Home = () => {
 
   useEffect(() => {
     fetchCategories();
-    const params = new URLSearchParams(location.search);
-    const scrollTo = params.get('scrollTo');
-    if (scrollTo) {
-      setTimeout(() => {
-        const el = document.getElementById(scrollTo);
-        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 180);
-    }
-
     startTestimonialTimer();
     return () => {
       stopTestimonialTimer();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Handle scrolling to sections (menu, hero, etc.)
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const scrollTo = params.get('scrollTo');
+
+    // Also check for hash in URL
+    const hash = window.location.hash.substring(1); // Remove the '#'
+    const targetSection = scrollTo || hash;
+
+    if (targetSection) {
+      // Use multiple attempts with increasing delays to ensure content is loaded
+      const scrollAttempts = [100, 300, 600];
+
+      scrollAttempts.forEach((delay, index) => {
+        setTimeout(() => {
+          const el = document.getElementById(targetSection);
+          if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            // Clear URL parameters after successful scroll on first attempt
+            if (index === 0) {
+              window.history.replaceState(null, null, window.location.pathname);
+            }
+          }
+        }, delay);
+      });
+    }
+  }, [location.search, location.hash]);
 
   useEffect(() => {
     fetchMenuItems();
@@ -542,7 +561,7 @@ export const Home = () => {
               <p className="text-xs sm:text-sm text-body mt-1.5 sm:mt-2 leading-relaxed" style={{ color: 'oklch(0.42 0.010 260)' }}>Hand-layered rice, saffron aromas, and slow-cooked proteins ready for gatherings.</p>
             </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 md:gap-6">
+          <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 xs:gap-4 sm:gap-4 md:gap-5 lg:gap-5 xl:gap-6">
             {biryaniShowcase.map((item) => (
               <MenuItem key={`biryani-${item.id}`} item={item} onAddToCart={handleAddToCart} onImgError={handleImgError} />
             ))}
@@ -559,7 +578,7 @@ export const Home = () => {
               <p className="text-xs sm:text-sm text-gray-600 mt-1.5 sm:mt-2 leading-relaxed">Pit-roasted meats over spiced rice, topped with roasted nuts and caramelized onions.</p>
             </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 md:gap-6">
+          <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 xs:gap-4 sm:gap-4 md:gap-5 lg:gap-5 xl:gap-6">
             {mandhiShowcase.map((item) => (
               <MenuItem key={`mandhi-${item.id}`} item={item} onAddToCart={handleAddToCart} onImgError={handleImgError} />
             ))}
@@ -640,7 +659,7 @@ export const Home = () => {
               <p className="text-gray-600 mt-2">Try adjusting your search or filters</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 md:gap-6">
+            <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 xs:gap-4 sm:gap-4 md:gap-5 lg:gap-5 xl:gap-6">
               {items.map((item) => (
                 <div key={item.id}>
                   <MenuItem item={item} onAddToCart={handleAddToCart} onImgError={handleImgError} />

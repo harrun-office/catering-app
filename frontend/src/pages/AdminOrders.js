@@ -47,6 +47,7 @@ const formatAmount = (value) => `₹${Number(value || 0).toFixed(0)}`;
 
 export const AdminOrders = () => {
   const [orders, setOrders] = useState([]);
+  const [users, setUsers] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [expandedOrder, setExpandedOrder] = useState(null);
@@ -58,13 +59,44 @@ export const AdminOrders = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedStatus]);
 
+  const fetchUserDetails = async (userId) => {
+    if (!userId || users[userId]) return; // Already fetched or no userId
+
+    try {
+      // For now, we'll assume we can get user details. In a real scenario,
+      // we might need a specific API endpoint to get user by ID
+      // Since we don't have a getUserById API, we'll work with what's available
+      const response = await adminAPI.getAllUsers({ limit: 1000 }); // Get all users
+      const allUsers = response.data.users || [];
+      const userMap = {};
+      allUsers.forEach(user => {
+        userMap[user.id] = user;
+      });
+      setUsers(userMap);
+    } catch (err) {
+      console.error('Failed to fetch user details:', err);
+    }
+  };
+
   const fetchOrders = async () => {
     try {
       setLoading(true);
       setError('');
       const params = selectedStatus === 'all' ? {} : { status: selectedStatus };
       const response = await adminAPI.getAllOrders(params);
-      setOrders(response.data.orders || []);
+      const ordersData = response.data.orders || [];
+
+      // Check if orders have user_id and fetch user details
+      const userIds = ordersData
+        .map(order => order.user_id || order.userId || order.customer_id)
+        .filter(id => id);
+
+      if (userIds.length > 0) {
+        // Fetch user details for orders that have user IDs
+        await fetchUserDetails(userIds[0]); // For now, fetch all users
+      }
+
+      setOrders(ordersData);
     } catch (err) {
       setError('Failed to load orders');
     } finally {
@@ -221,6 +253,46 @@ export const AdminOrders = () => {
 
                 {isExpanded && (
                   <div className="mt-4 space-y-4 rounded-2xl bg-slate-50 p-4">
+                    {/* Customer Contact Information */}
+                    <div>
+                      <p className="text-xs uppercase tracking-widest text-slate-400">Customer Contact</p>
+                      <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div className="rounded-2xl bg-white px-3 py-2">
+                          <p className="text-xs text-slate-400 uppercase tracking-widest">Mobile Number</p>
+                          <p className="text-sm font-semibold text-slate-800">
+                            {(() => {
+                              // Try order fields first
+                              const orderPhone = order.phone || order.mobile;
+                              if (orderPhone) return orderPhone;
+
+                              // Try user data if available
+                              const userId = order.user_id || order.userId || order.customer_id;
+                              const user = users[userId];
+                              if (user && user.phone) return user.phone;
+
+                              return 'Not provided';
+                            })()}
+                          </p>
+                        </div>
+                        <div className="rounded-2xl bg-white px-3 py-2">
+                          <p className="text-xs text-slate-400 uppercase tracking-widest">Email Address</p>
+                          <p className="text-sm font-semibold text-slate-800">
+                            {(() => {
+                              // Try order fields first
+                              if (order.email) return order.email;
+
+                              // Try user data if available
+                              const userId = order.user_id || order.userId || order.customer_id;
+                              const user = users[userId];
+                              if (user && user.email) return user.email;
+
+                              return 'Not provided';
+                            })()}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
                     <div>
                       <p className="text-xs uppercase tracking-widest text-slate-400">Update status</p>
                       <p className="text-xs text-slate-500 mt-1 mb-3">Status can only progress forward. Previous statuses cannot be selected.</p>
@@ -230,15 +302,15 @@ export const AdminOrders = () => {
                           const allowedStatuses = getAllowedStatuses(order.status);
                           const isAllowed = allowedStatuses.includes(status);
                           const isDisabled = !isAllowed && !active;
-                          
+
                           return (
                             <button
                               key={status}
                               onClick={() => isAllowed && handleStatusChange(order.id, status, order.status)}
                               disabled={isDisabled}
                               className={`rounded-full px-4 py-2 text-xs font-semibold transition ${
-                                active 
-                                  ? 'bg-[#FF6A28] text-white shadow cursor-default' 
+                                active
+                                  ? 'bg-[#FF6A28] text-white shadow cursor-default'
                                   : isAllowed
                                     ? 'bg-white text-gray-600 hover:bg-orange-50 border border-orange-200 cursor-pointer'
                                     : 'bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed opacity-50'

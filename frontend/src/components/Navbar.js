@@ -23,21 +23,70 @@ export const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(true);   // Start collapsed
-  const [sidebarWidth, setSidebarWidth] = useState(288); // 72 * 4 = 288px
+  const [sidebarWidth, setSidebarWidth] = useState(() => {
+    // Responsive initial width based on screen size
+    if (window.innerWidth >= 1280) return 288; // xl screens
+    if (window.innerWidth >= 1024) return 256; // lg screens
+    return 240; // md screens
+  });
   const [mobileOpen, setMobileOpen] = useState(false);
   const [logoError, setLogoError] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [activeItem, setActiveItem] = useState(null);
   const [clickedItem, setClickedItem] = useState(null);
 
+  // Lock scroll when mobile menu is open
+  useEffect(() => {
+    const originalOverflow = document.body.style.overflow;
+    if (mobileOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = originalOverflow || '';
+    }
+    return () => {
+      document.body.style.overflow = originalOverflow || '';
+    };
+  }, [mobileOpen]);
+
   useEffect(() => {
     // Expand on hover or when not collapsed
     const shouldExpand = isHovered || !collapsed;
-    const width = shouldExpand ? 288 : 80;
+    let width;
+    if (shouldExpand) {
+      // Responsive expanded width
+      if (window.innerWidth >= 1280) width = 288; // xl screens
+      else if (window.innerWidth >= 1024) width = 256; // lg screens
+      else width = 240; // md screens
+    } else {
+      width = 80; // collapsed width
+    }
     setSidebarWidth(width);
     document.documentElement.style.setProperty("--sidebar-width", `${width}px`);
     setLogoError(false); // Reset logo error when sidebar state changes
   }, [collapsed, isHovered]);
+
+  // Handle window resize for responsive sidebar width
+  useEffect(() => {
+    const handleResize = () => {
+      const shouldExpand = isHovered || !collapsed;
+      if (shouldExpand) {
+        let width;
+        if (window.innerWidth >= 1280) width = 288;
+        else if (window.innerWidth >= 1024) width = 256;
+        else width = 240;
+        setSidebarWidth(width);
+        document.documentElement.style.setProperty("--sidebar-width", `${width}px`);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [isHovered, collapsed]);
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [location.pathname]);
 
   useEffect(() => {
     // Set active item based on current route
@@ -352,63 +401,155 @@ export const Navbar = () => {
         )}
       </aside>
 
-      {/* MOBILE NAV (unchanged) */}
-      <nav className="md:hidden fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-[#FF6A28] to-[#FF8B4A] text-white shadow-md">
-        <div className="container-main flex items-center justify-between py-3 relative">
+      {/* MOBILE NAV */}
+      <nav
+        className="md:hidden fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-[#FF6A28] to-[#FF8B4A] text-white shadow-md"
+        style={{
+          paddingTop: 'env(safe-area-inset-top, 0px)',
+        }}
+      >
+        <div
+          className="flex items-center justify-between px-4 py-3 xs:px-3 xs:py-2.5"
+          style={{
+            paddingLeft: 'max(0.75rem, env(safe-area-inset-left, 0px))',
+            paddingRight: 'max(0.75rem, env(safe-area-inset-right, 0px))',
+          }}
+        >
           <button
             onClick={() => setMobileOpen((s) => !s)}
-            className="p-2 rounded-md bg-white/10 z-10"
+            className="p-2 xs:p-1.5 rounded-md bg-white/10 hover:bg-white/20 transition-colors z-10"
+            aria-expanded={mobileOpen}
+            aria-label="Toggle navigation"
           >
-            <MenuIcon size={18} />
+            <MenuIcon size={20} className="xs:w-4 xs:h-4" />
           </button>
 
-          <Link 
-            to="/" 
+          <Link
+            to="/"
             onClick={(e) => {
               if (location.pathname === '/') {
                 e.preventDefault();
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }
             }}
-            className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 flex items-center gap-2 text-lg font-bold"
+            className="flex items-center gap-1.5 xs:gap-1 text-base xs:text-sm font-bold hover:opacity-80 transition-opacity"
           >
             <img
               src="/images/cater-chef-logo.png"
               alt="CaterHub"
-              className="h-7 w-auto object-contain"
+              className="h-6 w-auto xs:h-5 object-contain"
             />
-            <span>Cater Hub</span>
+            <span className="xs:hidden sm:inline">Cater Hub</span>
           </Link>
 
-          <Link to="/cart" className="relative z-10">
-            <ShoppingCart size={20} />
+          <Link to="/cart" className="relative z-10 p-1">
+            <ShoppingCart size={20} className="xs:w-4 xs:h-4" />
             {count > 0 && (
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-semibold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
+              <span className="absolute -top-1 -right-1 xs:-top-0.5 xs:-right-0.5 bg-red-500 text-white text-[10px] xs:text-[8px] font-semibold rounded-full min-w-[18px] xs:min-w-[14px] h-[18px] xs:h-[14px] flex items-center justify-center px-1 xs:px-0.5">
                 {count > 99 ? '99+' : count}
               </span>
             )}
           </Link>
         </div>
 
+        {/* Overlay to close menu */}
         {mobileOpen && (
-          <div className="bg-white/5 backdrop-blur-sm p-3 space-y-2">
-            <button onClick={() => goToSection("hero")} className="block w-full text-left px-3 py-2 rounded-lg">Home</button>
-            <button onClick={() => goToSection("menu")} className="block w-full text-left px-3 py-2 rounded-lg">Menu</button>
-            <button onClick={() => goToSection("about")} className="block w-full text-left px-3 py-2 rounded-lg">About</button>
-            <button onClick={() => goToSection("gallery")} className="block w-full text-left px-3 py-2 rounded-lg">Gallery</button>
-            <button onClick={() => goToSection("contact")} className="block w-full text-left px-3 py-2 rounded-lg">Contact</button>
+          <button
+            aria-label="Close menu overlay"
+            onClick={() => setMobileOpen(false)}
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm md:hidden"
+            style={{ top: 'env(safe-area-inset-top, 0px)' }}
+          />
+        )}
 
-            {isAuthenticated ? (
-              <>
-                {isAdmin && <Link to="/admin" className="block px-3 py-2 rounded-lg">Admin</Link>}
-                <button onClick={handleLogout} className="w-full text-left px-3 py-2 rounded-lg">Logout</button>
-              </>
-            ) : (
-              <>
-                <Link to="/login" className="block px-3 py-2 rounded-lg">Login</Link>
-                <Link to="/register" className="block px-3 py-2 rounded-lg">Register</Link>
-              </>
-            )}
+        {mobileOpen && (
+          <div className="bg-white/10 backdrop-blur-md border-t border-white/10 animate-fade-in relative">
+            <div
+              className="px-4 py-3 xs:px-3 xs:py-2 space-y-1"
+              style={{
+                paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom, 0px))',
+              }}
+            >
+              <button
+                onClick={() => goToSection("hero")}
+                className="block w-full text-left px-3 py-3 xs:px-2 xs:py-2.5 rounded-lg hover:bg-white/20 transition-colors duration-200 font-medium"
+              >
+                Home
+              </button>
+              <button
+                onClick={() => goToSection("menu")}
+                className="block w-full text-left px-3 py-3 xs:px-2 xs:py-2.5 rounded-lg hover:bg-white/20 transition-colors duration-200 font-medium"
+              >
+                Menu
+              </button>
+              <button
+                onClick={() => goToSection("about")}
+                className="block w-full text-left px-3 py-3 xs:px-2 xs:py-2.5 rounded-lg hover:bg-white/20 transition-colors duration-200 font-medium"
+              >
+                About
+              </button>
+              <button
+                onClick={() => goToSection("gallery")}
+                className="block w-full text-left px-3 py-3 xs:px-2 xs:py-2.5 rounded-lg hover:bg-white/20 transition-colors duration-200 font-medium"
+              >
+                Gallery
+              </button>
+              <button
+                onClick={() => goToSection("contact")}
+                className="block w-full text-left px-3 py-3 xs:px-2 xs:py-2.5 rounded-lg hover:bg-white/20 transition-colors duration-200 font-medium"
+              >
+                Contact
+              </button>
+
+              {/* Auth Section */}
+              <div className="border-t border-white/20 my-3 xs:my-2"></div>
+
+              {isAuthenticated ? (
+                <>
+                  {isAdmin && (
+                    <Link
+                      to="/admin"
+                      className="block px-3 py-3 xs:px-2 xs:py-2.5 rounded-lg hover:bg-white/20 transition-colors duration-200 font-medium"
+                    >
+                      Admin Dashboard
+                    </Link>
+                  )}
+                  <Link
+                    to="/tracking"
+                    className="block px-3 py-3 xs:px-2 xs:py-2.5 rounded-lg hover:bg-white/20 transition-colors duration-200 font-medium"
+                  >
+                    Track Order
+                  </Link>
+                  <Link
+                    to="/orders"
+                    className="block px-3 py-3 xs:px-2 xs:py-2.5 rounded-lg hover:bg-white/20 transition-colors duration-200 font-medium"
+                  >
+                    Order History
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="block w-full text-left px-3 py-3 xs:px-2 xs:py-2.5 rounded-lg hover:bg-red-500/20 transition-colors duration-200 font-medium text-red-200"
+                  >
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    to="/login"
+                    className="block px-3 py-3 xs:px-2 xs:py-2.5 rounded-lg hover:bg-white/20 transition-colors duration-200 font-medium"
+                  >
+                    Login
+                  </Link>
+                  <Link
+                    to="/register"
+                    className="block px-3 py-3 xs:px-2 xs:py-2.5 rounded-lg bg-white/20 hover:bg-white/30 transition-colors duration-200 font-medium"
+                  >
+                    Register
+                  </Link>
+                </>
+              )}
+            </div>
           </div>
         )}
       </nav>

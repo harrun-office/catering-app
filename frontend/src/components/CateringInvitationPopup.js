@@ -382,15 +382,32 @@ export default function CateringInvitationPopup({
 
   function handleBrowse() {
     setIsOpen(false);
+
     if (onBrowse) {
       try {
         onBrowse();
+        return;
       } catch (e) {
         // Swallow errors
       }
-    } else {
-      navigate('/menu');
     }
+
+    // Always navigate to home page first (this ensures we're on the right page)
+    navigate('/');
+
+    // Then scroll to menu section after navigation
+    setTimeout(() => {
+      const el = document.getElementById('menu');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else {
+        // Fallback: try scrolling after a longer delay
+        setTimeout(() => {
+          const el = document.getElementById('menu');
+          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 500);
+      }
+    }, 500); // Give more time for navigation and content loading
   }
 
   // Focus management: move focus to first button when opened

@@ -153,9 +153,9 @@ export const MenuItem = ({ item = {}, onAddToCart = () => { }, onImgError }) => 
 
 
   return (
-    <div className="card overflow-hidden hover:shadow-xl transition transform hover:-translate-y-2 duration-300 p-4 sm:p-6 flex flex-col h-full">
+    <div className="card overflow-hidden hover:shadow-xl transition transform hover:-translate-y-2 duration-300 p-3 xs:p-3.5 sm:p-5 flex flex-col h-full">
       {/* IMAGE */}
-      <div className="relative overflow-hidden bg-gray-200 aspect-[4/3] sm:aspect-[3/2] rounded-xl">
+      <div className="relative overflow-hidden bg-gray-200 aspect-[4/3] xs:aspect-[5/4] sm:aspect-[3/2] rounded-xl">
         <img
           src={resolved}
           alt={item?.name || "menu item"}
@@ -207,17 +207,17 @@ export const MenuItem = ({ item = {}, onAddToCart = () => { }, onImgError }) => 
 
       {/* CONTENT */}
       <div className="p-2 sm:p-4 flex flex-col flex-1">
-        <h3 className="font-bold text-lg sm:text-xl text-gray-900 mb-2 line-clamp-2" style={{ color: 'oklch(0.20 0.012 260)' }}>
+        <h3 className="font-bold text-base xs:text-lg sm:text-xl text-gray-900 mb-2 line-clamp-2" style={{ color: 'oklch(0.20 0.012 260)' }}>
           {item?.name}
         </h3>
 
-        <p className="text-body text-sm mb-3 line-clamp-2" style={{ color: 'oklch(0.42 0.010 260)' }}>
+        <p className="text-body text-xs xs:text-sm mb-3 line-clamp-2" style={{ color: 'oklch(0.42 0.010 260)' }}>
           {item?.description}
         </p>
 
         <div className="flex items-center justify-between mb-4">
           <div>
-            <p className="text-2xl font-bold text-[#FC4300]">₹{item?.price}</p>
+            <p className="text-xl xs:text-2xl font-bold text-[#FC4300]">₹{item?.price}</p>
             {item?.servings && (
               <p className="text-xs text-muted" style={{ color: 'oklch(0.50 0.008 260)' }}>Serves {item.servings}</p>
             )}

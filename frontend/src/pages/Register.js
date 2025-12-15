@@ -139,7 +139,7 @@ export const Register = () => {
 
   const validatePhone = (phone) => {
     if (!phone || phone.trim().length === 0) {
-      return null; // phone optional
+      return 'Phone number is required.'; // phone now required
     }
     const digits = phone.replace(/[\s()-]/g, '');
     const phoneRe = /^\+?\d{10,15}$/; // allow leading +, 10-15 digits
@@ -324,7 +324,7 @@ export const Register = () => {
 
           {/* Phone Field */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">Phone Number</label>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">Phone Number <span className="text-red-500">*</span></label>
             <div className="relative">
               <Phone className="absolute left-3 top-3 text-gray-400" size={20} />
               <input
@@ -332,8 +332,9 @@ export const Register = () => {
                 name="phone"
                 value={formData.phone}
                 onChange={handleChange}
-                placeholder="+91 9876543210"
+                placeholder="+91 9876543210 (required)"
                 className="w-full pl-10 pr-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-[#FF6A28] focus:ring-2 focus:ring-[#FF6A28]/20 transition"
+                required
               />
             </div>
             {errors.phone && <p className="text-red-600 text-xs mt-1">{errors.phone}</p>}

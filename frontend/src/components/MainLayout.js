@@ -95,19 +95,17 @@ export const MainLayout = ({ children }) => {
 
             {/* Catering Invitation Popup - Shows only on home page when user logs in with empty cart */}
             {isHome && isAuthenticated && user && (user.id || user.userId || user._id) && (
-                <CateringInvitationPopup 
+                <CateringInvitationPopup
                     cartItems={items || []}
                     userId={user.id || user.userId || user._id}
                     isAuthenticated={isAuthenticated}
-                    onBrowse={() => navigate('/menu')}
                 />
             )}
             {/* Debug: Uncomment to test popup */}
-            {/* <CateringInvitationPopup 
+            {/* <CateringInvitationPopup
                 cartItems={[]}
-                userId={user?.id || user?.userId || user?._id || 'test'}
+                userId={'test'}
                 isAuthenticated={true}
-                onBrowse={() => navigate('/menu')}
             /> */}
         </>
     );

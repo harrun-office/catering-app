@@ -398,7 +398,10 @@ export const Cart = () => {
 
       if (response?.data?.success) {
         clearCart();
-        navigate('/tracking');
+        setSuccessMessage('Order request submitted! Our payment team will contact you after confirmation for the 50% advance payment. Balance will be collected on delivery.');
+        setTimeout(() => {
+          navigate('/tracking');
+        }, 3000); // Show message for 3 seconds before navigating
       } else {
         setError(response?.data?.message || 'Failed to place order');
       }
@@ -676,6 +679,19 @@ export const Cart = () => {
                     className="w-full px-4 py-2 border border-orange-100 rounded-lg focus:outline-none focus:border-[#FF6A28] focus:ring-2 focus:ring-[#FF6A28]/20 resize-none"
                     rows="2"
                   />
+                </div>
+
+                {/* Payment Information */}
+                <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-4">
+                  <h3 className="text-sm font-semibold text-[#301b16] mb-2">💳 Payment Information</h3>
+                  <div className="text-sm text-[#7b5a4a] space-y-1">
+                    <p>• <strong>50% Advance Payment:</strong> Required after order confirmation</p>
+                    <p>• <strong>Balance Amount:</strong> Pay cash on delivery when your order arrives</p>
+                    <p>• <strong>Payment Process:</strong> Our team will contact you after order confirmation</p>
+                    <p className="text-xs text-orange-600 mt-2 italic">
+                      * Order will proceed only after receiving the advance payment confirmation
+                    </p>
+                  </div>
                 </div>
 
                 <button
