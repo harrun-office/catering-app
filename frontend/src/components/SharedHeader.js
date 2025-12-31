@@ -52,7 +52,7 @@ export const SharedHeader = ({ isAuthenticated, user, onLogout }) => {
           }, 300);
         }}
         aria-label="Open menu"
-        className={`fixed top-4 right-4 z-40 h-11 w-11 rounded-full bg-white shadow-md border border-[#FF6A28] flex items-center justify-center hover:shadow-lg focus:outline-none focus:ring-0 transition-all duration-300 md:hidden ${iconAnimating ? 'scale-90 rotate-90' : 'hover:-translate-y-0.5'
+        className={`fixed top-4 right-4 z-40 h-11 w-11 rounded-full bg-white shadow-md border border-[#FF6A28] flex items-center justify-center hover:shadow-lg focus:outline-none focus:ring-0 transition-all duration-300 ${iconAnimating ? 'scale-90 rotate-90' : 'hover:-translate-y-0.5'
           }`}
       >
         <MenuIcon
